@@ -76,8 +76,66 @@ guard 留在 `disposeEnv()` 的理由（窗口在那里：跑用户 abort 监听
 
 ## 3. 内部质量（无行为变化）
 
-见 §4 之后各节：`materializer.ts` 的拆分、测试按行为域重排、gate 脚本合并、`descriptors.ts` 拆目录、
-`docs/VALIDATION.md` 重新纳入源码归档。每一项的判据都是"测试一个字符未改即通过"。
+每一项的判据都是"测试不改即通过"。`packages/core/src` 的 diff 只包含搬运：函数体一字未动，改的是它们所在的
+文件、`this.` 前缀与显式参数。
+
+### 3.1 `materializer.ts` 拆成它所编排的五个关注点
+
+1720 行 → 601 行 + 五个模块，**测试一个字符未改**：
+
+| 模块 | 行数 | 内容 |
+|---|---:|---|
+| `internal/attempt.ts` | 189 | 一次 `setup()` 执行：`Attempt`、raw 阶段的结束形态、观察这个结束的 race、被登记的 attempt 放掉的句柄（`releaseSlot` / `releaseRaw`） |
+| `internal/cleanup-phase.ts` | 144 | `CleanupPhase` 任务本身、cleanup 的执行、把阶段已确定的失败归给等待它的那次关闭 |
+| `internal/deadline-queue.ts` | 305 | 进程级 `DeadlineQueue` 与 `Waiters`：一个调用者自己的 Promise、它在当前 attempt 上的期限、到期时的报告 |
+| `internal/attempt-ledger.ts` | 409 | 账本：记录、对用户 raw Promise 的终结监视、迟到关闭、unreachable 诊断、放弃时的报告 |
+| `internal/slot-disposal.ts` | 202 | 有界关闭对一组 slot 做的事：先给在跑的 attempt 宽限期，再按 SCC 缩图依赖者优先关闭 Ready 的 |
+
+`materializer.ts` 留下把它们串起来的那条序列：`load()` 变成一次等待，等待加入一个 attempt，失败的 attempt
+变成 rollback，rollback 决定序列重试还是终结。
+
+**这些模块放在 `internal/` 而不是自己的目录里，是有原因的**：四个测试用列目录的方式扫描 `dist` 与
+`dist/internal` 找抛出点和已删除的名字；放进子目录会让它们**悄悄不再覆盖**被搬走的代码，而其中一个会直接
+因为读到目录而失败。同样的理由，两处 `Syna internal invariant` 留在 `materializer.ts`——它们在该文件与
+`runtime.js` 中的出现次数是被断言的。
+
+### 3.2 测试按行为域重排
+
+43 个按审计轮次命名的文件（`v04-*`、`v05-audit-*`、`v07-s7-*`、`rc4-*`）变成七个按断言内容命名的目录：
+`planning/`、`materialization/`、`disposal/`、`errors/`、`refs/`、`inventory/`、`property/`。审计编号留在
+测试标题里（`F-PL-01 …`、`N2 …`、`R17 …`、`A03 …`），`packages/core/tests/README.md` 是旧→新的映射表。
+除了搬运带来的两处机械后果——到 `../../dist` 的相对路径深度，以及五个文件里按旧名交叉引用别的用例的注释
+——内容未改。
+
+### 3.3 gate 脚本合并
+
+`verify-v05/v06/v07/v08.mjs` 是彼此的副本，删除。每个已发布版本一份
+`scripts/release-profiles/<version>.json`：从该版本自己的 manifest 里抽出的记录——每一步及其真实命令行、
+commit、源码指纹、状态。当前版本的 profile 还带着 gate 读取的常量（benchmark 基线与提交、`any` 预算、
+inventory 记录与登记的增量、mutation 记录）和步骤清单；每次运行的最后一步 `release-profile` 把实际记录的
+步骤与清单比对——**悄悄不再运行某一步的 gate 是 gate 的缺陷，只有清单看得见它**。
+
+### 3.4 `docs/VALIDATION.md` 重新纳入归档
+
+仍然排除出指纹（它由运行自己的 manifest 生成，运行时还不存在），但重新放进 tar.gz：rc.1 一并排除得过头，
+拿到归档的人少了唯一一份说明"验证了什么"的文档。归档里的那份是上一次运行的，落后一个发布；同一个归档里的
+`validation/<version>-release/manifest.json` 才是本次运行自己的记录。
+
+### 3.5 停下报告：`descriptors.ts` 不拆
+
+任务书 §4.4 要求把 `descriptors.ts`（952 行）拆成目录，判据是"对 `.d.ts` 使用者零影响"。**这一项没有做，
+因为它不满足那条判据。**做出来的版本（七个模块、`api-inventory` 逐项相同 374/374）让四个测试失败：
+
+| 测试 | 它读的东西 |
+|---|---|
+| `packages/core/tests/refs/slot-state.test.mjs:30` | `dist/descriptors.d.ts` 里 `SlotState` 的七个成员 |
+| `packages/core/tests/disposal/state-and-ledger.test.mjs:252` | 同一文件里 `EnvInspection.abandonedAttempts` 的声明 |
+| `packages/core/tests/inventory/expired-forms-0.7.test.mjs:52` | 同一文件里 `ServiceRef<T>` 的形状 |
+| `packages/core/tests/inventory/expired-forms-0.7.test.mjs:308` | 同一文件里 `RuntimeLimits` 记录的默认值 |
+
+它们不是过时的断言，而正是"零影响"的检验：TypeScript 的声明输出跟随模块结构，拆开之后这些公开声明就不在
+`descriptors.d.ts` 里了。让测试改去别处找，等于把判据换掉再宣布满足它。按 §7"拆分若需要改测试才能通过，
+停下报告"，此项撤回；`descriptors.ts` 保持原样。
 
 ## 4. 公开面
 
