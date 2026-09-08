@@ -15,9 +15,25 @@ import { createRuntime, definePackage } from '../dist/index.js'
 
 const makeDefine = id => definePackage({ name: `@rc4/${id.replaceAll('.', '-')}`, version: '1.0.0', syna: { id } })
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+const turn = () => new Promise(resolve => setImmediate(resolve))
 const deferred = () => { let resolve; const promise = new Promise(settle => { resolve = settle }); return { promise, resolve } }
 const codeOf = promise => promise.then(() => 'resolved', error => error?.code ?? String(error?.message ?? error))
+const flat = error => (error instanceof AggregateError ? error.errors.flatMap(flat) : [error])
+/** What a Promise has done so far, read without awaiting it. */
+const track = promise => {
+  const state = { settled: 'pending', reason: undefined }
+  promise.then(() => { state.settled = 'fulfilled' }, error => { state.settled = 'rejected'; state.reason = error })
+  return state
+}
 const GRACE = 60
+/**
+ * The budget of the re-entry matrix below, which holds its cleanup open on purpose:
+ * long enough that the close cannot reach the end of its grace while the assertions
+ * that it has *not* ended yet are being made. Each of those tests carries a watchdog
+ * of its own (`{ timeout }`), which is a test harness limit and never a deadline the
+ * model promises.
+ */
+const HELD = 5_000
 
 /** A Service whose setup registers `onAbort` on the owner's stop signal. */
 const listener = (define, name, onAbort, options = {}) => define.service(name, {
@@ -33,59 +49,114 @@ const listener = (define, name, onAbort, options = {}) => define.service(name, {
 // N2 — one close, whoever calls it and from where.
 // ---------------------------------------------------------------------------
 
+/**
+ * The eight paths a user callback can re-enter a close from (the independent review
+ * of rc.4 enumerated them): `outer` is the close the test starts, `inner` the close
+ * the abort listener of a Service inside the child Env starts from within it.
+ *
+ * Every cell asserts the same four things, because the third review showed that the
+ * rc.4 assertions did not: an implementation where both `joinClose()` methods yield
+ * one microtask and then fulfil — the re-entering caller succeeds early while the
+ * real close runs on and reports its cleanup failure only to the caller that started
+ * it — passed all 55 of the rc.4 cases (`work/rc5/BASELINE.md`). What rejects it is
+ * asserting the *inner* observer: that it is still waiting while the cleanup is, and
+ * that it is answered with the same failure afterwards.
+ *
+ * Deliberately NOT asserted: that the two observers receive the same Error object. A
+ * parent's close and the Runtime's own aggregate what their children report, so the
+ * cleanup failure may sit one layer deeper for one of them; what the model promises
+ * is that the failure reaches both, and once each.
+ */
 const REENTRY = [
-  { id: 'same Env, dispose()', target: 'self' },
-  { id: 'same Env, Symbol.asyncDispose', target: 'self-async-dispose' },
-  { id: 'same Env, runtime.dispose()', target: 'runtime' },
-  { id: 'child Env re-enters its own close', target: 'child-self' },
-  { id: 'child Env re-enters its parent', target: 'child-parent' },
+  { id: 'same Env', outer: 'child', inner: 'child' },
+  { id: 'same Env through Symbol.asyncDispose', outer: 'child', inner: 'child', asyncDispose: true },
+  { id: 'a child Env, re-entering its parent', outer: 'child', inner: 'root' },
+  { id: 'a parent Env, re-entering its child', outer: 'root', inner: 'child' },
+  { id: 'a root Env, re-entering that same root', outer: 'root', inner: 'root' },
+  { id: 'a root Env, re-entering the Runtime', outer: 'root', inner: 'runtime' },
+  { id: 'the Runtime, re-entering the Runtime', outer: 'runtime', inner: 'runtime' },
+  { id: 'the Runtime, re-entering a child Env', outer: 'runtime', inner: 'child' },
 ]
 
 for (const shape of REENTRY) {
-  test(`N2 ${shape.id}: one close, the caller's Promise carries its cleanup failure, and nothing is reported twice`, async () => {
-    const define = makeDefine(`rc4.n2.${shape.id.replaceAll(/[^a-z]+/gi, '-')}`)
-    const events = []
-    const holder = {}
-    let cleanupRuns = 0
-    const cleanup = () => { cleanupRuns += 1; throw new Error('cleanup failed') }
-    const reenter = () => {
-      const target = shape.target === 'runtime' ? holder.runtime
-        : shape.target === 'child-parent' ? holder.root
-        : shape.target === 'child-self' ? holder.child
-        : holder.env
-      holder.inner = shape.target === 'self-async-dispose' ? target[Symbol.asyncDispose]() : target.dispose()
-      holder.inner.then(() => undefined, () => undefined)
-    }
-    const Service = listener(define, 's', reenter, { cleanup })
-    const Root = define.entry('root', {})
-    const Child = define.entry('child', { requires: { s: Service } })
-    const runtime = createRuntime({
-      services: [Service],
-      limits: { disposalGraceMs: GRACE },
-      diagnostics: { onEvent: event => events.push(event.type) },
-    })
-    holder.runtime = runtime
-    const root = await runtime.enter(Root)
-    holder.root = root
-    const child = await root.enter(Child)
-    holder.child = child
-    holder.env = shape.target.startsWith('child') ? child : child
-    await child.deps.s.load()
+  for (const ending of ['a cleanup that fails', 'a cleanup that succeeds']) {
+    const fails = ending === 'a cleanup that fails'
+    test(`N2 ${shape.id} / ${ending}: neither observer settles before the cleanup does, and both are answered by that one close`,
+      { timeout: 20_000 }, async () => {
+        const define = makeDefine(`rc4.n2.${shape.id.replaceAll(/[^a-z]+/gi, '-')}.${fails ? 'fails' : 'ok'}`)
+        const holder = {}
+        const gate = deferred()
+        const entered = deferred()
+        const failure = Object.assign(new Error(`cleanup of ${shape.id} failed`), { marker: shape.id })
+        let cleanups = 0
+        let dormantSetups = 0
+        const Dormant = define.service('dormant', { setup() { dormantSetups += 1; return { ok: true } } })
+        const Listening = define.service('listening', {
+          requires: { dormant: Dormant },
+          setup({ dormant }, { signal, onDispose }) {
+            onDispose(async () => {
+              cleanups += 1
+              entered.resolve()
+              await gate.promise
+              if (fails) throw failure
+            })
+            signal.addEventListener('abort', () => {
+              holder.stateAtAbort = holder.child.state
+              // N3 in the same breath: the close set refuses new work before any listener runs.
+              holder.refused = codeOf(dormant.load())
+              const target = holder[shape.inner]
+              holder.innerPromise = shape.asyncDispose ? target[Symbol.asyncDispose]() : target.dispose()
+              holder.inner = track(holder.innerPromise)
+            }, { once: true })
+            return { ok: true }
+          },
+        })
+        const Root = define.entry('root', {})
+        const Child = define.entry('child', { requires: { listening: Listening, dormant: Dormant } })
+        const runtime = createRuntime({ services: [Listening, Dormant], limits: { disposalGraceMs: HELD } })
+        holder.runtime = runtime
+        holder.root = await runtime.enter(Root)
+        holder.child = await holder.root.enter(Child)
+        await holder.child.deps.listening.load()
 
-    const closed = shape.target === 'child-parent' || shape.target === 'runtime'
-      ? await codeOf(root.dispose())
-      : await codeOf(child.dispose())
-    assert.notEqual(closed, 'resolved',
-      'the Promise the caller awaited carries the cleanup failure: it is not the empty-handed half of a race')
-    assert.equal(cleanupRuns, 1, 'the cleanup ran once, in one close')
-    assert.equal(child.state, 'disposed')
-    assert.equal(events.filter(type => type === 'attempt-abandoned').length, 0, 'nothing was abandoned: the cleanup was fast')
-    await codeOf(holder.inner)
-    assert.equal(cleanupRuns, 1, 'and the re-entering call joined that same close')
-    assert.equal(runtime.inspect().unsettledAttempts.length, 0)
-    await codeOf(runtime.dispose())
-    assert.equal(events.filter(type => type === 'runtime-attempts-outstanding').length, 0)
-  })
+        const outerPromise = holder[shape.outer].dispose()
+        const outer = track(outerPromise)
+        await entered.promise
+        await turn()
+        await turn()
+
+        // 1. While the cleanup is still running, neither observer has been answered.
+        assert.equal(cleanups, 1, 'one close, so the cleanup ran once')
+        assert.equal(outer.settled, 'pending', 'the caller that started the close is still waiting for it')
+        assert.equal(holder.inner.settled, 'pending',
+          'and so is the caller that re-entered it: joining a close means waiting for it, not being let go early')
+        assert.equal(holder.stateAtAbort, 'disposing', 'the close set was marked before any listener ran')
+        assert.equal(holder.child.state, 'disposing', 'nothing is declared disposed while its own cleanup runs')
+        assert.equal(await holder.refused, 'ENV_CLOSED')
+        assert.equal(dormantSetups, 0, 'and nothing inside the close set was started')
+
+        gate.resolve()
+        const [outerEnd, innerEnd] = await Promise.allSettled([outerPromise, holder.innerPromise])
+
+        // 2. Both are answered by that one close, with what it determined.
+        if (fails) {
+          assert.equal(outerEnd.status, 'rejected', 'the close reports its cleanup failure')
+          assert.equal(innerEnd.status, 'rejected', 'to the re-entering caller as well')
+          assert.equal(flat(outerEnd.reason).filter(error => error === failure).length, 1,
+            'the failure the cleanup produced, once')
+          assert.equal(flat(innerEnd.reason).filter(error => error === failure).length, 1,
+            'the same failure, once, however many layers of aggregation are between')
+        }
+        else {
+          assert.equal(outerEnd.status, 'fulfilled')
+          assert.equal(innerEnd.status, 'fulfilled', 'a close that had nothing to report fulfils for both observers')
+        }
+        assert.equal(cleanups, 1, 'and there was never a second close over the same slots')
+        assert.equal(holder.child.state, 'disposed')
+        assert.equal(runtime.inspect().unsettledAttempts.length, 0)
+        await codeOf(runtime.dispose())
+      })
+  }
 }
 
 test('N2 a listener that re-enters runtime.dispose() gets one Runtime close: runtime-attempts-outstanding is reported once', async () => {

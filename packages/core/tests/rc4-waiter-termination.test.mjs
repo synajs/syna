@@ -11,6 +11,17 @@
 // overlapping attempt while a rollback is unfinished, the retry rules of one
 // sequence when a rollback succeeds, and the `AggregateError` + `ROLLBACK_FAILED`
 // pair when a rollback fails.
+//
+// This file is the *end-to-end* evidence: real timers, a real process, a wait that
+// really does end after a real timeout. It is not where this suite establishes when
+// a deadline fires — `rc4-deadline-clock.test.mjs` does that on a clock the test
+// owns. The third independent review of rc.4 showed why the two must be separate:
+// with every deadline armed at four times its configured value, all eight cases here
+// still passed, because a window wide enough not to flake under load is also wide
+// enough to hold a deadline that is wrong by a factor (`work/rc5/BASELINE.md`).
+// So the windows below are stated as what they are — a lower bound with the slack a
+// timer may fire early with, and an upper bound with the scheduling tolerance of a
+// loaded machine — and the deadline itself is proved elsewhere.
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { createRuntime, definePackage } from '../dist/index.js'
@@ -20,6 +31,18 @@ const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 const deferred = () => { let resolve, reject; const promise = new Promise((settle, fail) => { resolve = settle; reject = fail }); return { promise, resolve, reject } }
 const codeOf = promise => promise.then(() => 'resolved', error => error?.code ?? String(error))
 const stateOf = env => env.inspect().nodes.filter(node => node.kind === 'service').map(node => node.state)
+
+/** libuv may fire a timer about a millisecond early (1.0.0-rc.4 / G1). */
+const SLACK = 5
+/** Process scheduling, GC and a loaded machine — never the deadline itself. */
+const TOLERANCE = 250
+/** A wait ended after its deadline and not far past it, measured on a monotonic clock. */
+const endedAtItsDeadline = (elapsedMs, expectedMs, what) => {
+  assert.ok(elapsedMs >= expectedMs - SLACK,
+    `${what}: ended before its deadline (${elapsedMs.toFixed(1)} ms, expected at least ${expectedMs} ms)`)
+  assert.ok(elapsedMs <= expectedMs + TOLERANCE,
+    `${what}: ended far past its deadline (${elapsedMs.toFixed(1)} ms, expected at most ${expectedMs + TOLERANCE} ms)`)
+}
 
 test('N5 lazy load(): a waiter on an attempt whose rollback hangs ends at its own deadline, and the cleanup keeps running', async () => {
   const define = makeDefine('rc4.n5.lazy')
@@ -38,11 +61,11 @@ test('N5 lazy load(): a waiter on an attempt whose rollback hangs ends at its ow
   const runtime = createRuntime({ services: [Service], diagnostics: { onEvent: event => events.push(event.type) } })
   const env = await runtime.enter(Entry)
 
-  const started = Date.now()
+  const started = performance.now()
   const first = await codeOf(env.deps.s.load())
-  const elapsed = Date.now() - started
+  const elapsed = performance.now() - started
   assert.equal(first, 'LOAD_TIMEOUT', 'the wait ends at the load timeout although the setup itself settled long ago')
-  assert.ok(elapsed >= 35 && elapsed < 400, `and at that deadline, not at some other time (${elapsed} ms)`)
+  endedAtItsDeadline(elapsed, 40, 'the first waiter')
   assert.equal(cleanupStarted, 1, 'the cleanup was started')
   assert.deepEqual(stateOf(env), ['starting'], 'the slot is still on the unfinished attempt')
   assert.equal(env.state, 'ready', 'nothing about the Env changed: this is not a close')
@@ -74,11 +97,11 @@ test('N5 a waiter that joins after the raw setup has already failed gets a deadl
   void env.deps.s.load().catch(() => undefined)
   await sleep(60) // the first waiter has already timed out; the rollback is still running
 
-  const started = Date.now()
+  const started = performance.now()
   const joined = await codeOf(env.deps.s.load())
-  const elapsed = Date.now() - started
+  const elapsed = performance.now() - started
   assert.equal(joined, 'LOAD_TIMEOUT', 'the wait that joined afterwards is bounded too')
-  assert.ok(elapsed >= 35 && elapsed < 400, `by its own deadline, measured from its own start (${elapsed} ms)`)
+  endedAtItsDeadline(elapsed, 40, 'the waiter that joined during the rollback')
   assert.equal(setups, 1, 'joining an unfinished rollback never starts an overlapping attempt')
   hang.resolve()
   await sleep(20)
@@ -104,12 +127,16 @@ test('N5 eager activation: enter() fails with ENTRY_ACTIVATION_FAILED within the
     limits: { disposalGraceMs: 40 },
     diagnostics: { onEvent: event => events.push(event.type) },
   })
-  const started = Date.now()
+  const started = performance.now()
   const outcome = await runtime.enter(Entry).then(() => 'entered', error => error)
-  const elapsed = Date.now() - started
+  const elapsed = performance.now() - started
   assert.equal(outcome.code, 'ENTRY_ACTIVATION_FAILED')
   assert.equal(outcome.cause?.code, 'LOAD_TIMEOUT', 'the activation is the waiter of the eager attempt (§11)')
-  assert.ok(elapsed < 1_000, `and it settles (${elapsed} ms)`)
+  // Two moments, not one (§11): the internal wait ends at `loadTimeoutMs`, and the
+  // public Promise follows the bounded close that failure starts — here a rollback
+  // that never returns, so the whole grace. Which of the two ends when is asserted
+  // instant by instant in `rc4-deadline-clock.test.mjs`.
+  endedAtItsDeadline(elapsed, 40 + 40, 'the public enter()')
   assert.equal(runtime.inspect().liveEnvCount, 0, 'the half-started Env is closed')
   assert.ok(events.includes('attempt-abandoned'), 'the close abandons the unfinished rollback and says so')
   hang.resolve()
@@ -212,7 +239,7 @@ test('N5 unchanged semantics: a waiter may leave while the rollback is unfinishe
   let setups = 0
   const Service = define.service('s', {
     failure: { attempts: 1, afterExhaustion: 'retry-on-next-load', cooldownMs: 1 },
-    loadTimeoutMs: 5_000,
+    loadTimeoutMs: 60,
     setup(_deps, { onDispose }) { setups += 1; onDispose(() => hang.promise); return Promise.reject(new Error('setup failed')) },
   })
   const Entry = define.entry({ requires: { s: Service } })
@@ -223,13 +250,32 @@ test('N5 unchanged semantics: a waiter may leave while the rollback is unfinishe
   await sleep(10)
   controller.abort()
   assert.equal(await leaving, 'LOAD_CANCELLED', 'the caller left its wait')
+  // A caller whose signal is already aborted is refused at the door, before it ever
+  // reaches the slot's sequence: on its own that proves nothing about the attempt.
   for (let round = 0; round < 5; round += 1) {
-    void env.deps.s.load({ signal: AbortSignal.abort() }).catch(() => undefined)
-    await sleep(2)
+    assert.equal(await codeOf(env.deps.s.load({ signal: AbortSignal.abort() })), 'LOAD_CANCELLED')
   }
+  assert.equal(setups, 1)
+
+  // So the real question is asked by a waiter that is genuinely waiting: it reaches
+  // the sequence, finds the unfinished rollback, and must join that attempt rather
+  // than start one of its own — while the rollback is still held open.
+  let active = 'pending'
+  const started = performance.now()
+  const waiting = codeOf(env.deps.s.load()).then(result => { active = result; return result })
+  await sleep(25)
+  assert.equal(active, 'pending', 'it is waiting on the attempt, not answered by it')
   assert.equal(setups, 1, 'the unfinished rollback blocks every new attempt')
+  assert.deepEqual(stateOf(env), ['starting'], 'the slot is still on that one attempt')
+
+  // And it can leave on its own, at its own deadline, with the rollback still unfinished.
+  assert.equal(await waiting, 'LOAD_TIMEOUT')
+  endedAtItsDeadline(performance.now() - started, 60, 'the active waiter')
+  assert.equal(setups, 1, 'which started nothing either')
   assert.deepEqual(stateOf(env), ['starting'])
+
   hang.resolve()
   await sleep(20)
+  assert.equal(setups, 1, 'and no second attempt was started behind the released rollback')
   await runtime.dispose().catch(() => undefined)
 })

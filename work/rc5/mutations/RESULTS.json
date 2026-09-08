@@ -1,0 +1,85 @@
+{
+  "generatedAt": "2026-09-08T16:39:27.550Z",
+  "node": "v26.0.0",
+  "commit": "aba7c9454eb4b0ccb0cb5c8ba70dca860ca3de05",
+  "status": "ALL_KILLED",
+  "inputs": {
+    "packages/core/src/runtime.ts": "7a9514d2200c016c625f3d7e6259734a156672359dd4d4760b8024215da52c25",
+    "packages/core/tests/rc4-close-invariants.test.mjs": "215d3e68f33b4b057e70a0e1ecbc181f03988d2c5a3e977ea3592c15a3ed5b4d",
+    "packages/core/tests/rc4-cleanup-phase.test.mjs": "bf7b751940c8748f833f60224d40e48a0c6a27871023b452dbed257e17b4d401",
+    "packages/core/src/internal/materializer.ts": "4a3dc71c2e431e0127581208c182b8136200c8277094cbf7c483babb22a33269",
+    "packages/core/tests/rc4-waiter-termination.test.mjs": "a988e91d92fae0b2827ccd48f9cd81d58fa87dea5678b3381498cae0f90032d1",
+    "packages/core/tests/rc4-deadline-clock.test.mjs": "5dce0b6835caea5dc5b45fa339694c07cd49bcd1e5d6a210aa8330889b22fbab"
+  },
+  "results": [
+    {
+      "id": "m1",
+      "name": "join-premature",
+      "title": "a re-entering observer fulfils instead of joining the close",
+      "explanation": "Both `joinClose()` methods yield one microtask and then fulfil. The real close still runs to the end and still reports its cleanup failure to the caller that started it; only the re-entering observer is answered early, with success. A test kills this by asserting the inner observer's own outcome, not just that the cleanup ran once.",
+      "compiledFile": "packages/core/dist/runtime.js",
+      "source": "packages/core/src/runtime.ts",
+      "patch": "work/rc5/mutations/join-premature.patch",
+      "log": "work/rc5/mutations/join-premature.log",
+      "tests": [
+        "rc4-close-invariants.test.mjs",
+        "rc4-cleanup-phase.test.mjs"
+      ],
+      "exit": 1,
+      "counts": {
+        "tests": 51,
+        "pass": 39,
+        "fail": 12,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "killed": true,
+      "killedBy": [
+        "N2 same Env / a cleanup that fails: neither observer settles before the cleanup does, and both are answered by that one close",
+        "N2 same Env / a cleanup that succeeds: neither observer settles before the cleanup does, and both are answered by that one close",
+        "N2 same Env through Symbol.asyncDispose / a cleanup that fails: neither observer settles before the cleanup does, and both are answered by that one close",
+        "N2 same Env through Symbol.asyncDispose / a cleanup that succeeds: neither observer settles before the cleanup does, and both are answered by that one close",
+        "N2 a child Env, re-entering its parent / a cleanup that fails: neither observer settles before the cleanup does, and both are answered by that one close",
+        "N2 a child Env, re-entering its parent / a cleanup that succeeds: neither observer settles before the cleanup does, and both are answered by that one close",
+        "N2 a root Env, re-entering that same root / a cleanup that fails: neither observer settles before the cleanup does, and both are answered by that one close",
+        "N2 a root Env, re-entering that same root / a cleanup that succeeds: neither observer settles before the cleanup does, and both are answered by that one close",
+        "N2 a root Env, re-entering the Runtime / a cleanup that fails: neither observer settles before the cleanup does, and both are answered by that one close",
+        "N2 a root Env, re-entering the Runtime / a cleanup that succeeds: neither observer settles before the cleanup does, and both are answered by that one close",
+        "N2 the Runtime, re-entering the Runtime / a cleanup that fails: neither observer settles before the cleanup does, and both are answered by that one close",
+        "N2 the Runtime, re-entering the Runtime / a cleanup that succeeds: neither observer settles before the cleanup does, and both are answered by that one close"
+      ],
+      "scope": "isolated compiled copy under work/mutations/; the workspace is not modified"
+    },
+    {
+      "id": "m2",
+      "name": "deadline-4x",
+      "title": "every waiter deadline is armed for four times its configured timeout",
+      "explanation": "A waiter is armed at four times its `loadTimeoutMs`; the error it eventually reports still names the configured value. A test kills this only by observing when the deadline fires — a controlled clock, or the phase the run has reached — rather than by an upper bound wide enough to hold both.",
+      "compiledFile": "packages/core/dist/internal/materializer.js",
+      "source": "packages/core/src/internal/materializer.ts",
+      "patch": "work/rc5/mutations/deadline-4x.patch",
+      "log": "work/rc5/mutations/deadline-4x.log",
+      "tests": [
+        "rc4-waiter-termination.test.mjs",
+        "rc4-deadline-clock.test.mjs"
+      ],
+      "exit": 1,
+      "counts": {
+        "tests": 13,
+        "pass": 8,
+        "fail": 5,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "killed": true,
+      "killedBy": [
+        "N5 clock: the first waiter on an attempt whose rollback hangs ends at its own deadline, at that instant and not before",
+        "N5 clock: a waiter that joins during the rollback is armed from its own start, not from the attempt's",
+        "N5 clock: eager activation has two moments — the internal wait ends at the deadline, the public enter() after the close it starts",
+        "N5 clock: the public enter() is bounded by the close, so a shorter grace ends it earlier — the deadline itself does not move",
+        "N5 clock control: while the setup itself is pending the deadline fires at the same instant, and that attempt is overdue"
+      ],
+      "scope": "isolated compiled copy under work/mutations/; the workspace is not modified"
+    }
+  ]
+}
