@@ -20,7 +20,7 @@
     "build": "tsc -b packages/core --force && tsc -b tsconfig.json --force",
     "typecheck": "tsc -b tsconfig.json --pretty false && npm run type-tests",
     "type-tests": "tsc -p packages/core/tsconfig.type-tests.json --pretty false",
-    "test": "npm run build && node --test 'packages/core/tests/**/*.test.mjs'",
+    "test": "npm run build && node scripts/core-tests.mjs",
     "test:app": "node --test apps/multitenant-blog/tests/filesystem.test.mjs apps/multitenant-blog/tests/render.test.mjs apps/multitenant-blog/tests/tenants-auth.test.mjs apps/multitenant-blog/tests/preflight.test.mjs apps/multitenant-blog/tests/audit-app.test.mjs apps/multitenant-blog/tests/review-app.test.mjs apps/multitenant-blog/tests/rc3-close-paths.test.mjs apps/multitenant-blog/tests/rc4-acquire-deadline.test.mjs && node --test --expose-gc apps/multitenant-blog/tests/site-manager.test.mjs",
     "test:postgres": "node scripts/pg-test-cluster.mjs with -- node --test apps/multitenant-blog/tests/postgres.test.mjs apps/multitenant-blog/tests/matrix.test.mjs",
     "test:scripts": "node --test scripts/tests/*.test.mjs",
