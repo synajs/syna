@@ -22,6 +22,13 @@ const argv = process.argv.slice(2)
 const list = argv.includes('--list')
 const dirFlag = argv.indexOf('--dir')
 const dir = dirFlag === -1 ? 'packages/core/tests' : argv[dirFlag + 1]
+// `--dir` at the very end leaves nothing to walk. Said here, before discovery and before `--list`,
+// because the alternative is `path.resolve` reporting it: an ERR_INVALID_ARG_TYPE about `paths[1]`,
+// which names an argument of a function this script called rather than the one the caller left out.
+if (dir === undefined) {
+  console.error('--dir requires a path')
+  process.exit(1)
+}
 // `--dir` and the path behind it are consumed here rather than passed on — but only when `--dir` is
 // there at all. Without it `indexOf` answers -1, and an index test written against `dirFlag + 1`
 // reads as `index !== 0`: it drops argv[0], the first argument meant for `node --test`. Silently, so

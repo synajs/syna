@@ -98,6 +98,20 @@ test('--list prints what --dir discovered and runs none of it', () => {
   }
 })
 
+test('--dir with nothing behind it is refused in the script\'s own words', () => {
+  // Both shapes reach discovery with an undefined directory, and `path.resolve` used to be the one to
+  // report it: a stack about `paths[1]` being undefined, naming an argument of a function this script
+  // called rather than the one the caller left out. `--list` must not get in first and hide it either.
+  for (const args of [['--dir'], ['--list', '--dir']]) {
+    assert.throws(() => run(args, { stdio: 'pipe' }), error => {
+      assert.notEqual(error.status, 0, `exit code for ${args.join(' ')}`)
+      assert.match(String(error.stderr), /^--dir requires a path$/m, 'the diagnostic this script owns')
+      assert.doesNotMatch(String(error.stderr), /ERR_INVALID_ARG_TYPE|TypeError|node:path/, 'and no internal stack')
+      return true
+    })
+  }
+})
+
 test('the entry discovers every core test file, recursively, and nothing else', () => {
   const walk = (dir) => readdirSync(path.join(root, dir), { withFileTypes: true }).flatMap(item =>
     item.isDirectory() ? walk(path.join(dir, item.name)) : [path.join(dir, item.name)])
