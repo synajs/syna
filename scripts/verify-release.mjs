@@ -70,6 +70,10 @@ const BENCHMARK_REGISTERED_FASTER_FLOOR = '0.30'
 // name of the reference application (apps/multitenant-blog), the deleted demos and fixtures dropped (each carried 0).
 // The seven examples and the rebuilt fixtures are absent from it: they may not use `any` at all.
 const ANY_BASELINE = 'scripts/any-baseline-v1.0.0-rc.2.json'
+// The mutation audit (1.0.0-rc.5): the manual script and the record of its last run. The gate reads the
+// record; it never runs the mutants, which take an isolated copy of the compiled core per mutant.
+const MUTATION_SCRIPT = 'scripts/mutation-audit.mjs'
+const MUTATION_RECORD = 'work/rc5/mutations/RESULTS.json'
 // The public API of 0.8.0 as the 0.8.0 release gate recorded it (commit 38a722e): the frozen surface. This source's
 // inventory must be identical to it, item by item, up to the registrations that have been made against it since.
 const INVENTORY_FROZEN = 'validation/v0.8-release/api-inventory.json'
@@ -313,6 +317,29 @@ async function developmentGate() {
   // the README example, the API inventory and its doc-aware diff, the codemod on a fixture, the `any` budget; 1.0.0-rc.2:
   // the vendor-name scan and the re-keyed `any` baseline.
   await run('gate-self-tests', 'node', ['--test', '--test-reporter=tap', ...glob('scripts/tests', '.test.mjs')], { noSkip: true })
+  // 1.0.0-rc.5: the mutation audit is a manual check, not a step of every run — a full
+  // mutation engine in CI would cost far more than it tells anyone. What the gate asserts is
+  // that the record of the last manual run says both standing counter-examples were killed,
+  // and that the sources and tests it was produced from are byte for byte the ones in this
+  // tree. A record from other sources is stale, and stale is not evidence.
+  {
+    const script = path.join(root, MUTATION_SCRIPT)
+    const recordFile = path.join(root, MUTATION_RECORD)
+    const record = existsSync(recordFile) ? JSON.parse(readFileSync(recordFile, 'utf8')) : null
+    const stale = record ? Object.entries(record.inputs ?? {}).filter(([file, digest]) =>
+      !existsSync(path.join(root, file)) || sha256File(path.join(root, file)) !== digest).map(([file]) => file) : []
+    const survived = record ? (record.results ?? []).filter(item => !item.killed).map(item => item.name) : []
+    const ok = existsSync(script) && record !== null && record.status === 'ALL_KILLED'
+      && record.partial === undefined && survived.length === 0 && stale.length === 0
+      && (record.results ?? []).length >= 2
+    const note = record === null
+      ? `${MUTATION_RECORD} is absent: run \`node ${MUTATION_SCRIPT}\``
+      : `${(record.results ?? []).length} mutant(s) recorded ${record.generatedAt} on ${record.node}`
+        + `, ${survived.length} survived, ${Object.keys(record.inputs ?? {}).length} input file(s) checked`
+        + `${stale.length > 0 ? `, ${stale.length} changed since` : ''}`
+    steps.push({ name: 'mutation-audit-record', ok, exitCode: ok ? 0 : 1, mustRun: true, command: 'internal', log: MUTATION_RECORD, note, ...(survived.length > 0 ? { survived } : {}), ...(stale.length > 0 ? { stale } : {}) })
+    log(`${ok ? 'ok  ' : 'FAIL'} mutation-audit-record (${note})`)
+  }
   // The public API inventory of this source, the gate's own assertion that no item of it is deprecated (A11 in 0.7,
   // a success criterion of 0.8), its diff against the 1.0.0-rc.2 record when that record is present, and — the frozen
   // surface — the assertion that the inventory differs from the 1.0.0-rc.2 record and from the 0.8.0 record by exactly

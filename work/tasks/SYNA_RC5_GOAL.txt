@@ -1,0 +1,11 @@
+/goal 先完整读取工作区根目录的 SYNA_RC5_EXECUTION_PROMPT.md 与 work/rc5/audit/ 下的第三轮独立审计材料（含两个变异补丁），并按任务书完成 Syna 1.0.0-rc.5。本轮不改任何生产行为：第三轮审计没有找到生产缺陷，找到的是测试没有守住它们声称守住的不变式。两个部分顺序不可交换——A 部分先让测试真正证明承诺，B 部分再用修好的测试当网做内部质量重构。
+
+A 部分：修订测试使其能杀死审计注入的两个变异——M1（把两处 joinClose() 改成 await null; return，重入者提前成功，rc.4 五个测试文件 55/55 照过）要求八种重入路径每格断言"闸门放行前内外都不结算、放行后都拒绝且含同一底层 cleanup failure"；M2（DeadlineQueue 入队时间 × 4，rc4-waiter-termination 8/8 照过）要求用受控时钟或阶段观测分别验证内部 deadline 触发时刻、回滚等待边界、公开 Promise 的结果与 cause，另保留有容差的端到端墙钟检查——不得把 <1000 改成 <60。另修：onEvent 重入测试实际 callbackCalls=0，必须强制产生目标事件并先断言回调发生；rc4-retention 的 "same four paths" 实际只测两条；rc4-cleanup-phase 的 sleep(5/20) 换成闸门；no-overlap 补一个真正活跃的 waiter；应用 rc4-acquire-deadline 的 <400/<600/<1000 同类收紧。文档修正：SEMANTIC_CHANGES_RC4 §3.2 仍写早期候选方案而实际是 entered guard 加延后 join；SEMANTIC_MODEL §11 写清 rollback waiter 到期不发 attempt-overdue 并加入 eager 的两个保证（内部 waiter 按 loadTimeoutMs 结束并启动关闭；公开 enter() 在有界关闭后拒绝）；覆盖表述按真实矩阵（Ready 6 + rollback 6 + discarded-late-success 3 + late-settlement 3 + unreachable 1）而非"5×6=30"。明确不做：不把 enter() 改成在 load timeout 处直接抛错。
+
+B 部分（A 部分全绿后才开始）：拆分 materializer.ts（1720 行）为职责模块，判据是测试一个字符未改即通过；测试按行为域重排为 planning/materialization/disposal/errors/refs/inventory/property，审计编号保留为标题后缀并加 README 映射表，内容不改只搬运；合并 verify-v05/v06/v07/v08 到一个 verify-release.mjs + 每版 JSON 步骤清单；descriptors.ts 拆目录；docs/VALIDATION.md 重新纳入源码归档（仍排除出指纹）。
+
+Phase A 产出变异基线、A 部分各项修订方案（尤其 M2 的受控时钟方案）与 materializer 切法后直接继续；只有某项修正需要改生产代码、或拆分无法在不改测试的前提下完成时才停下报告。
+
+成功结束必须同时满足：packages/core/src 的 diff 只含纯搬运；api-inventory 与 rc.4 记录 0 added / 0 removed / 0 changed；planner 差分与 explain/inspect 快照逐字不变；两个变异在隔离副本上被修订后的测试杀死（脚本记录，不进 CI 必跑）；onEvent 断言 callbackCalls>0；retention 覆盖与标题一致；cleanup-phase 无 sleep 假定；活跃 waiter 的 no-overlap 有测试；应用三处上界收紧且 A4 原有断言仍通过；四项文档修正到位；materializer 拆分后测试一字未改即通过；测试重排有映射表；gate 脚本合并且历史清单保留；全部核心/类型/应用/scripts 测试与真实 PostgreSQL 矩阵通过；benchmark 与 rc.4 同机交替 ±10% 且 dispose 相关行不退化；any 不增；release gate 从最终归档重新解包、安装、编译、运行必跑项并实际输出 COMPLETE、provenance dirty=false、VALIDATION.md 在归档中。最后把 gate 真实摘要、归档哈希、两个变异的杀死记录与前后 inventory 对照输出到会话，不以"已完成"的文字代替证据；不打 tag，不推送。
+
+持续执行、修复和复验，不停在规划或某个子任务通过。若仅因 PostgreSQL 不可用等确实无法自行消除的外部条件阻塞，完成其余可做部分后记录 work/rc5/STATE.md 和精确复现命令，报告 BLOCKED 并暂停；BLOCKED 不是成功，任务大或测试红不构成 BLOCKED。

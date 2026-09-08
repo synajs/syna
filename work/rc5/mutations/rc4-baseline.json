@@ -1,0 +1,69 @@
+{
+  "generatedAt": "2026-09-08T16:30:06.828Z",
+  "node": "v26.0.0",
+  "commit": "aba7c9454eb4b0ccb0cb5c8ba70dca860ca3de05",
+  "status": "SURVIVED",
+  "inputs": {
+    "packages/core/src/runtime.ts": "7a9514d2200c016c625f3d7e6259734a156672359dd4d4760b8024215da52c25",
+    "packages/core/tests/rc4-cleanup-phase.test.mjs": "bf7b751940c8748f833f60224d40e48a0c6a27871023b452dbed257e17b4d401",
+    "packages/core/tests/rc4-close-invariants.test.mjs": "422acca5ca6a78d191fd07855dbe5a96f05e52af0ca996a7fcef5f21572a7657",
+    "packages/core/tests/rc4-graph-property.test.mjs": "af83c4a7dcb8a27fed7a9374c8c0331a4f8165c9bbebc120dccb8504f2805dc3",
+    "packages/core/tests/rc4-retention.test.mjs": "da2494c5103c39d1ee7ad683fdae3c392f2da760b0353d55d8c736acbc4059ef",
+    "packages/core/tests/rc4-waiter-termination.test.mjs": "8ad274d118e8fae74cf7afe1bfa28bdc3d70db5e8281801de930351c3553cc1b",
+    "packages/core/src/internal/materializer.ts": "4a3dc71c2e431e0127581208c182b8136200c8277094cbf7c483babb22a33269"
+  },
+  "results": [
+    {
+      "id": "m1",
+      "name": "join-premature",
+      "title": "a re-entering observer fulfils instead of joining the close",
+      "explanation": "Both `joinClose()` methods yield one microtask and then fulfil. The real close still runs to the end and still reports its cleanup failure to the caller that started it; only the re-entering observer is answered early, with success. A test kills this by asserting the inner observer's own outcome, not just that the cleanup ran once.",
+      "compiledFile": "packages/core/dist/runtime.js",
+      "source": "packages/core/src/runtime.ts",
+      "patch": "work/rc5/mutations/join-premature.patch",
+      "log": "work/rc5/mutations/join-premature.log",
+      "tests": [
+        "rc4-cleanup-phase.test.mjs",
+        "rc4-close-invariants.test.mjs",
+        "rc4-graph-property.test.mjs",
+        "rc4-retention.test.mjs",
+        "rc4-waiter-termination.test.mjs"
+      ],
+      "exit": 0,
+      "counts": {
+        "tests": 55,
+        "pass": 55,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "killed": false,
+      "killedBy": [],
+      "scope": "isolated compiled copy under work/mutations/; the workspace is not modified"
+    },
+    {
+      "id": "m2",
+      "name": "deadline-4x",
+      "title": "every waiter deadline is armed for four times its configured timeout",
+      "explanation": "A waiter is armed at four times its `loadTimeoutMs`; the error it eventually reports still names the configured value. A test kills this only by observing when the deadline fires — a controlled clock, or the phase the run has reached — rather than by an upper bound wide enough to hold both.",
+      "compiledFile": "packages/core/dist/internal/materializer.js",
+      "source": "packages/core/src/internal/materializer.ts",
+      "patch": "work/rc5/mutations/deadline-4x.patch",
+      "log": "work/rc5/mutations/deadline-4x.log",
+      "tests": [
+        "rc4-waiter-termination.test.mjs"
+      ],
+      "exit": 0,
+      "counts": {
+        "tests": 8,
+        "pass": 8,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "killed": false,
+      "killedBy": [],
+      "scope": "isolated compiled copy under work/mutations/; the workspace is not modified"
+    }
+  ]
+}

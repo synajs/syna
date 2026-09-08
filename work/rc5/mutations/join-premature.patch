@@ -1,0 +1,20 @@
+--- a/dist/runtime.js
++++ b/dist/runtime.js
+@@ -242,7 +242,8 @@
+      */
+     async joinClose() {
+         await null;
+-        await this.disposePromise;
++        return; /* MUTANT M1 */
+     }
+     [Symbol.asyncDispose]() {
+         return this.dispose();
+@@ -343,7 +343,8 @@
+     /** As `EnvImpl.joinClose()`: one microtask behind this close's own prologue. */
+     async joinClose() {
+         await null;
+-        await this.disposePromise;
++        return; /* MUTANT M1 */
+     }
+     async disposeRuntime() {
+         {

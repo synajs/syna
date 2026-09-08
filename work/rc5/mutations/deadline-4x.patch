@@ -1,0 +1,11 @@
+--- a/dist/internal/materializer.js
++++ b/dist/internal/materializer.js
+@@ -597,7 +597,8 @@
+         }
+         waiter.attempt = attempt;
+         waiter.deadlineMs = deadlineMs;
+-        deadlines.add(waiter, performance.now() + Math.max(0, deadlineMs));
++        deadlines.add(waiter, performance.now() + Math.max(0, deadlineMs * 4)); /* MUTANT M2 */
+     }
+     disarm(waiter) {
+         deadlines.remove(waiter);
