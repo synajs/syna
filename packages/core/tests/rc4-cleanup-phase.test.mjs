@@ -8,6 +8,13 @@
 // the `AggregateError` of `dispose()`, what fails afterwards is in the late event,
 // and neither list repeats itself.
 //
+// Nothing here waits for a phase by sleeping for a while and hoping. Each case waits
+// for the thing itself: the attempt has started (its `setup()` ran), the close has been
+// entered (the stop signal reached the setup), the cleanup phase has reached the step
+// that holds it open (a gate was registered), the ledger is empty again. The only
+// duration in the file is each test's own watchdog, and a watchdog is a limit of the
+// harness — it is never a deadline the model promises, and no assertion is made from it.
+//
 // Deliberately NOT asserted anywhere in this file: that an error appears exactly
 // once counting `dispose()` and the diagnostic events together. Those are two
 // observers with contracts of their own (`rc3-close-paths.test.mjs:141-173` asserts
@@ -37,18 +44,31 @@ const marked = name => Object.assign(new Error(`cleanup ${name} failed`), { mark
 const flat = error => (error instanceof AggregateError ? error.errors.flatMap(flat) : [error])
 const markersOf = error => flat(error).map(item => item?.marker).filter(marker => marker !== undefined).sort()
 const settledOutcome = promise => promise.then(() => undefined, error => error)
-/** Releases every hung cleanup, including the ones that only start once an earlier one is released. */
-const releaseAll = async gates => {
+/** Waits for something observable to have happened, rather than for a duration to pass. */
+const until = async predicate => { while (!predicate()) await sleep(1) }
+/** The ledger is empty again: every cleanup phase this Runtime was still running has ended. */
+const drained = runtime => () => runtime.inspect().unsettledAttempts.length === 0
+/**
+ * Releases every hung cleanup, including the ones that only start once an earlier one is
+ * released, and returns when the phase has actually ended rather than after a guessed delay.
+ */
+const releaseAll = async (gates, ended) => {
   for (let round = 0; round < 6; round += 1) {
     const pending = gates.splice(0)
     if (pending.length === 0) break
     for (const gate of pending) gate.resolve()
-    await sleep(20)
+    await until(() => gates.length > 0 || ended())
   }
-  await sleep(20)
+  await until(ended)
 }
 
 const GRACE = 40
+/**
+ * Every case here holds a cleanup open on purpose, so a defect would hang it rather than
+ * fail it. The watchdog turns that into a failure with a name. It is generous by design:
+ * nothing is asserted from it, and it must never be mistaken for the budget under test.
+ */
+const WATCHDOG = { timeout: 60_000 }
 
 /**
  * One cleanup phase described in the order its cleanups RUN (they are registered
@@ -88,7 +108,7 @@ const SHAPES = [
 // ---------------------------------------------------------------------------
 
 for (const shape of SHAPES) {
-  test(`N1 Ready-slot cleanup / ${shape.id}: the close reports what it determined, the late report only what came after`, async () => {
+  test(`N1 Ready-slot cleanup / ${shape.id}: the close reports what it determined, the late report only what came after`, WATCHDOG, async () => {
     const define = makeDefine(`rc4.n1.ready.${shape.id}`)
     const events = []
     const ran = []
@@ -122,7 +142,7 @@ for (const shape of SHAPES) {
     if (!shape.settles) assert.equal(abandonments[0].phase, 'cleanup')
     assert.equal(runtime.inspect().unsettledAttempts.length, shape.settles ? 0 : 1)
 
-    await releaseAll(gates)
+    await releaseAll(gates, drained(runtime))
     const late = events.filter(event => event.type === 'attempt-failed-late')
     // A phase the close waited to the end of reports through `dispose()` alone: the
     // Ready-slot channel emits `attempt-failed-late` only for an abandoned phase.
@@ -142,15 +162,24 @@ for (const shape of SHAPES) {
 // ---------------------------------------------------------------------------
 
 for (const shape of SHAPES) {
-  test(`N1 attempt rollback / ${shape.id}: the close reports what the rollback determined`, async () => {
+  test(`N1 attempt rollback / ${shape.id}: the close reports what the rollback determined`, WATCHDOG, async () => {
     const define = makeDefine(`rc4.n1.rollback.${shape.id}`)
     const events = []
     const ran = []
     const gates = []
     const setupGate = deferred()
+    const attemptStarted = deferred()
+    const closeEntered = deferred()
     const Service = define.service('s', {
       failure: { attempts: 1 },
-      setup(_deps, { onDispose }) { phase(shape.steps, onDispose, ran, gates); return setupGate.promise },
+      setup(_deps, { signal, onDispose }) {
+        phase(shape.steps, onDispose, ran, gates)
+        // The stop signal reaches a running setup inside the synchronous prologue of the
+        // close, so this is the close having been entered — not a guess that it has.
+        signal.addEventListener('abort', () => closeEntered.resolve(), { once: true })
+        attemptStarted.resolve()
+        return setupGate.promise
+      },
     })
     const Entry = define.entry({ requires: { s: Service } })
     const runtime = createRuntime({
@@ -160,10 +189,10 @@ for (const shape of SHAPES) {
     })
     const env = await runtime.enter(Entry)
     const waiter = settledOutcome(env.deps.s.load())
-    await sleep(5)
+    await attemptStarted.promise
     // The close begins first, so the rollback runs inside the wait it bounds.
     const closing = settledOutcome(env.dispose())
-    await sleep(5)
+    await closeEntered.promise
     setupGate.resolve(Promise.reject(Object.assign(new Error('setup failed'), { marker: 'setup' })))
     const closeError = await closing
     assert.equal(env.state, 'disposed')
@@ -178,7 +207,7 @@ for (const shape of SHAPES) {
     if (!shape.settles) assert.equal(abandonments[0].phase, 'rollback', 'the phase is named')
     assert.deepEqual(runtime.inspect().unsettledAttempts.map(entry => entry.state), shape.settles ? [] : ['rolling-back'])
 
-    await releaseAll(gates)
+    await releaseAll(gates, drained(runtime))
     const late = events.filter(event => event.type === 'attempt-failed-late')
     assert.equal(late.length, 1, 'the late end of the attempt is reported once')
     assert.deepEqual(late[0].cleanupErrors.map(item => item.marker).sort(), shape.late,
@@ -194,14 +223,21 @@ for (const shape of SHAPES) {
 // ---------------------------------------------------------------------------
 
 for (const shape of [SHAPES[0], SHAPES[3], SHAPES[4]]) {
-  test(`N1 discarded late success / ${shape.id}: the close reports what that rollback determined`, async () => {
+  test(`N1 discarded late success / ${shape.id}: the close reports what that rollback determined`, WATCHDOG, async () => {
     const define = makeDefine(`rc4.n1.discarded.${shape.id}`)
     const events = []
     const ran = []
     const gates = []
     const setupGate = deferred()
+    const attemptStarted = deferred()
+    const closeEntered = deferred()
     const Service = define.service('s', {
-      setup(_deps, { onDispose }) { phase(shape.steps, onDispose, ran, gates); return setupGate.promise },
+      setup(_deps, { signal, onDispose }) {
+        phase(shape.steps, onDispose, ran, gates)
+        signal.addEventListener('abort', () => closeEntered.resolve(), { once: true })
+        attemptStarted.resolve()
+        return setupGate.promise
+      },
     })
     const Entry = define.entry({ requires: { s: Service } })
     const runtime = createRuntime({
@@ -211,15 +247,15 @@ for (const shape of [SHAPES[0], SHAPES[3], SHAPES[4]]) {
     })
     const env = await runtime.enter(Entry)
     const waiter = settledOutcome(env.deps.s.load())
-    await sleep(5)
+    await attemptStarted.promise
     const closing = settledOutcome(env.dispose())
-    await sleep(5)
+    await closeEntered.promise
     setupGate.resolve({ late: true }) // succeeds after the close began: the instance is discarded
     const closeError = await closing
     if (shape.determined.length === 0) assert.equal(closeError, undefined)
     else assert.deepEqual(markersOf(closeError), shape.determined)
     for (const name of shape.blocked) assert.ok(!ran.includes(name))
-    await releaseAll(gates)
+    await releaseAll(gates, drained(runtime))
     const late = events.filter(event => event.type === 'attempt-succeeded-late')
     assert.equal(late.length, 1, 'the discarded late success is reported once')
     assert.deepEqual(late[0].cleanupErrors.map(item => item.marker).sort(), shape.late)
@@ -241,14 +277,15 @@ for (const shape of [SHAPES[0], SHAPES[3], SHAPES[4]]) {
 // ---------------------------------------------------------------------------
 
 for (const shape of [SHAPES[0], SHAPES[3], SHAPES[4]]) {
-  test(`N1 late settlement / ${shape.id}: the late report carries every failure of the phase, however long before it was determined`, async () => {
+  test(`N1 late settlement / ${shape.id}: the late report carries every failure of the phase, however long before it was determined`, WATCHDOG, async () => {
     const define = makeDefine(`rc4.n1.late.${shape.id}`)
     const events = []
     const ran = []
     const gates = []
     const setupGate = deferred()
+    const attemptStarted = deferred()
     const Late = define.service('late', {
-      setup(_deps, { onDispose }) { phase(shape.steps, onDispose, ran, gates); return setupGate.promise },
+      setup(_deps, { onDispose }) { phase(shape.steps, onDispose, ran, gates); attemptStarted.resolve(); return setupGate.promise },
     })
     const Entry = define.entry({ requires: { late: Late } })
     const runtime = createRuntime({
@@ -258,7 +295,7 @@ for (const shape of [SHAPES[0], SHAPES[3], SHAPES[4]]) {
     })
     const env = await runtime.enter(Entry)
     const waiter = settledOutcome(env.deps.late.load())
-    await sleep(5)
+    await attemptStarted.promise
 
     // The close stops waiting for the pending setup at the grace and returns.
     const closeError = await settledOutcome(env.dispose())
@@ -266,13 +303,15 @@ for (const shape of [SHAPES[0], SHAPES[3], SHAPES[4]]) {
     assert.deepEqual(runtime.inspect().unsettledAttempts.map(entry => entry.state), ['abandoned'])
 
     setupGate.resolve({ late: true }) // settles late: `closeUnsettled` runs its cleanups
-    await sleep(20)
+    // Wait for the late phase itself: either it has reached the step that holds it open,
+    // or (when nothing in it hangs) it has already ended and left the ledger.
+    await until(() => gates.length > 0 || runtime.inspect().unsettledAttempts.length === 0)
     const settling = runtime.inspect().unsettledAttempts
     assert.deepEqual(settling.map(entry => entry.state), shape.settles ? [] : ['settling'],
       'the ledger says settling while the late phase is still running')
     for (const name of shape.blocked) assert.ok(!ran.includes(name), `${name} has not run while the earlier cleanup hangs`)
 
-    await releaseAll(gates)
+    await releaseAll(gates, drained(runtime))
     const late = events.filter(event => event.type === 'attempt-succeeded-late')
     assert.equal(late.length, 1, 'the late close is reported once')
     const everyFailure = shape.steps.filter(([, kind]) => kind === 'throw').map(([name]) => name).sort()
@@ -310,13 +349,15 @@ test('N1 unreachable channel: the cleanup phase of an attempt closed as unreacha
     const runtime = createRuntime({ services: [Stuck], limits: { disposalGraceMs: 40 }, diagnostics: { onEvent: event => events.push(event) } })
     const env = await runtime.enter(Entry)
     const timeout = await env.deps.stuck.load().then(() => 'resolved', error => error.code)
-    for (let round = 0; round < 12 && !ran.includes('h'); round += 1) { global.gc(); await sleep(20) }
+    // The raw Promise becomes unreachable only when the collector says so; the loop asks
+    // for a collection and waits for the cleanup phase it starts to have been entered.
+    for (let round = 0; round < 40 && !ran.includes('h'); round += 1) { global.gc(); await sleep(20) }
     const ranBeforeClose = [...ran]
     // The Env closes while the unreachable attempt's cleanup phase is still hanging.
     const closeError = await env.dispose().then(() => undefined, error => error)
     const markers = closeError ? [...closeError.errors].flatMap(function flat(e) { return e instanceof AggregateError ? e.errors.flatMap(flat) : [e] }).map(e => e.marker).filter(Boolean) : []
     releaseHang()
-    await sleep(40)
+    while (events.filter(event => event.type === 'attempt-unreachable').length === 0) await sleep(1)
     console.log(JSON.stringify({
       timeout,
       ranBeforeClose,
@@ -366,7 +407,7 @@ test('N1 invariant 1: the close\'s own error set never repeats itself, and two c
   await runtime.dispose()
 })
 
-test('N1 invariant 2: an abandonment and its late end are each reported exactly once, whatever the phase does afterwards', async () => {
+test('N1 invariant 2: an abandonment and its late end are each reported exactly once, whatever the phase does afterwards', WATCHDOG, async () => {
   const define = makeDefine('rc4.n1.once')
   const events = []
   const gates = []
@@ -383,7 +424,7 @@ test('N1 invariant 2: an abandonment and its late end are each reported exactly 
   const env = await runtime.enter(Entry)
   await env.deps.s.load()
   await settledOutcome(env.dispose())
-  await releaseAll(gates)
+  await releaseAll(gates, drained(runtime))
   assert.equal(events.filter(type => type === 'attempt-abandoned').length, 1)
   assert.equal(events.filter(type => type === 'attempt-failed-late').length, 1)
   await runtime.dispose()
@@ -391,17 +432,24 @@ test('N1 invariant 2: an abandonment and its late end are each reported exactly 
   await runtime.dispose()
 })
 
-test('N1 invariant 3: what the waiter got never decides whether the close reports — cancelled, timed out or gone', async () => {
+test('N1 invariant 3: what the waiter got never decides whether the close reports — cancelled, timed out or gone', WATCHDOG, async () => {
   for (const how of ['cancelled', 'past-its-deadline', 'no-waiter']) {
     const define = makeDefine(`rc4.n1.waiter.${how}`)
     const events = []
     const ran = []
     const gates = []
     const setupGate = deferred()
+    const attemptStarted = deferred()
+    const closeEntered = deferred()
     const Service = define.service('s', {
       failure: { attempts: 1 },
       loadTimeoutMs: how === 'past-its-deadline' ? 15 : 5_000,
-      setup(_deps, { onDispose }) { phase([['a', 'throw'], ['h', 'hang']], onDispose, ran, gates); return setupGate.promise },
+      setup(_deps, { signal, onDispose }) {
+        phase([['a', 'throw'], ['h', 'hang']], onDispose, ran, gates)
+        signal.addEventListener('abort', () => closeEntered.resolve(), { once: true })
+        attemptStarted.resolve()
+        return setupGate.promise
+      },
     })
     const Entry = define.entry({ requires: { s: Service } })
     const runtime = createRuntime({
@@ -415,36 +463,44 @@ test('N1 invariant 3: what the waiter got never decides whether the close report
     if (how !== 'no-waiter') {
       const waiting = env.deps.s.load(how === 'cancelled' ? { signal: controller.signal } : undefined)
         .then(() => 'resolved', error => error?.code ?? 'error')
-      if (how === 'cancelled') { await sleep(5); controller.abort() }
-      if (how === 'cancelled') waiterOutcome = await waiting
-      else { await sleep(25); waiterOutcome = await waiting }
+      await attemptStarted.promise
+      // `cancelled` leaves by its own signal; `past-its-deadline` by its own 15 ms window.
+      if (how === 'cancelled') controller.abort()
+      waiterOutcome = await waiting
     }
     else {
       void env.deps.s.load().catch(() => undefined)
-      await sleep(5)
+      await attemptStarted.promise
     }
     const closing = settledOutcome(env.dispose())
-    await sleep(5)
+    await closeEntered.promise
     setupGate.resolve(Promise.reject(new Error('setup failed')))
     const closeError = await closing
     assert.deepEqual(markersOf(closeError ?? new Error('none')), ['a'],
       `${how}: the close reports the failure it waited for, whatever the waiter received`)
     if (how === 'cancelled') assert.equal(waiterOutcome, 'LOAD_CANCELLED')
     if (how === 'past-its-deadline') assert.equal(waiterOutcome, 'LOAD_TIMEOUT')
-    await releaseAll(gates)
+    await releaseAll(gates, drained(runtime))
     await runtime.dispose()
   }
 })
 
-test('N1 invariant 4 and the three moments: a failure before the close is the sequence\'s, one inside the close\'s wait is the close\'s, one after that budget is the late report\'s', async () => {
+test('N1 invariant 4 and the three moments: a failure before the close is the sequence\'s, one inside the close\'s wait is the close\'s, one after that budget is the late report\'s', WATCHDOG, async () => {
   const define = makeDefine('rc4.n1.moments')
   const events = []
   const ran = []
   const gates = []
   const setupGate = deferred()
+  const attemptStarted = deferred()
+  const closeEntered = deferred()
   const Service = define.service('s', {
     failure: { attempts: 1 },
-    setup(_deps, { onDispose }) { phase([['a', 'throw'], ['h', 'hang'], ['b', 'throw']], onDispose, ran, gates); return setupGate.promise },
+    setup(_deps, { signal, onDispose }) {
+      phase([['a', 'throw'], ['h', 'hang'], ['b', 'throw']], onDispose, ran, gates)
+      signal.addEventListener('abort', () => closeEntered.resolve(), { once: true })
+      attemptStarted.resolve()
+      return setupGate.promise
+    },
   })
   const Entry = define.entry({ requires: { s: Service } })
   const runtime = createRuntime({
@@ -454,14 +510,14 @@ test('N1 invariant 4 and the three moments: a failure before the close is the se
   })
   const env = await runtime.enter(Entry)
   const waiter = env.deps.s.load().then(() => 'resolved', error => error)
-  await sleep(5)
+  await attemptStarted.promise
   const closing = settledOutcome(env.dispose())
-  await sleep(5)
+  await closeEntered.promise
   setupGate.resolve(Promise.reject(new Error('setup failed')))
   const closeError = await closing
   // Determined inside the close's wait → the close's.
   assert.deepEqual(markersOf(closeError), ['a'])
-  await releaseAll(gates)
+  await releaseAll(gates, drained(runtime))
   const late = events.filter(event => event.type === 'attempt-failed-late')
   // Determined after that phase's budget → the late report's, and only that one.
   assert.deepEqual(late[0].cleanupErrors.map(item => item.marker), ['b'])

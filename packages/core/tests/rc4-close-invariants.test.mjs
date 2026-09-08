@@ -206,22 +206,46 @@ test('N2 a listener re-entering the close of a sibling root closes that root on 
   await codeOf(runtime.dispose())
 })
 
-test('N2 onEvent that re-enters dispose() joins the same close, exactly as it did before', async () => {
+test('N2 onEvent that re-enters dispose() joins the same close — and the callback really is entered', { timeout: 20_000 }, async () => {
+  // A Service that neither fails nor outruns its budget reports no diagnostic at all: the
+  // rc.4 version of this case entered its callback zero times and therefore asserted
+  // nothing about it (the third review measured `callbackCalls = 0`). So the Service here
+  // is arranged to produce a real one — a cleanup that fails, behind one that outlives the
+  // grace — and the first thing asserted is that the callback ran.
   const define = makeDefine('rc4.n2.onevent')
   const holder = {}
+  const seen = []
+  const hang = deferred()
+  const failure = Object.assign(new Error('cleanup failed'), { marker: 'onevent' })
   let cleanups = 0
-  const Service = define.service('s', { setup(_deps, { onDispose }) { onDispose(() => { cleanups += 1 }); return { ok: true } } })
+  const Service = define.service('s', {
+    setup(_deps, { onDispose }) {
+      onDispose(() => hang.promise)                             // registered first → runs second
+      onDispose(() => { cleanups += 1; throw failure })         // runs first, and fails
+      return { ok: true }
+    },
+  })
   const Entry = define.entry({ requires: { s: Service } })
   const runtime = createRuntime({
     services: [Service],
     limits: { disposalGraceMs: GRACE },
-    diagnostics: { onEvent: () => { holder.inner ??= codeOf(holder.env.dispose()) } },
+    diagnostics: { onEvent: event => { seen.push(event.type); holder.inner ??= holder.env.dispose() } },
   })
   const env = await runtime.enter(Entry)
   holder.env = env
   await env.deps.s.load()
-  await codeOf(env.dispose())
-  assert.equal(cleanups, 1)
+  const [outer] = await Promise.allSettled([env.dispose()])
+  assert.ok(seen.length > 0, 'the callback under test was entered at all')
+  assert.ok(seen.includes('attempt-abandoned'), `and on the diagnostic this case is about: ${seen}`)
+  assert.notEqual(holder.inner, undefined, 'and it re-entered the close from there')
+  const [inner] = await Promise.allSettled([holder.inner])
+  assert.equal(outer.status, 'rejected', 'the close reports the failure its cleanup determined')
+  assert.equal(inner.status, 'rejected', 'to the caller that re-entered it from the callback as well')
+  assert.strictEqual(inner.reason, outer.reason, 'one close, so one outcome for both of them')
+  assert.equal(flat(outer.reason).filter(error => error === failure).length, 1)
+  assert.equal(cleanups, 1, 'and the cleanup ran once')
+  hang.resolve()
+  await sleep(20)
   await codeOf(runtime.dispose())
 })
 

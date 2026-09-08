@@ -40,6 +40,18 @@ const scenario = body => `
   const define = definePackage({ name: '@rc4/retention', version: '1.0.0', syna: { id: 'rc4.retention' } })
   const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
   const deferred = () => { let resolve; const promise = new Promise(settle => { resolve = settle }); return { promise, resolve } }
+  // Why a fixed number of rounds is enough. \`globalThis.gc()\` under --expose-gc is a full,
+  // stop-the-world collection, so one of them is in principle all the collector needs. The
+  // rounds are for everything that is not the collector: a WeakRef target stays alive until
+  // the end of the job that dereferenced it, the reactions that still held the Env have to
+  // run, and a queued timer may hold one more. So the loop yields a macrotask between
+  // collections and stops the moment what it waits for has happened — eight is a bound on
+  // how long it waits, not a number the answer depends on. The negative and positive
+  // controls in the same process are what make the answer readable at all: a collection is
+  // observed (the control Env goes) and retention is observed (the held Env stays).
+  // Nothing inside the loop may call \`deref()\`: a WeakRef keeps its target alive for the
+  // rest of the job that dereferenced it, so reading one between two collections would
+  // hold alive exactly the thing being measured.
   const collect = async () => { for (let round = 0; round < 8; round += 1) { globalThis.gc(); await sleep(20) } }
   const payload = () => ({ marker: new Uint8Array(1 << 20) })
   const hang = deferred()
@@ -75,7 +87,7 @@ const scenario = body => `
   gate.resolve({ late: true })
   await sleep(20)
   hang.resolve()
-  await sleep(40)
+  while (runtime.inspect().unsettledAttempts.length > 0) await sleep(1)
   await collect()
   console.log(JSON.stringify({
     ledger,
@@ -194,23 +206,45 @@ test('N4 after runtime.dispose(): the same four paths keep nothing either', asyn
     import { createRuntime, definePackage } from ${JSON.stringify(DIST)}
     const define = definePackage({ name: '@rc4/retention-runtime', version: '1.0.0', syna: { id: 'rc4.retention.runtime' } })
     const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+    const until = async predicate => { while (!predicate()) await sleep(1) }
     const collect = async () => { for (let round = 0; round < 8; round += 1) { globalThis.gc(); await sleep(20) } }
+    const deferred = () => { let resolve; const promise = new Promise(settle => { resolve = settle }); return { promise, resolve } }
     const hangs = []
-    const Rollback = define.service('rollback', {
-      failure: { attempts: 1 }, loadTimeoutMs: 30,
-      setup(_deps, { onDispose }) { onDispose(() => new Promise(resolve => hangs.push(resolve))); return Promise.reject('setup failed') },
+    const hang = () => new Promise(resolve => hangs.push(resolve))
+    const lateGate = deferred()
+    // The four paths that can outlive a close, one Service each (§13):
+    const Pending = define.service('pending', {                        // raw setup still pending
+      loadTimeoutMs: 30, setup(_deps, { onDispose }) { onDispose(hang); return new Promise(() => {}) },
     })
-    const Ready = define.service('ready', { setup(_deps, { onDispose }) { onDispose(() => new Promise(resolve => hangs.push(resolve))); return { ok: true } } })
+    const Rollback = define.service('rollback', {                      // the rollback of a failed setup
+      failure: { attempts: 1 }, loadTimeoutMs: 30,
+      setup(_deps, { onDispose }) { onDispose(hang); return Promise.reject('setup failed') },
+    })
+    const Ready = define.service('ready', {                            // the cleanup phase of a Ready slot
+      setup(_deps, { onDispose }) { onDispose(hang); return { ok: true } },
+    })
+    const Late = define.service('late', {                              // an attempt that settles after the close
+      loadTimeoutMs: 30, setup(_deps, { onDispose }) { onDispose(hang); return lateGate.promise },
+    })
     const Payload = define.input('payload')
-    const Entry = define.entry('entry', { requires: { rollback: Rollback, ready: Ready, payload: Payload }, parameters: { payload: Payload } })
-    const runtime = createRuntime({ services: [Rollback, Ready], limits: { disposalGraceMs: 20 } })
+    const Entry = define.entry('entry', {
+      requires: { pending: Pending, rollback: Rollback, ready: Ready, late: Late, payload: Payload },
+      parameters: { payload: Payload },
+    })
+    const runtime = createRuntime({ services: [Pending, Rollback, Ready, Late], limits: { disposalGraceMs: 20 } })
     let env = await runtime.enter(Entry, { payload: { marker: new Uint8Array(1 << 20) } })
+    void env.deps.pending.load().catch(() => undefined)
     void env.deps.rollback.load().catch(() => undefined)
     await env.deps.ready.load()
-    await sleep(10)
+    void env.deps.late.load().catch(() => undefined)
+    // The rollback has to be under way before the close, or its path is not the one under test.
+    await until(() => hangs.length >= 1)
     const envRef = new WeakRef(env)
     const payloadRef = new WeakRef(env.deps.payload.read())
     await runtime.dispose().catch(() => undefined)
+    // The fourth path exists only once the abandoned attempt settles late.
+    lateGate.resolve({ late: true })
+    await until(() => runtime.inspect().unsettledAttempts.some(entry => entry.state === 'settling'))
     const ledger = runtime.inspect().unsettledAttempts.map(entry => entry.state).sort()
     env = undefined
     await collect()
@@ -219,7 +253,8 @@ test('N4 after runtime.dispose(): the same four paths keep nothing either', asyn
   `)
   assert.equal(result.code, 0, result.stderr)
   const out = JSON.parse(result.stdout.trim().split('\n').at(-1))
-  assert.deepEqual(out.ledger, ['abandoned', 'rolling-back'], 'both kinds of outstanding work are listed')
-  assert.equal(out.env, false, 'the Env is collected after runtime.dispose() too')
-  assert.equal(out.payload, false)
+  assert.deepEqual(out.ledger, ['abandoned', 'abandoned', 'rolling-back', 'settling'],
+    'all four kinds of outstanding work are listed: a pending setup, a Ready slot\'s cleanup, a rollback and a late settlement')
+  assert.equal(out.env, false, 'the Env is collected after runtime.dispose() too, with all four still running')
+  assert.equal(out.payload, false, 'and so is its Input payload')
 })
