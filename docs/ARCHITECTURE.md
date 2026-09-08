@@ -19,7 +19,7 @@ packages/core/src/
     ├── plan-cache.ts                   bounded deterministic LRU for plan templates
     ├── implementation-directory.ts     read-only candidate directory, implementation refs, policy-order validation, CandidateIndex
     ├── implementation-views.ts         C.all set built on the directory
-    ├── materializer.ts                 attempts, waiters, the DeadlineQueue (load timeouts), retry/recovery, late results, bounded dependant-first disposal
+    ├── materializer.ts                 attempts, cleanup phases, waiters, the DeadlineQueue (load timeouts), retry/recovery, late results, bounded dependant-first disposal
     ├── abort.ts                        abortable sleep, per-caller wait cancellation, bounded settle
     ├── solve-errors.ts                 backtrackable topology errors
     └── runtime-model.ts                internal records: CompiledService, slots, attempts, plans, realms
@@ -37,6 +37,7 @@ packages/core/src/
 
 ## What the boundaries prevent
 
+- **The cleanup phase** (`materializer.ts`, 1.0.0-rc.4) is a task, not an `await` in the caller's frame: the cleanups of a failed or discarded attempt, of an attempt that settled after its owner closed, and of a Ready slot being disposed all run through one `CleanupPhase`. It records each failure the moment that cleanup ends (so a close that stops waiting takes what is already determined and leaves the rest to the late report), and it holds its slot and its owner Env strongly only while a close is still waiting for it — weakly from the moment one stops. That is why the setup sequence is driven by reactions rather than by an `await` loop: an `async` frame suspended on a cleanup keeps its whole register file, `slot` and `owner` included, and `slot.ownerEnv` is the Env behind them (`docs/SEMANTIC_MODEL.md` §13). A completed bounded close clears `slot.ownerEnv` for the slots it owned, so nothing that outlives it reaches the Env at all.
 - The planner cannot execute setup (no materializer reference); the materializer cannot alter versions or slots (it only reads slot records); the plan cache stores templates (graphs + choices) and never Env or slot instances; diagnostics (`onEvent`) are fire-and-forget and cannot change outcomes.
 - No AsyncLocalStorage: caller attribution for pending-load diagnostics comes from the refs handed to each attempt.
 - No hidden `__type`/string-prefix state carries internal records; `InternalCandidateRef` and `CompiledService` are internal types.
