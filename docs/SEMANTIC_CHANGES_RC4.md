@@ -38,25 +38,25 @@ rc.4 把清理阶段建成一个独立任务（`CleanupPhase`）：每个 cleanu
 
 一条边界要说清楚：**迟到结算的清理没有可以承载它的 `dispose()`**。那个 attempt 正是被关闭放弃的那一个，按 §13 "关闭停止等待的东西由事件报告，因为本该承载它的 `dispose()` 按定义已经返回"。这个调用点上 rc.4 改的是阶段的记录方式与弱持有，不是归属。
 
-证据：`rc4-cleanup-phase`（四个调用点 × 六种阶段形状，加 §2.1 四条判据逐条一测，加"关闭之前 / 关闭等待之内 / 该阶段预算之后"三个时点的归属）。
+证据：`rc4-cleanup-phase`。真实矩阵按调用点分别计数，不是笛卡尔积：Ready slot 的清理 6 种阶段形状、attempt rollback 6 种、被丢弃的迟到成功 3 种、迟到结算 3 种、unreachable 通道 1 种，共 19 格（`work/rc4/MATRIX.md` 逐格列出）；另加 §2.1 四条判据逐条一测，加"关闭之前 / 关闭等待之内 / 该阶段预算之后"三个时点的归属。
 
 ### 3.2 N2 + N3：用户回调之前发布完整的关闭状态（不变式修正）
 
-`EnvImpl.dispose()` 与 `RuntimeImpl.dispose()` 过去写作 `this.disposePromise ??= …`。`??=` 先判空、再求值右侧、最后赋值，而 `disposeEnv()` 在第一个 `await` 之前同步 `abort()`，`AbortController.abort()` 按规范同步执行监听器。于是监听器重入 `dispose()` 时看到的 `disposePromise` 仍是 `undefined`，起了第二条关闭流程；两条流程竞争同一组 slot，先到的把 slot 置 `disposing`，后到的空手完成并宣布 `disposed`——调用者 await 到的可能正是空手那条，而一个**确定发生的 cleanup 失败会落进没人 await 的那条被彻底吞掉**。
+`EnvImpl.dispose()` 与 `RuntimeImpl.dispose()` 都写作 `this.disposePromise ??= …`。`??=` 先判空、再求值右侧、最后赋值，而 `disposeEnv()` 在第一个 `await` 之前同步 `abort()`，`AbortController.abort()` 按规范同步执行监听器。rc.3 里没有任何东西在广播之前标记"这次关闭已经开始"，于是监听器重入 `dispose()` 时看到的 `disposePromise` 仍是 `undefined`，起了第二条关闭流程；两条流程竞争同一组 slot，先到的把 slot 置 `disposing`，后到的空手完成并宣布 `disposed`——调用者 await 到的可能正是空手那条，而一个**确定发生的 cleanup 失败会落进没人 await 的那条被彻底吞掉**。
 
 `broadcastClosing()` 过去把"标记"和"abort"放在同一趟深度优先遍历里，abort 在递归**之前**。于是父级的监听器看到的子 Env 仍是 `ready`，可以在正在关闭的集合里点起一个 dormant 服务——`load()` 会被随后到来的标记拒绝，但 `setup()` 已经执行、副作用已经发生、资源已经获取，然后作为迟到结果丢弃；让那个 setup 挂住，本该 0 ms 结束的关闭要多付一整个宽限期，§13 的时间上界被用户代码撑破。`runtime.dispose()` 的 `for (const root of roots) broadcastClosing(root)` 把同一个洞放大到 root 之间。
 
-三处改动，缺一不可：
+三处改动，缺一不可（rc.5 更正：此表在 rc.4 发布时描述的是早期候选方案"先创建并发布 Promise"，实际实现是下面这一种——`disposeEnv()` 先写入"已进入"标记，重入者延后一个微任务再 join）：
 
-1. `EnvImpl.dispose()` 先建立并发布本次关闭的 Promise，再同步进入 `disposeEnv()`；
-2. `RuntimeImpl.dispose()` 同形；
+1. **`disposeEnv()` 在广播之前把这次关闭标记为已进入**（`env.closing = true`，Runtime 同形）。窗口就在这里：跑用户 abort 监听器的是 `disposeEnv()`，不是 `dispose()`。`EnvImpl.dispose()` 与 `RuntimeImpl.dispose()` 保持 rc.3 的那一行 `??=` 不变（形状敏感，见 `work/rc4/STATE.md` 的 benchmark 记录）。
+2. **重入者由 `disposeEnv()` 交给 `joinClose()`**：先让出一个微任务，再 `await this.disposePromise`。外层的 `??=` 在右侧求值返回之后赋值，且不再重新判空，因此重入调用留在字段里的那个 Promise 会被真正那条关闭的 Promise 覆盖；等 `joinClose()` 的微任务运行时，字段里已经是后者。重入者因此加入同一次关闭，并得到它的结果——成功就成功，cleanup 失败就拿到同一个失败。
 3. `broadcastClosing()` 拆成两趟——先标记整个关闭集合，再统一 abort——并把 `runtime.dispose()` 的 root 循环换成一次覆盖全部 root 的广播。
 
 同步入口保持同步：关闭没有任何一段被推迟到微任务，所以不存在"调用 `dispose()` 之后仍能 `enter()`"的窗口。给 abort 加 `try/catch` **不是**本项的修复（异常隔离与重入安全是两回事）；补充事实：abort 监听器抛错不会打断广播递归，按 Node `EventTarget` 语义变成 `uncaughtException`，这不是关闭路径的缺陷。
 
 一处收紧了错误码：父级关闭时监听器在**已标记**的子 Env 上 `enter()`，现在在规划期就得到 `ENV_CLOSED`，而不是活到一半才发现的 `ENTRY_ACTIVATION_FAILED`。同一场景下更早、更准确的拒绝，没有新增名字。
 
-证据：`rc4-close-invariants`（{监听器位置} × {重入 `dispose()` / 启动 dormant slot}，含多 root、`Symbol.asyncDispose`、`onEvent`、`enterFrom` 激活失败路径、"只关一棵树时另一棵 root 仍可用"的反向断言、监听器造出的 Env 不漏出关闭集合、关闭时间上界不被撑大）。
+证据：`rc4-close-invariants`（八条重入路径 × {cleanup 失败 / cleanup 成功}，每格断言放行前内外观察者都未结算、放行后都被同一次关闭答复；另有 {监听器位置} × {启动 dormant slot} 的 N3 矩阵，含多 root、`Symbol.asyncDispose`、`onEvent`、`enterFrom` 激活失败路径、"只关一棵树时另一棵 root 仍可用"的反向断言、监听器造出的 Env 不漏出关闭集合、关闭时间上界不被撑大）。rc.5 补齐了其中"内层观察者的结果"这一格——rc.4 只 await 它而没有断言它，见 `docs/SEMANTIC_CHANGES_RC5.md`。
 
 ### 3.3 N5：等待者等待的是当前 attempt 的终结（修到规范承诺的位置）
 
