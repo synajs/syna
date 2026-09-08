@@ -1,0 +1,11 @@
+/goal 先完整读取工作区根目录的 SYNA_RC4_EXECUTION_PROMPT.md、work/rc4/ROOT_CAUSE.md 与三方交叉复核报告，并按任务书完成 Syna 1.0.0-rc.4。本轮的核心结论是：把 cleanup / rollback 建成可独立观察、可脱离 Env 的内部任务；保持调用者期限与资源清理寿命分离；在执行用户回调之前发布完整的关闭状态；按现行渠道契约归集错误。未完成的清理不得启动重叠 attempt，但也不得困住所有 waiter、隐藏已知错误或保留无关的 Env 图。任务书规定的是要达到的保证，不是实现答案——不要预设"给 rollback 再加一个 timer"。
+
+要修的八项：N1（已确定的 cleanup 失败被同阶段后续挂起藏住，四个调用点同处理）、N2（abort 回调重入 dispose 导致两条关闭流程、cleanup 抛错被吞掉）、N3（父级 abort 时子 Env 未标记，回调可启动关闭集合内的 dormant 服务）、N4（挂起帧强持 slot/owner 保留整张 Env 图，rollback pending 与 late cleanup pending 两条路径）、N5（raw 已失败而 rollback 挂住时 waiter 永不结算，含 eager activation 被挂住）、A4（acquireTimeoutMs 不覆盖 create 与 record.creation，且共享 creation 不得被某个 acquirer 的期限拖累）、G1（close-matrix.test.mjs:249 与 :263 的零容差墙钟下界断言）、D2（§11/§13 的四条文档澄清）。
+
+两条硬性禁止：不得要求同一错误在 dispose() 与诊断事件中"合计恰好一次"（rc3-close-paths.test.mjs:141-173 断言的正是合计 2，那是不同观察者的合法报告）；不得用精确 timer 数量断言并发或串行（5 个独立 slot 就是 5 个并发 arm 的 timer，应验证预算归属与启用先后关系）。同时不得改变三条既有语义：未结束的 rollback 不启动重叠 attempt、rollback 期限内成功时同 sequence 重试规则不变、rollback 确定失败时的 AggregateError 与 ROLLBACK_FAILED 规则不变；必须改则停下报告。不重构 materializer（rc.5），不改公开名字，不加公开选项，规划层零改动。
+
+Phase A 产出基线、合并后的验收矩阵、最小公开面增量（可能为零）与 N4/N5 的方案说明后直接继续；只有必须改公开名字、必须实质修订 §11/§13、或必须改变上述三条既有语义时才停下。
+
+成功结束必须同时满足：N1 四调用点 × 六组合、N2/N3 的监听器位置 × 重入目标矩阵（含多 root、asyncDispose、enterFrom 激活失败、只关一棵树不影响另一棵的反向断言）、N4 四条保留路径的对照组 WeakRef 验收加用户自持的正对照、N5 的 lazy/后加入 waiter/eager activation 三种入口、A4 的三个卡点与第一 caller 超时第二 caller 仍等待、G1 改造后的结构性与墙钟两条断言，全部绿；属性测试按裁剪形状进 gate（固定种子、oracle 独立于被测调度器、不含随机挂住、失败打印种子与图）；两轮报告的全部探针以翻转后的正确行为形式断言；规划层 git diff 为空、planner 差分与快照逐字不变、inventory diff 恰好等于记录的增量；SEMANTIC_MODEL §11/§13 澄清、SEMANTIC_CHANGES_RC4、API_REFERENCE、MULTITENANT_BLOG、API_STABILITY、HISTORY、CHANGELOG 齐备；全部核心/类型/应用/scripts 测试与真实 PostgreSQL 矩阵通过；benchmark 与 rc.3 同机交替对比 ±10% 且 dispose 相关行不退化；any 不增；release gate 从最终归档重新解包、安装、编译、运行必跑项并实际输出 COMPLETE、provenance dirty=false。回归必须在完整工作区与锁文件环境下验证，不得以 dist 副本加复制测试目录的诊断性验证作为放行依据。最后把 gate 真实摘要、归档哈希、翻转探针与全部矩阵结果输出到会话，不以"已完成"的文字代替证据；不打 tag，不推送。
+
+持续执行、修复和复验，不停在规划或某个子任务通过。若仅因 PostgreSQL 不可用等确实无法自行消除的外部条件阻塞，完成其余可做部分后记录 work/rc4/STATE.md 和精确复现命令，报告 BLOCKED 并暂停；BLOCKED 不是成功，任务大或测试红不构成 BLOCKED。
