@@ -157,6 +157,30 @@ export interface SetupWaiter {
   next: SetupWaiter | undefined
 }
 
+/**
+ * The cleanup phase of an attempt or of a Ready slot, run as a task of its own
+ * (`materializer.ts`). Its failures are recorded the moment each cleanup ends, so
+ * a failure that is already determined is never hidden by a later cleanup of the
+ * same phase that hangs; and it holds its slot and owner Env strongly only while
+ * the close is still waiting for it, so a phase that outlives that close keeps no
+ * Env graph alive.
+ */
+export interface AttemptCleanupPhase {
+  /** Failures determined so far and not yet handed to a close, in the order they happened. */
+  readonly errors: readonly DisposableError[]
+  /** Whether any cleanup of this phase failed, whoever ended up reporting it. */
+  readonly failed: boolean
+  /** Resolves when every cleanup of the phase has ended. Never rejects. */
+  readonly done: Promise<void>
+  /** Strong while the close still waits for the phase, weak (and possibly gone) afterwards. */
+  readonly slot: ServiceSlot | undefined
+  readonly owner: SlotOwnerEnv | undefined
+  /** Hands out the failures determined so far and takes them out of the phase, so a later report lists only later ones. */
+  take(): readonly DisposableError[]
+  /** The close stops waiting: from here the phase keeps its slot and owner only weakly. */
+  release(): void
+}
+
 /** One actual execution of `setup()` for a slot. Waiters join it; it never runs concurrently with another attempt of the same slot. */
 export interface SetupAttempt {
   readonly id: number
@@ -209,6 +233,13 @@ export interface SetupAttempt {
   /** The minimal record of the Env that owns this attempt's slot. */
   readonly owner: AttemptOwnerRecord
   /**
+   * The cleanup phase running for this attempt, while one is: the rollback of a
+   * failed or discarded setup, or the late close of an attempt that settled after
+   * its owner. A close that stops waiting for the attempt takes the failures the
+   * phase has already determined and tells it to let go of the Env.
+   */
+  cleanupPhase?: AttemptCleanupPhase
+  /**
    * Whether a cleanup failure of this attempt still belongs to its owner's
    * close. False from the moment that close stopped waiting for the attempt: its
    * late failures are reported by an event, never by a `dispose()` that returned.
@@ -222,7 +253,12 @@ export interface ServiceSlot {
   readonly ownerEnvId: string
   readonly service: CompiledService
   readonly requires: Map<string, RuntimeSlot>
-  ownerEnv?: SlotOwnerEnv
+  /**
+   * Set to `undefined` — never `delete`d, which would move a hot slot into
+   * dictionary mode — when the owner Env's bounded close completes: from then on
+   * the slot reaches no Env.
+   */
+  ownerEnv?: SlotOwnerEnv | undefined
   state: SlotState
   instance?: unknown
   error?: unknown

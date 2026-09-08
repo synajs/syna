@@ -10,6 +10,7 @@ import type {
 import { SynaError } from '../errors.js'
 import { stronglyConnectedComponents } from '../graph.js'
 import type {
+  AttemptCleanupPhase,
   AttemptOwnerRecord,
   DisposableError,
   InputSlot,
@@ -34,15 +35,31 @@ export interface MaterializerOptions {
   readonly onEvent: (event: RuntimeEvent) => void
 }
 
-type AttemptOutcome =
-  | { readonly ok: true; readonly instance: unknown }
-  | {
-      readonly ok: false
-      readonly error: unknown
-      /** The raw setup Promise is still pending (the owner's close ended the wait); never retried. */
-      readonly unsettled: boolean
-      readonly cleanupErrors: readonly unknown[]
-    }
+/** How an attempt's raw setup ended, when what follows is a cleanup phase. */
+type RollbackReason = 'unreachable' | 'failed' | 'discarded'
+
+/** The rollback of one attempt, handed to the sequence so it can go on without waiting in a frame of its own. */
+interface RollbackOutcome {
+  readonly kind: 'rollback'
+  readonly attempt: SetupAttempt
+  readonly phase: AttemptCleanupPhase
+  readonly reason: RollbackReason
+  /** The raw rejection, for `reason: 'failed'`. */
+  readonly error: unknown
+  /** Whether the owner had already begun closing when the raw setup settled (`reason: 'discarded'`). */
+  readonly ownerClosed: boolean
+}
+
+/**
+ * The end of one attempt's raw phase — everything up to and including the
+ * settlement of the user's setup Promise. A rollback is never awaited here: it is
+ * returned as a task the sequence attaches to (see `runSequence`).
+ */
+type RawOutcome =
+  | { readonly kind: 'ok'; readonly instance: unknown }
+  /** The owner's close stopped waiting for the raw Promise; no cleanup of this attempt runs here. */
+  | { readonly kind: 'unsettled'; readonly error: unknown }
+  | RollbackOutcome
 
 type RaceResult =
   | { readonly kind: 'resolved'; readonly value: unknown }
@@ -155,6 +172,65 @@ class Attempt implements SetupAttempt {
   resolveSettled(): void {
     this.isSettled = true
     this.resolveSettledPromise?.()
+  }
+}
+
+/**
+ * One cleanup phase: the cleanups of a failed or discarded attempt, of an attempt
+ * that settled after its owner closed, or of a Ready slot being disposed.
+ *
+ * Two things make it a task rather than an `await` in its caller's frame. Its
+ * failures are recorded the moment each cleanup ends, so a failure that is
+ * already determined never disappears behind a later cleanup of the same phase
+ * that hangs — `take()` hands a close what is determined so far, and whatever
+ * comes afterwards is the late report's. And it holds its slot and its owner Env
+ * strongly only while the close is still waiting for it: `release()` swaps both
+ * for weak handles, so a phase that outlives its close keeps no Env graph alive.
+ * An `async` frame suspended on a hung cleanup would keep `slot` and `owner` in
+ * its register file whether or not it still uses them, and `slot.ownerEnv` is the
+ * whole graph behind them (§13).
+ */
+class CleanupPhase implements AttemptCleanupPhase {
+  readonly errors: DisposableError[] = []
+  failed = false
+  readonly done: Promise<void>
+  private strongSlot: ServiceSlot | undefined
+  private weakSlot: WeakRef<ServiceSlot> | undefined
+  private strongOwner: SlotOwnerEnv | undefined
+  private weakOwner: WeakRef<SlotOwnerEnv> | undefined
+
+  constructor(
+    slot: ServiceSlot | undefined,
+    owner: SlotOwnerEnv | undefined,
+    run: (record: (failure: DisposableError) => void) => Promise<void>,
+  ) {
+    this.strongSlot = slot
+    this.strongOwner = owner
+    this.done = run(this.record)
+  }
+
+  get slot(): ServiceSlot | undefined { return this.strongSlot ?? this.weakSlot?.deref() }
+
+  get owner(): SlotOwnerEnv | undefined { return this.strongOwner ?? this.weakOwner?.deref() }
+
+  private readonly record = (failure: DisposableError): void => {
+    this.failed = true
+    this.errors.push(failure)
+  }
+
+  take(): readonly DisposableError[] {
+    return this.errors.splice(0)
+  }
+
+  release(): void {
+    if (this.strongSlot !== undefined) {
+      this.weakSlot = new WeakRef(this.strongSlot)
+      this.strongSlot = undefined
+    }
+    if (this.strongOwner !== undefined) {
+      this.weakOwner = new WeakRef(this.strongOwner)
+      this.strongOwner = undefined
+    }
   }
 }
 
@@ -369,6 +445,11 @@ export class Materializer {
       if (!(await settlesWithin(slot.sequence, graceMs))) {
         const running = slot.attempt
         slot.state = 'abandoned'
+        // What the attempt's cleanup phase has already determined belongs to this
+        // close even though it stops waiting for the rest of the phase (§13): it is
+        // taken before `reportsToClose` is cleared, so it enters the AggregateError
+        // of dispose() exactly once and the late report lists only later failures.
+        if (running) this.abandonCleanupPhase(running)
         // From here the close no longer waits for this attempt: whatever its
         // cleanups do afterwards is reported by an event, not by dispose().
         if (running) running.reportsToClose = false
@@ -397,9 +478,28 @@ export class Materializer {
     const remainingMs = Number.isFinite(graceMs) ? Math.max(0, graceMs - (Date.now() - startedAt)) : graceMs
     if (await settlesWithin(attempt.settled, remainingMs)) return
     slot.state = 'abandoned'
+    // The late close of this attempt is a cleanup phase like any other: what it has
+    // already determined is this close's to report (N1).
+    this.abandonCleanupPhase(attempt)
     attempt.reportsToClose = false
     this.reportAbandoned(slot, attempt)
   }
+
+  /**
+   * The close stops waiting for an attempt's cleanup phase. The failures the phase
+   * has already determined stay with the close — they happened while it was still
+   * waiting — and the phase lets go of the Env from here on.
+   */
+  private abandonCleanupPhase(attempt: SetupAttempt): void {
+    const phase = attempt.cleanupPhase
+    // Only the close that is still waiting for the phase may take from it: once it
+    // has stopped, later failures are the late report's and must stay in the phase.
+    if (!phase || !attempt.reportsToClose || !attempt.owner.closing) return
+    const determined = phase.take()
+    if (determined.length > 0) this.attributeToClose(attempt, determined.map(item => item.error))
+    phase.release()
+  }
+
 
   private reportAbandoned(slot: ServiceSlot, attempt: SetupAttempt): void {
     const record = this.unsettled.get(attempt.id)
@@ -588,7 +688,11 @@ export class Materializer {
       }
       signal?.addEventListener('abort', onAbort, { once: true })
       const attempt = slot.attempt
-      if (attempt && attempt.state === 'running' && !attempt.rawSettled) this.arm(waiter, slot, attempt)
+      // Armed for the current attempt until that attempt ends, not until its raw
+      // Promise settles: a wait joined while the rollback of a failed setup is
+      // still running is a wait on the current attempt (§11) and gets a deadline
+      // like any other.
+      if (attempt && attempt.state === 'running') this.arm(waiter, slot, attempt)
     })
   }
 
@@ -621,22 +725,30 @@ export class Materializer {
     const attempt = waiter.attempt
     const deadlineMs = waiter.deadlineMs
     if (!slot.waiters.has(waiter)) return
-    if (attempt === undefined || slot.attempt !== attempt || attempt.state !== 'running' || attempt.rawSettled) return
-    const owner = this.owner(slot)
+    if (attempt === undefined || slot.attempt !== attempt || attempt.state !== 'running') return
+    const envId = slot.ownerEnvId
+    if (attempt.rawSettled) {
+      // The setup itself has settled and the attempt is in its cleanup phase. The
+      // wait is still a wait on the current attempt, so the deadline still ends it —
+      // but the setup is not overdue, nothing is listed for it, and the cleanup goes
+      // on: only this one wait ends.
+      waiter.settle({ ok: false, error: this.timeoutError(attempt, slot, envId, deadlineMs, true) })
+      return
+    }
     if (attempt.overdueAt === undefined) {
       attempt.overdueAt = Date.now()
-      this.registerOverdue(attempt, owner)
+      this.registerOverdue(attempt, envId)
       this.options.onEvent({
         type: 'attempt-overdue',
         slot: slot.id,
         revision: slot.service.key,
-        env: owner.id,
+        env: envId,
         attemptNumber: attempt.id,
         deadlineMs,
         elapsedMs: attempt.overdueAt - attempt.startedAt,
       })
     }
-    waiter.settle({ ok: false, error: this.timeoutError(attempt, slot, owner, deadlineMs) })
+    waiter.settle({ ok: false, error: this.timeoutError(attempt, slot, envId, deadlineMs, false) })
   }
 
   private serviceValue(slot: ServiceSlot): Promise<unknown> {
@@ -689,7 +801,7 @@ export class Materializer {
     })
     slot.sequence = sequence
     void sequence.catch(() => undefined)
-    this.runSequence(slot, owner).then(resolveSequence, rejectSequence)
+    void this.startAttempt(slot, owner, 1, resolveSequence, rejectSequence)
   }
 
   /**
@@ -718,53 +830,189 @@ export class Materializer {
     throw new Error(`Syna internal invariant: setup attempt ${unsettled.id} of ${slot.service.key} has not settled; a new attempt would overlap it.`)
   }
 
-  private async runSequence(slot: ServiceSlot, owner: SlotOwnerEnv): Promise<unknown> {
-    const signal = owner.abortController.signal
-    const policy = slot.service.failure
+  /**
+   * One iteration of the setup sequence — attempts 1 to `failure.attempts`, with
+   * the failure policy between them — settling the slot's sequence Promise
+   * directly through its resolvers.
+   *
+   * The sequence is driven by reactions rather than by one `await` loop on
+   * purpose. An `async` frame suspended on a rollback keeps `slot` and `owner` in
+   * its register file for as long as that rollback runs, and `slot.ownerEnv` is
+   * the Env behind them — the whole plan, its Input payloads and its sibling
+   * slots (§13). Nothing here is suspended while a cleanup phase runs: what the
+   * phase needs, it holds itself, and it lets go of the Env the moment the close
+   * stops waiting for it.
+   */
+  private async startAttempt(
+    slot: ServiceSlot,
+    owner: SlotOwnerEnv,
+    index: number,
+    resolve: (value: unknown) => void,
+    reject: (error: unknown) => void,
+  ): Promise<void> {
+    let raw: RawOutcome
     try {
-      for (let index = 1; index <= policy.attempts; index += 1) {
-        this.assertOwnerUsable(owner, slot, 'continue setup of')
-        const outcome = await this.runAttempt(slot, owner)
-        if (outcome.ok) {
-          return outcome.instance
-        }
-        if (outcome.unsettled) throw outcome.error
-        if (outcome.cleanupErrors.length > 0) {
-          // A failed rollback ends the sequence and is final for the slot: retrying
-          // (now or on a later load) on top of leaked resources is not safe.
-          slot.rollbackFailed = true
-          throw new AggregateError(
-            [outcome.error, ...outcome.cleanupErrors],
-            `Setup attempt ${index} of ${slot.service.key} and its rollback both failed.`,
-            outcome.error instanceof Error ? { cause: outcome.error } : undefined,
-          )
-        }
-        const mayRetry = index < policy.attempts
-          && !signal.aborted
-          && (owner.state === 'activating' || owner.state === 'ready')
-        if (!mayRetry) throw outcome.error
-        await sleepAbortable(
-          policy.delayMs,
-          signal,
-          `Retry of ${slot.service.key} was cancelled because owner Env ${owner.id} is closing.`,
-          this.closedDetails(owner, slot),
-        )
-      }
-      // `failure.attempts` is a positive integer by definition: the loop above always returns or throws.
-      throw new Error(`Syna internal invariant: service ${slot.service.key} exhausted setup attempts.`)
+      this.assertOwnerUsable(owner, slot, 'continue setup of')
+      // Suspended here for the raw phase only, exactly as the sequence always was:
+      // the close ends that wait by ending the attempt's race. What follows a
+      // settled setup — the cleanup phase — is never awaited in this frame.
+      raw = await this.runAttemptRaw(slot, owner)
     }
     catch (error) {
+      this.endSequence(slot, error, reject)
+      return
+    }
+    if (raw.kind === 'ok') {
+      resolve(raw.instance)
+      return
+    }
+    if (raw.kind === 'unsettled') {
+      this.endSequence(slot, raw.error, reject)
+      return
+    }
+    this.continueAfterRollback(raw, index, resolve, reject)
+  }
+
+  /**
+   * The rest of the sequence, attached to the attempt's cleanup phase instead of
+   * awaited: what a hung rollback keeps alive is this one reaction, and it reaches
+   * the slot and the owner only through the phase, which holds both weakly from
+   * the moment the close stops waiting.
+   */
+  private continueAfterRollback(
+    rollback: RollbackOutcome,
+    index: number,
+    resolve: (value: unknown) => void,
+    reject: (error: unknown) => void,
+  ): void {
+    void rollback.phase.done.then(() => {
+      const outcome = this.finishRollback(rollback)
+      const slot = rollback.phase.slot
+      if (rollback.phase.failed) {
+        // A failed rollback ends the sequence and is final for the slot: retrying
+        // (now or on a later load) on top of leaked resources is not safe.
+        if (slot) slot.rollbackFailed = true
+        this.endSequence(slot, new AggregateError(
+          [outcome.error, ...outcome.cleanupErrors],
+          `Setup attempt ${index} of ${rollback.attempt.revisionKey} and its rollback both failed.`,
+          outcome.error instanceof Error ? { cause: outcome.error } : undefined,
+        ), reject)
+        return
+      }
+      const owner = rollback.phase.owner
+      const policy = slot?.service.failure
+      // A slot or an owner that is already gone means the Env was collected while
+      // this rollback ran: there is nothing left to retry into.
+      const mayRetry = slot !== undefined && owner !== undefined && policy !== undefined
+        && index < policy.attempts
+        && !owner.abortController.signal.aborted
+        && (owner.state === 'activating' || owner.state === 'ready')
+      if (!mayRetry || !slot || !owner || !policy) {
+        this.endSequence(slot, outcome.error, reject)
+        return
+      }
+      void sleepAbortable(
+        policy.delayMs,
+        owner.abortController.signal,
+        `Retry of ${slot.service.key} was cancelled because owner Env ${owner.id} is closing.`,
+        this.closedDetails(owner, slot),
+      ).then(
+        () => void this.startAttempt(slot, owner, index + 1, resolve, reject),
+        error => this.endSequence(slot, error, reject),
+      )
+    })
+  }
+
+  /** The sequence ends with a failure: the slot records it, if the slot is still there, and the sequence rejects. */
+  private endSequence(slot: ServiceSlot | undefined, error: unknown, reject: (error: unknown) => void): void {
+    if (slot) {
       if (slot.state === 'starting') {
         slot.error = error
         slot.failedAt = Date.now()
         slot.state = 'failed'
       }
       delete slot.attempt
-      throw error
+    }
+    reject(error)
+  }
+
+  /**
+   * An attempt's cleanup phase has ended, so the attempt is over: it is reported
+   * and the sequence is told what happened. Everything used here comes from the
+   * attempt's own record of itself, so the phase never had to keep the slot or the
+   * Env to make this report.
+   */
+  private finishRollback(rollback: RollbackOutcome): { readonly error: unknown; readonly cleanupErrors: readonly unknown[] } {
+    const { attempt, phase, reason } = rollback
+    const slot = phase.slot
+    // The attempt ends here, so its waiters' deadlines end with it: the backoff
+    // before a retry is not counted against them (§11), and the next attempt arms
+    // every waiter again.
+    if (slot) for (const waiter of slot.waiters) this.disarm(waiter)
+    const cleanupErrors = phase.take().map(item => item.error)
+    attempt.state = 'failed'
+    delete attempt.cleanupPhase
+    this.attributeToClose(attempt, cleanupErrors)
+    const wasOverdue = this.forgetOverdue(attempt)
+    const envId = attempt.owner.envId
+    if (reason === 'unreachable') {
+      attempt.resolveSettled()
+      this.options.onEvent({
+        type: 'attempt-unreachable',
+        slot: attempt.slotId,
+        revision: attempt.revisionKey,
+        env: envId,
+        elapsedMs: Date.now() - attempt.startedAt,
+        cleanupErrors,
+      })
+      return {
+        error: new Error(`Setup of ${attempt.revisionKey} can no longer settle: its Promise was garbage-collected while still pending.`),
+        cleanupErrors,
+      }
+    }
+    if (reason === 'failed') {
+      // Late is measured from the start of the close, not from its end: a
+      // settlement inside the grace is reported like one after it, whether or
+      // not a waiter is still there.
+      if (wasOverdue || (phase.owner ? this.ownerClosing(phase.owner) : attempt.owner.closing)) {
+        this.options.onEvent({
+          type: 'attempt-failed-late',
+          slot: attempt.slotId,
+          revision: attempt.revisionKey,
+          env: envId,
+          error: rollback.error,
+          cleanupErrors,
+        })
+      }
+      attempt.resolveSettled()
+      return { error: rollback.error, cleanupErrors }
+    }
+    if (wasOverdue || rollback.ownerClosed) {
+      this.options.onEvent({
+        type: 'attempt-succeeded-late',
+        slot: attempt.slotId,
+        revision: attempt.revisionKey,
+        env: envId,
+        adopted: false,
+        cleanupErrors,
+      })
+    }
+    attempt.resolveSettled()
+    return {
+      error: closedError(
+        `Setup of ${attempt.revisionKey} completed after owner Env ${envId} began closing; the instance was discarded.`,
+        { env: envId, state: phase.owner?.state ?? 'disposed', slot: attempt.slotId, revision: attempt.revisionKey },
+      ),
+      cleanupErrors,
     }
   }
 
-  private async runAttempt(slot: ServiceSlot, owner: SlotOwnerEnv): Promise<AttemptOutcome> {
+  /**
+   * The raw phase of one attempt: `setup()` and everything up to the settlement of
+   * the Promise it returned. A rollback is not run here — it is started as a task
+   * of its own and handed back, so no frame stays suspended on it.
+   */
+  private async runAttemptRaw(slot: ServiceSlot, owner: SlotOwnerEnv): Promise<RawOutcome> {
     const attempt = this.createAttempt(slot, owner)
     slot.attempt = attempt
     slot.attemptCount += 1
@@ -803,11 +1051,16 @@ export class Materializer {
       for (const waiter of slot.waiters) this.arm(waiter, slot, attempt)
       return raceAttempt(rawPromise, attempt)
     })()
-    for (const waiter of slot.waiters) this.disarm(waiter)
+    // The waiters' deadlines are *not* cleared here. A wait is on the current
+    // attempt, and the attempt is not over until its cleanup phase is: clearing
+    // them at the settlement of the raw Promise left every waiter of a failed setup
+    // whose rollback hung with no timeout at all. They are cleared when the attempt
+    // ends (`finishRollback`), so the backoff before a retry is still not counted
+    // against them (§11), or by their own settlement when the sequence ends here.
 
     if (raced.kind === 'abandoned') {
       slot.unsettledAttempt = attempt
-      const record = this.registerUnsettled(attempt, owner, 'abandoned')
+      const record = this.registerUnsettled(attempt, owner.id, 'abandoned')
       const error = closedError(
         `Setup of ${slot.service.key} was still pending when owner Env ${owner.id} closed; its eventual result will be discarded.`,
         this.closedDetails(owner, slot)(),
@@ -822,85 +1075,31 @@ export class Materializer {
         // Overdue earlier and collected since: nothing can settle it any more.
         void this.settleRecord(record, attempt, undefined, 'unreachable')
       }
-      return { ok: false, error, unsettled: true, cleanupErrors: [] }
+      return { kind: 'unsettled', error }
     }
 
     attempt.rawSettled = true
     attempt.raw = undefined
     attempt.endRace = undefined
+    // A setup that has settled waits for nothing: the wait-cycle diagnosis only
+    // reads attempts that are still executing, and keeping the entries would hold
+    // this attempt's dependency slots through the cleanup phase that follows.
+    attempt.pendingLoads.clear()
     if (attempt.watched) this.unreachable.unregister(attempt)
+    const ownerClosed = owner.abortController.signal.aborted
+      || (owner.state !== 'activating' && owner.state !== 'ready')
+
     if (raced.kind === 'unreachable') {
       // The raw Promise of an overdue attempt was collected while its owner
       // lived: the attempt is closed as failed and the sequence goes on with the
       // failure policy (a new attempt cannot overlap one that can never finish).
-      const cleanupErrors = (await this.runCleanups(attempt.cleanups, slot.id)).map(item => item.error)
-      attempt.state = 'failed'
-      this.attributeToClose(attempt, cleanupErrors)
-      this.forgetOverdue(attempt)
-      attempt.resolveSettled()
-      this.options.onEvent({
-        type: 'attempt-unreachable',
-        slot: slot.id,
-        revision: slot.service.key,
-        env: owner.id,
-        elapsedMs: Date.now() - attempt.startedAt,
-        cleanupErrors,
-      })
-      return {
-        ok: false,
-        error: new Error(`Setup of ${slot.service.key} can no longer settle: its Promise was garbage-collected while still pending.`),
-        unsettled: false,
-        cleanupErrors,
-      }
+      return this.startRollback(attempt, slot, owner, 'unreachable', undefined, ownerClosed)
     }
-
     if (raced.kind === 'rejected') {
-      const cleanupErrors = (await this.runCleanups(attempt.cleanups, slot.id)).map(item => item.error)
-      attempt.state = 'failed'
-      this.attributeToClose(attempt, cleanupErrors)
-      // Late is measured from the start of the close, not from its end: a
-      // settlement inside the grace is reported like one after it, whether or
-      // not a waiter is still there.
-      if (this.forgetOverdue(attempt) || this.ownerClosing(owner)) {
-        this.options.onEvent({
-          type: 'attempt-failed-late',
-          slot: slot.id,
-          revision: slot.service.key,
-          env: owner.id,
-          error: raced.error,
-          cleanupErrors,
-        })
-      }
-      attempt.resolveSettled()
-      return { ok: false, error: raced.error, unsettled: false, cleanupErrors }
+      return this.startRollback(attempt, slot, owner, 'failed', raced.error, ownerClosed)
     }
-
-    const ownerClosed = owner.abortController.signal.aborted
-      || (owner.state !== 'activating' && owner.state !== 'ready')
     if (ownerClosed || slot.attempt !== attempt) {
-      const cleanupErrors = (await this.runCleanups(attempt.cleanups, slot.id)).map(item => item.error)
-      attempt.state = 'failed'
-      this.attributeToClose(attempt, cleanupErrors)
-      if (this.forgetOverdue(attempt) || ownerClosed) {
-        this.options.onEvent({
-          type: 'attempt-succeeded-late',
-          slot: slot.id,
-          revision: slot.service.key,
-          env: owner.id,
-          adopted: false,
-          cleanupErrors,
-        })
-      }
-      attempt.resolveSettled()
-      return {
-        ok: false,
-        error: closedError(
-          `Setup of ${slot.service.key} completed after owner Env ${owner.id} began closing; the instance was discarded.`,
-          this.closedDetails(owner, slot)(),
-        ),
-        unsettled: false,
-        cleanupErrors,
-      }
+      return this.startRollback(attempt, slot, owner, 'discarded', undefined, ownerClosed)
     }
 
     attempt.state = 'succeeded'
@@ -926,7 +1125,35 @@ export class Materializer {
         cleanupErrors: [],
       })
     }
-    return { ok: true, instance: raced.value }
+    return { kind: 'ok', instance: raced.value }
+  }
+
+  /**
+   * Starts the cleanup phase of an attempt whose setup has settled and hands it to
+   * the sequence. The phase is a task: `runAttemptRaw` returns here, so nothing is
+   * suspended on cleanups that may never end.
+   */
+  private startRollback(
+    attempt: SetupAttempt,
+    slot: ServiceSlot,
+    owner: SlotOwnerEnv,
+    reason: RollbackReason,
+    error: unknown,
+    ownerClosed: boolean,
+  ): RollbackOutcome {
+    const phase = this.startCleanupPhase(attempt.cleanups, slot.id, slot, owner)
+    attempt.cleanupPhase = phase
+    return { kind: 'rollback', attempt, phase, reason, error, ownerClosed }
+  }
+
+  /** Starts one cleanup phase as a task of its own (see `CleanupPhase`). */
+  private startCleanupPhase(
+    cleanups: Array<() => Awaitable<void>>,
+    slotId: string,
+    slot: ServiceSlot | undefined,
+    owner: SlotOwnerEnv | undefined,
+  ): CleanupPhase {
+    return new CleanupPhase(slot, owner, record => this.runCleanups(cleanups, slotId, record))
   }
 
   private createAttempt(slot: ServiceSlot, owner: SlotOwnerEnv): SetupAttempt {
@@ -1018,8 +1245,8 @@ export class Materializer {
    * while it keeps running under its live owner. From now on it holds the raw
    * Promise only weakly, so that Promise's reachability bounds the record.
    */
-  private registerOverdue(attempt: SetupAttempt, owner: SlotOwnerEnv): void {
-    this.registerUnsettled(attempt, owner, 'overdue')
+  private registerOverdue(attempt: SetupAttempt, envId: string): void {
+    this.registerUnsettled(attempt, envId, 'overdue')
     const rawPromise = this.releaseRaw(attempt)
     if (rawPromise) this.watch(attempt, rawPromise)
     else attempt.endRace?.('unreachable')
@@ -1051,7 +1278,7 @@ export class Materializer {
 
   private registerUnsettled(
     attempt: SetupAttempt,
-    owner: SlotOwnerEnv,
+    envId: string,
     state: 'overdue' | 'abandoned',
   ): UnsettledRecord {
     const existing = this.unsettled.get(attempt.id)
@@ -1064,7 +1291,7 @@ export class Materializer {
       attempt,
       slot: attempt.slotId,
       revision: attempt.revisionKey,
-      env: owner.id,
+      env: envId,
       startedAt: attempt.startedAt,
       state,
     }
@@ -1156,7 +1383,7 @@ export class Materializer {
    * cleanups it registered run, its slot is released, and the outcome is
    * reported. `unreachable` means the raw Promise was collected unsettled.
    */
-  private async closeUnsettled(
+  private closeUnsettled(
     attempt: SetupAttempt,
     envId: string,
     failure: { readonly error: unknown } | undefined,
@@ -1164,14 +1391,35 @@ export class Materializer {
   ): Promise<void> {
     attempt.rawSettled = true
     // The slot may be gone with its Env: the cleanups of the attempt run either
-    // way, and what is reported comes from the attempt's own record of itself.
-    const slot = this.slotOf(attempt)
-    const cleanupErrors = (await this.runCleanups(attempt.cleanups, attempt.slotId)).map(item => item.error)
+    // way, and what is reported comes from the attempt's own record of itself. The
+    // phase takes the slot weakly from the start — the attempt is listed by now, so
+    // a late cleanup that hangs must keep no Env graph alive (§13). A plain `const
+    // slot = …` here would be held by the suspended frame however little the code
+    // after the await still used it.
+    this.releaseSlot(attempt)
+    const phase = this.startCleanupPhase(attempt.cleanups, attempt.slotId, this.slotOf(attempt), undefined)
+    phase.release()
+    attempt.cleanupPhase = phase
+    return phase.done.then(() => this.finishLateClose(attempt, envId, failure, how, phase))
+  }
+
+  /** The late close of a listed attempt has run its cleanups: the slot is released and the outcome reported. */
+  private finishLateClose(
+    attempt: SetupAttempt,
+    envId: string,
+    failure: { readonly error: unknown } | undefined,
+    how: 'settled' | 'unreachable',
+    phase: AttemptCleanupPhase,
+  ): void {
+    // Only what this phase has not already handed to a close that was still waiting.
+    const cleanupErrors = phase.take().map(item => item.error)
+    delete attempt.cleanupPhase
     this.attributeToClose(attempt, cleanupErrors)
+    const slot = phase.slot
     if (slot) {
       if (slot.unsettledAttempt === attempt) delete slot.unsettledAttempt
       // Resources a late cleanup could not release are outside Syna control from now on.
-      if (cleanupErrors.length > 0) slot.rollbackFailed = true
+      if (phase.failed) slot.rollbackFailed = true
       // An abandoned slot has now released everything its attempt acquired.
       if (slot.state === 'abandoned' && slot.unsettledAttempt === undefined) slot.state = 'disposed'
     }
@@ -1209,7 +1457,13 @@ export class Materializer {
     }
   }
 
-  private timeoutError(attempt: SetupAttempt, slot: ServiceSlot, owner: SlotOwnerEnv, deadlineMs: number): SynaError {
+  private timeoutError(
+    attempt: SetupAttempt,
+    slot: ServiceSlot,
+    envId: string,
+    deadlineMs: number,
+    rollingBack: boolean,
+  ): SynaError {
     const now = Date.now()
     const pendingLoads = [...attempt.pendingLoads.values()].map(pending => ({
       revision: pending.target.service.key,
@@ -1228,14 +1482,16 @@ export class Materializer {
       {
         slot: slot.id,
         revision: slot.service.key,
-        env: owner.id,
+        env: envId,
         attemptNumber: attempt.id,
         deadlineMs,
         elapsedMs: now - attempt.startedAt,
         pendingLoads,
         ...(suspectedWaitCycle ? { suspectedWaitCycle } : {}),
         attemptStillRunning: true,
-        note: 'The deadline ended this wait while setup was still pending. The attempt keeps running; its result is adopted if the owner Env is still ready, and discarded only if the owner closes.',
+        note: rollingBack
+          ? 'The deadline ended this wait while the rollback of the failed setup was still running. The attempt is not overdue; its cleanups keep running and the slot accepts no overlapping attempt until they end.'
+          : 'The deadline ended this wait while setup was still pending. The attempt keeps running; its result is adopted if the owner Env is still ready, and discarded only if the owner closes.',
       },
     )
   }
@@ -1366,12 +1622,20 @@ export class Materializer {
       return
     }
     const startedAt = Date.now()
-    const running = this.runCleanups(slot.cleanups, slot.id)
-    if (!(await settlesWithin(running, this.options.disposalGraceMs))) {
-      this.abandonCleanup(slot, running, startedAt)
+    const phase = this.startCleanupPhase(slot.cleanups, slot.id, slot, slot.ownerEnv)
+    if (!(await settlesWithin(phase.done, this.options.disposalGraceMs))) {
+      // What this phase already determined belongs to the close that waited for it,
+      // even though the close stops waiting for the rest (§13): it is reported by
+      // `dispose()` like any other cleanup failure the close waited for, and the
+      // late report of the abandoned phase lists only what fails after this point.
+      const determined = phase.take().map(item => item.error)
+      this.abandonCleanup(slot, phase, startedAt)
+      if (determined.length > 0) {
+        throw new AggregateError(determined, `Service ${slot.service.key} failed to dispose cleanly.`)
+      }
       return
     }
-    const errors = await running
+    const errors = phase.take()
     slot.state = 'disposed'
     delete slot.instance
     if (errors.length > 0) {
@@ -1391,7 +1655,7 @@ export class Materializer {
    */
   private abandonCleanup(
     slot: ServiceSlot,
-    running: Promise<readonly DisposableError[]>,
+    phase: AttemptCleanupPhase,
     startedAt: number,
   ): void {
     slot.state = 'abandoned'
@@ -1412,12 +1676,15 @@ export class Materializer {
     this.unsettled.set(id, record)
     this.reportAbandonment(slot, 'cleanup', Date.now() - startedAt)
     // The reaction is kept by the cleanup that outlived the close: like a listed
-    // attempt, it reaches its slot only weakly.
-    const slotRef = new WeakRef(slot)
-    record.closing = running.then(errors => {
+    // attempt, it reaches its slot only weakly from here on.
+    phase.release()
+    record.closing = phase.done.then(() => {
       if (this.unsettled.get(id) === record) this.unsettled.delete(id)
-      const abandoned = slotRef.deref()
+      const abandoned = phase.slot
       if (abandoned && abandoned.state === 'abandoned') abandoned.state = 'disposed'
+      // Only the failures that came after the close stopped waiting: the ones it
+      // had already been handed are in its own AggregateError.
+      const errors = phase.take()
       if (errors.length === 0) return
       this.options.onEvent({
         type: 'attempt-failed-late',
@@ -1432,16 +1699,22 @@ export class Materializer {
     })
   }
 
-  /** Runs cleanups in reverse registration order; every cleanup runs even if an earlier one throws. */
+  /**
+   * Runs cleanups in reverse registration order; every cleanup runs even if an
+   * earlier one throws, and every failure is recorded the moment it happens rather
+   * than when the phase ends — a failure that is already determined must not
+   * disappear behind a later cleanup of the same phase that hangs. A method of its
+   * own, so the frame suspended on a hung cleanup holds the cleanup list, a slot id
+   * and the recorder, never the slot or the Env behind it.
+   */
   private async runCleanups(
     cleanups: Array<() => Awaitable<void>>,
     slotId: string,
-  ): Promise<readonly DisposableError[]> {
-    const errors: DisposableError[] = []
+    record: (failure: DisposableError) => void,
+  ): Promise<void> {
     for (const cleanup of cleanups.splice(0).reverse()) {
       try { await cleanup() }
-      catch (error) { errors.push({ slot: slotId, error }) }
+      catch (error) { record({ slot: slotId, error }) }
     }
-    return errors
   }
 }

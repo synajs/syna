@@ -217,6 +217,9 @@ export const defaultRuntimePolicy: RuntimePolicy = Object.freeze({
   },
 })
 
+/** Any Env, whatever it requires: the Runtime's own registries and the close paths are shape-agnostic. */
+type AnyEnv = EnvImpl<any>
+
 class EnvImpl<Requires extends DependencyMap> implements Env<Requires> {
   readonly children = new Set<EnvImpl<any>>()
   readonly deps: DependencyRefs<Requires>
@@ -226,6 +229,8 @@ class EnvImpl<Requires extends DependencyMap> implements Env<Requires> {
   /** Advanced only by Runtime actions: `activating → ready → disposing → disposed`; `disposed` at the end of the bounded close. */
   state: EnvState = 'activating'
   private disposePromise?: Promise<void>
+  /** Set by `disposeEnv()` the moment this Env's own close is entered, before any of it runs. */
+  closing = false
 
   constructor(
     readonly runtime: RuntimeImpl,
@@ -311,9 +316,36 @@ class EnvImpl<Requires extends DependencyMap> implements Env<Requires> {
     }
   }
 
+  /**
+   * One close per Env, whoever asks and from wherever.
+   *
+   * `disposeEnv()` aborts the owner signal synchronously — `AbortController.abort()`
+   * runs its listeners there and then — so user code runs *inside* this call, before
+   * this line could assign what it returns. A listener that re-entered `dispose()`
+   * found the field still empty and started a second close: the two raced for the
+   * same slots, the one that arrived second skipped every slot the first had taken
+   * and announced `disposed` empty-handed, and a cleanup that threw could end up in
+   * whichever of them nobody awaited. `disposeEnv()` now sets `closing` before it
+   * runs any of that and hands such a re-entry `joinClose()` instead of a second
+   * close — the check belongs there, where the window is, and this stays the one
+   * line it was: `??=` assigns the close after `disposeEnv()` returns, so it wins
+   * over anything the re-entry left in the field.
+   */
   dispose(): Promise<void> {
     this.disposePromise ??= this.runtime.disposeEnv(this)
     return this.disposePromise
+  }
+
+  /**
+   * What a `dispose()` that re-entered this close's own synchronous prologue gets.
+   * The close exists and its Promise is a few statements away, on the stack below:
+   * `disposeEnv()` runs synchronously up to its first `await` and `dispose()` assigns
+   * what it returns, both before any microtask of this one. One hop is enough to see
+   * it, and this caller then settles exactly as the close itself does.
+   */
+  async joinClose(): Promise<void> {
+    await null
+    await this.disposePromise
   }
 
   [Symbol.asyncDispose](): Promise<void> {
@@ -337,6 +369,7 @@ class RuntimeImpl implements Runtime, ImplementationViewHost {
 
   private disposed = false
   private disposePromise?: Promise<void>
+  private closing = false
 
   constructor(options: CreateRuntimeOptions) {
     if (typeof options !== 'object' || options === null) {
@@ -441,11 +474,28 @@ class RuntimeImpl implements Runtime, ImplementationViewHost {
     return withCall(args[0], args[1], call => this.explainFrom(undefined, descriptor, call, PUBLIC_REALM))
   }
 
+  /** One close per Runtime, for the reason `EnvImpl.dispose()` gives: the root broadcast runs user abort listeners synchronously. */
   dispose(): Promise<void> {
-    this.disposePromise ??= (async () => {
+    this.disposePromise ??= this.disposeRuntime()
+    return this.disposePromise
+  }
+
+  /** As `EnvImpl.joinClose()`: one microtask behind this close's own prologue. */
+  private async joinClose(): Promise<void> {
+    await null
+    await this.disposePromise
+  }
+
+  private async disposeRuntime(): Promise<void> {
+    {
+      if (this.closing) return this.joinClose()
+      this.closing = true
       this.disposed = true
       const roots = [...this.roots]
-      for (const root of roots) this.broadcastClosing(root)
+      // One broadcast over every root: marking each root's subtree separately let an
+      // abort listener of the first root start work in a second one that was still
+      // `ready` (N3 at the Runtime level).
+      this.broadcastClosingAll(roots)
       const errors = (await Promise.allSettled(roots.map(root => root.dispose())))
         .flatMap(result => (result.status === 'rejected' ? [result.reason] : []))
       this.planner.clearCache()
@@ -460,8 +510,7 @@ class RuntimeImpl implements Runtime, ImplementationViewHost {
       if (errors.length > 0) {
         throw new AggregateError(errors, 'One or more Syna root Envs failed to dispose.')
       }
-    })()
-    return this.disposePromise
+    }
   }
 
   /** The ledger entries an Env's close left behind (`env.inspect().abandonedAttempts`). */
@@ -738,12 +787,49 @@ class RuntimeImpl implements Runtime, ImplementationViewHost {
    * cleanup in the subtree has seen the stop signal, before anything is waited
    * for. Idempotent.
    */
-  private broadcastClosing(env: EnvImpl<any>): void {
-    if (env.state === 'disposed') return
+  private broadcastClosing(env: AnyEnv): void {
+    this.markClosing(env)
+    this.abortClosing(env)
+  }
+
+  /**
+   * The same for several subtrees at once. Both take two passes: every Env of the
+   * close set is marked first, and only then are the signals aborted. `abort()` runs
+   * user listeners synchronously, so a single depth-first pass that aborted as it
+   * descended offered those listeners a subtree that was still `ready` — they could
+   * start a dormant Service inside the very set being closed (its `setup()` really
+   * ran, and its late result was discarded afterwards) and add a whole grace period
+   * to a close whose bound is computed from the tree as it stood when the close
+   * began. Marking first closes the set before any of it runs.
+   */
+  private broadcastClosingAll(envs: readonly AnyEnv[]): void {
+    for (const env of envs) this.markClosing(env)
+    for (const env of envs) this.abortClosing(env)
+  }
+
+  /** First pass: the subtree refuses new work. Runs no user code, so nothing can observe it half done. */
+  private markClosing(env: AnyEnv): void {
+    if (env.state === 'disposed' || env.attemptOwner.closing) return
     env.state = 'disposing'
     env.attemptOwner.closing = true
+    if (env.children.size !== 0) this.markDescendants(env)
+  }
+
+  /** Second pass: every signal of the marked set, in the same order. `abort()` is idempotent. */
+  private abortClosing(env: AnyEnv): void {
+    if (env.state === 'disposed') return
     env.abortController.abort()
-    for (const child of env.children) this.broadcastClosing(child)
+    if (env.children.size !== 0) this.abortDescendants(env)
+  }
+
+  // Descending is its own step in both passes: closing a leaf Env is the common
+  // case and it should not walk an empty child set to find that out.
+  private markDescendants(env: AnyEnv): void {
+    for (const child of env.children) this.markClosing(child)
+  }
+
+  private abortDescendants(env: AnyEnv): void {
+    for (const child of env.children) this.abortClosing(child)
   }
 
   /**
@@ -764,6 +850,11 @@ class RuntimeImpl implements Runtime, ImplementationViewHost {
    */
   async disposeEnv(env: EnvImpl<any>): Promise<void> {
     if (env.state === 'disposed') return
+    // The broadcast below runs user abort listeners, and one of them can call
+    // `dispose()` again: this close is already under way, so that caller joins it
+    // (see `EnvImpl.dispose()`) instead of starting a second one over the same slots.
+    if (env.closing) return env.joinClose()
+    env.closing = true
     this.broadcastClosing(env)
 
     const children = [...env.children]
@@ -780,8 +871,18 @@ class RuntimeImpl implements Runtime, ImplementationViewHost {
     // ago) next to the cleanups of the Ready slots it disposed.
     errors.push(...env.attemptOwner.closeErrors.splice(0))
 
-    for (const slot of ownedServiceSlots) {
+    // One indexed pass, not two `for…of` walks: this is the hot close path, where
+    // an array iterator costs an allocation per owned slot. A slot that never
+    // started ends `disposed`, and the Env stops being anyone's owner — an owned
+    // slot that outlives the close (an abandoned attempt, a cleanup phase that is
+    // still running, a waiter whose deadline has not passed yet) must not reach
+    // the Env through `slot.ownerEnv`: §13's "nothing in the Runtime retains its
+    // graph". Nothing starts on such a slot again: every one of them is `disposed`
+    // or `abandoned`.
+    for (let index = 0; index < ownedServiceSlots.length; index += 1) {
+      const slot = ownedServiceSlots[index]!
       if (slot.state === 'dormant' || slot.state === 'failed') slot.state = 'disposed'
+      slot.ownerEnv = undefined
     }
 
     this.detachEnv(env)

@@ -384,7 +384,9 @@ test('the four codes are declared and the compiled sources spell neither the 0.6
   const codes = readFileSync(path.join(dist, 'errors.d.ts'), 'utf8')
   for (const code of ['ENV_CLOSED', 'LIFECYCLE_MISUSE', 'RUNTIME_CLOSED', 'SLOT_NOT_LOADABLE']) assert.match(codes, new RegExp(`'${code}'`))
   const internal = readFileSync(path.join(dist, 'internal/materializer.js'), 'utf8') + readFileSync(path.join(dist, 'runtime.js'), 'utf8')
-  // Four from S7 (Q7) plus the recovery-path guard of S2: an unsettled attempt always belongs to an abandoned slot,
-  // which refuses load() with SLOT_NOT_LOADABLE, so the former error code of that guard has no site.
-  assert.equal([...internal.matchAll(/Syna internal invariant: /g)].length, 5, 'the five unreachable sites are internal invariants (Q7)')
+  // Three from S7 (Q7) plus the recovery-path guard of S2: an unsettled attempt always belongs to an abandoned slot,
+  // which refuses load() with SLOT_NOT_LOADABLE, so the former error code of that guard has no site. The fourth S7 site
+  // ("exhausted setup attempts") went with 1.0.0-rc.4's sequence driver: the attempts are chained by reaction rather
+  // than by a `for` loop, so there is no loop end that the attempt count could fall out of.
+  assert.equal([...internal.matchAll(/Syna internal invariant: /g)].length, 4, 'the four unreachable sites are internal invariants (Q7)')
 })
