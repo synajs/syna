@@ -1,6 +1,6 @@
 {
   "name": "@syna/core",
-  "version": "1.0.0-rc.3",
+  "version": "1.0.0-rc.4",
   "description": "Scope-aware capability composition runtime for TypeScript",
   "repository": {
     "type": "git",
@@ -35,7 +35,7 @@
   "license": "MIT",
   "sideEffects": false,
   "devDependencies": {
-    "@syna/tsconfig": "1.0.0-rc.3",
+    "@syna/tsconfig": "1.0.0-rc.4",
     "@types/node": "^22.19.7",
     "@types/semver": "^7.8.0"
   },
