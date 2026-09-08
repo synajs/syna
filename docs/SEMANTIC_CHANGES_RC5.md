@@ -23,7 +23,7 @@
 所以 `enter()` 的保证不是 `loadTimeoutMs`，而是"`loadTimeoutMs` 之后再加一次有界关闭"，两段各由自己的
 上限约束。独立复核用受控时钟逐毫秒记录了这两个时刻（60 ms 期限、2000 ms 宽限 → abort 在 60，`enter()`
 在 2060；把宽限改成 40 → abort 仍在 60，`enter()` 在 100），本轮把同样的观测做成了测试
-（`rc4-deadline-clock.test.mjs`）。
+（`materialization/deadline-clock.test.mjs`）。
 
 `work/tasks/SYNA_RC4_EXECUTION_PROMPT.md` §3 的那句"eager activation：`enter()` 必须在期限内以
 `ENTRY_ACTIVATION_FAILED` 结算"按字面读要求公开 Promise 在 `loadTimeoutMs` 内结算，与同一份任务书要求的
@@ -63,16 +63,16 @@ guard 留在 `disposeEnv()` 的理由（窗口在那里：跑用户 abort 监听
 
 | 项 | rc.4 的缺口 | rc.5 的判据 |
 |---|---|---|
-| M1 重入观察者提前成功 | `rc4-close-invariants.test.mjs` 对内层观察者只 `await`、不断言；"cleanup 只跑一次"对两种实现都成立 | 八条重入路径 × {cleanup 失败 / 成功}：闸门放行**前**内外都未结算且 Env 未 `disposed`，放行后都被同一次关闭答复，且都含同一个底层 cleanup 失败一次 |
-| M2 期限四倍 | 40 ms 期限只要求 `35 ≤ elapsed < 400`，eager 只要求 `< 1000` | `rc4-deadline-clock.test.mjs`：受控时钟推进到期限前一毫秒（什么都没发生）与期限那一刻（等待已结束）；eager 分别验证内部期限、有界关闭的边界、公开 Promise 的结果与 cause。端到端墙钟检查保留在 `rc4-waiter-termination.test.mjs`，容差写明（5 ms 定时器提前量、250 ms 调度） |
+| M1 重入观察者提前成功 | `disposal/close-reentry.test.mjs` 对内层观察者只 `await`、不断言；"cleanup 只跑一次"对两种实现都成立 | 八条重入路径 × {cleanup 失败 / 成功}：闸门放行**前**内外都未结算且 Env 未 `disposed`，放行后都被同一次关闭答复，且都含同一个底层 cleanup 失败一次 |
+| M2 期限四倍 | 40 ms 期限只要求 `35 ≤ elapsed < 400`，eager 只要求 `< 1000` | `materialization/deadline-clock.test.mjs`：受控时钟推进到期限前一毫秒（什么都没发生）与期限那一刻（等待已结束）；eager 分别验证内部期限、有界关闭的边界、公开 Promise 的结果与 cause。端到端墙钟检查保留在 `materialization/waiter-termination.test.mjs`，容差写明（5 ms 定时器提前量、250 ms 调度） |
 | `onEvent` 重入 | 服务健康、cleanup 静默，回调实测进入 0 次，该用例什么也没断言 | 先制造真实的 `attempt-abandoned`，**先断言回调发生**，再断言它重入的那次关闭以同一个失败答复它 |
-| `rc4-retention` 的四条路径 | 标题说四条，实测两条 | 四条各一个 Service（挂起的 setup、Ready slot 的清理、失败 setup 的 rollback、关闭后才结算的 attempt），账本读作 `abandoned` / `abandoned` / `rolling-back` / `settling`；并写明固定 GC 轮数为什么够，以及为什么循环里不能调用 `deref()` |
-| `rc4-cleanup-phase` 的 `sleep` | 用睡眠假定阶段已到位 | 换成阶段闸门：attempt 已开始（`setup()` 跑了）、关闭已进入（停止信号到达 setup）、阶段已到达挂住的那一步、账本已清空。每个用例带独立 watchdog，不作任何断言 |
+| `disposal/retention` 的四条路径 | 标题说四条，实测两条 | 四条各一个 Service（挂起的 setup、Ready slot 的清理、失败 setup 的 rollback、关闭后才结算的 attempt），账本读作 `abandoned` / `abandoned` / `rolling-back` / `settling`；并写明固定 GC 轮数为什么够，以及为什么循环里不能调用 `deref()` |
+| `disposal/cleanup-phase` 的 `sleep` | 用睡眠假定阶段已到位 | 换成阶段闸门：attempt 已开始（`setup()` 跑了）、关闭已进入（停止信号到达 setup）、阶段已到达挂住的那一步、账本已清空。每个用例带独立 watchdog，不作任何断言 |
 | no-overlap 的活跃 waiter | 后续五个 `load()` 都带已 abort 的 signal，在触及共享 attempt 前就被拒绝 | 补一个真正在等的 waiter：它加入同一个 attempt、setup 数不变、在 rollback 仍未放行时按自己的期限离开 |
 | 应用的三处上界（A4） | `< 400` / `< 600` / `< 1000`，且没有下界 | 单调时钟上的上下界对（配置值 −5 ms，配置值 +250 ms），加上一条**改变判据**的新用例：同一场景在 60 ms 与 360 ms 两种配置下各跑一次，断言两次等待之差就是两个配置之差 |
 
 本轮新增的判据里，没有任何一条是 rc.4 §2.1 禁止的：没有要求同一错误在 `dispose()` 与诊断事件中合计恰好
-一次（`rc3-close-paths.test.mjs:141-173` 断言的合计 2 仍然成立），也没有用精确 timer 数量断言并发或串行。
+一次（`disposal/close-paths.test.mjs:141-173` 断言的合计 2 仍然成立），也没有用精确 timer 数量断言并发或串行。
 
 ## 3. 内部质量（无行为变化）
 

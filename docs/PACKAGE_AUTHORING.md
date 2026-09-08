@@ -103,7 +103,7 @@ B = define.service('b', {
 })
 ```
 
-Runtime method cycles are legal after setup. Setup-time waits are ordinary Promises: `load()` returns a plain Promise, only what you `await` blocks your setup, and an un-awaited `load()` is a background operation the Runtime neither waits for nor tracks (K07, `packages/core/tests/v05-promises.test.mjs`). Do not form a cycle of awaited setup loads: it cannot complete; each awaited `load()` inside it times out at its waiter's load timeout (`LOAD_TIMEOUT`, with the observed `load()` cycle named in the diagnostic) and the setups of the cycle fail on those rejections.
+Runtime method cycles are legal after setup. Setup-time waits are ordinary Promises: `load()` returns a plain Promise, only what you `await` blocks your setup, and an un-awaited `load()` is a background operation the Runtime neither waits for nor tracks (K07, `packages/core/tests/refs/refs-and-payloads.test.mjs`). Do not form a cycle of awaited setup loads: it cannot complete; each awaited `load()` inside it times out at its waiter's load timeout (`LOAD_TIMEOUT`, with the observed `load()` cycle named in the diagnostic) and the setups of the cycle fail on those rejections.
 
 ## Failure and cleanup
 

@@ -51,8 +51,8 @@ export const MUTANTS = [
       + 'only the re-entering observer is answered early, with success. A test kills this by '
       + 'asserting the inner observer\'s own outcome, not just that the cleanup ran once.',
     tests: [
-      'rc4-close-invariants.test.mjs',
-      'rc4-cleanup-phase.test.mjs',
+      'disposal/close-reentry.test.mjs',
+      'disposal/cleanup-phase.test.mjs',
     ],
   },
   {
@@ -70,8 +70,8 @@ export const MUTANTS = [
       + 'deadline fires — a controlled clock, or the phase the run has reached — rather than '
       + 'by an upper bound wide enough to hold both.',
     tests: [
-      'rc4-waiter-termination.test.mjs',
-      'rc4-deadline-clock.test.mjs',
+      'materialization/waiter-termination.test.mjs',
+      'materialization/deadline-clock.test.mjs',
     ],
   },
 ]

@@ -150,8 +150,8 @@ test('no 0.5 name survives in the applications, benchmarks, scripts, workflow an
   // The exemptions are the expired-form tests, the codemod and its fixture test, nothing else (0.8: the 0.5
   // stored-document compatibility of the core and of the reference application is gone, and with it every file that carried it).
   assert.deepEqual(exempt, [
-    'packages/core/tests/v07-expired-forms.test.mjs',
-    'packages/core/tests/v08-expired-forms.test.mjs',
+    'packages/core/tests/inventory/expired-forms-0.7.test.mjs',
+    'packages/core/tests/inventory/expired-forms-0.8.test.mjs',
     'packages/core/type-tests/api.ts',
     'scripts/codemod-v08.mjs',
     'scripts/tests/codemod-v08.test.mjs',

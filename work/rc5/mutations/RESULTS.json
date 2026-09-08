@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-09-08T16:48:05.416Z",
+  "generatedAt": "2026-09-08T17:19:27.663Z",
   "node": "v26.0.0",
-  "commit": "907b708492f10ff9a400e6db126df755688a35fa",
+  "commit": "be0ba792e27fe0bd157b55e6e2b10685b9991140",
   "status": "ALL_KILLED",
   "inputs": {
     "packages/core/src/runtime.ts": "7a9514d2200c016c625f3d7e6259734a156672359dd4d4760b8024215da52c25",
-    "packages/core/tests/rc4-close-invariants.test.mjs": "bdb52e4931145e4efdd5680a6ca517fae5f3f042b56f3181dd2cce813ee061b9",
-    "packages/core/tests/rc4-cleanup-phase.test.mjs": "dcb718ac5b0bb172402ecc31de87cd5ceb5e18fe1adb717cc867206740cc3cb2",
-    "packages/core/src/internal/materializer.ts": "4a3dc71c2e431e0127581208c182b8136200c8277094cbf7c483babb22a33269",
-    "packages/core/tests/rc4-waiter-termination.test.mjs": "a988e91d92fae0b2827ccd48f9cd81d58fa87dea5678b3381498cae0f90032d1",
-    "packages/core/tests/rc4-deadline-clock.test.mjs": "5dce0b6835caea5dc5b45fa339694c07cd49bcd1e5d6a210aa8330889b22fbab"
+    "packages/core/tests/disposal/close-reentry.test.mjs": "2d8c0a00bb8ae5558aa2357bebe89e99a3677e0b9f4b43590e51294a985f0335",
+    "packages/core/tests/disposal/cleanup-phase.test.mjs": "994c60cddce74c31953e1f09a0df8862b92abfabc512f914c28d3863a44a3f8a",
+    "packages/core/src/internal/materializer.ts": "690090edabab6c32afc64b33b732a1e455a8600b506c717ce46204dc3e9b93d5",
+    "packages/core/tests/materialization/waiter-termination.test.mjs": "ca35f5eb91cfdfb8141b5846ad4ecd47a2147c9b017bf5f7705d59a6c82780c9",
+    "packages/core/tests/materialization/deadline-clock.test.mjs": "d7d37b79816e8f2cd16bcb86447b79461a5eb0bd2ad55fe0acfeb3476eea0e61"
   },
   "results": [
     {
@@ -22,8 +22,8 @@
       "patch": "work/rc5/mutations/join-premature.patch",
       "log": "work/rc5/mutations/join-premature.log",
       "tests": [
-        "rc4-close-invariants.test.mjs",
-        "rc4-cleanup-phase.test.mjs"
+        "disposal/close-reentry.test.mjs",
+        "disposal/cleanup-phase.test.mjs"
       ],
       "exit": 1,
       "counts": {
@@ -55,13 +55,13 @@
       "name": "deadline-4x",
       "title": "every waiter deadline is armed for four times its configured timeout",
       "explanation": "A waiter is armed at four times its `loadTimeoutMs`; the error it eventually reports still names the configured value. A test kills this only by observing when the deadline fires — a controlled clock, or the phase the run has reached — rather than by an upper bound wide enough to hold both.",
-      "compiledFile": "packages/core/dist/internal/materializer.js",
+      "compiledFile": "packages/core/dist/internal/deadline-queue.js",
       "source": "packages/core/src/internal/materializer.ts",
       "patch": "work/rc5/mutations/deadline-4x.patch",
       "log": "work/rc5/mutations/deadline-4x.log",
       "tests": [
-        "rc4-waiter-termination.test.mjs",
-        "rc4-deadline-clock.test.mjs"
+        "materialization/waiter-termination.test.mjs",
+        "materialization/deadline-clock.test.mjs"
       ],
       "exit": 1,
       "counts": {

@@ -469,8 +469,11 @@ async function developmentGate() {
   }
 }
 
-function glob(dir, suffix) {
-  return readdirSync(path.join(root, dir)).filter(file => file.endsWith(suffix)).sort().map(file => path.join(dir, file))
+/** Every matching file under `dir`, recursively: the core suites are grouped by behaviour domain (packages/core/tests/README.md). */
+function glob(dir, suffix, base = root) {
+  const walk = (current) => readdirSync(path.join(base, current), { withFileTypes: true }).flatMap(entry =>
+    entry.isDirectory() ? walk(path.join(current, entry.name)) : entry.name.endsWith(suffix) ? [path.join(current, entry.name)] : [])
+  return walk(dir).sort()
 }
 
 async function releaseGate(sourceFingerprint) {
@@ -517,7 +520,7 @@ async function releaseGate(sourceFingerprint) {
   await run('rebuild-install', 'npm', ['ci', '--no-fund', '--no-audit'], rebuildLogs)
   await run('rebuild-build', 'npm', ['run', 'build'], rebuildLogs)
   await run('rebuild-type-tests', 'npm', ['run', 'type-tests'], rebuildLogs)
-  await run('rebuild-core-tests', 'node', ['--test', '--test-reporter=tap', ...readdirSync(path.join(unpacked, 'packages/core/tests')).filter(f => f.endsWith('.test.mjs')).sort().map(f => `packages/core/tests/${f}`)], { ...rebuildLogs, noSkip: true })
+  await run('rebuild-core-tests', 'node', ['--test', '--test-reporter=tap', ...glob('packages/core/tests', '.test.mjs', unpacked)], { ...rebuildLogs, noSkip: true })
   await run('rebuild-app-tests', 'node', ['--test', '--test-reporter=tap', '--expose-gc', 'apps/multitenant-blog/tests/filesystem.test.mjs', 'apps/multitenant-blog/tests/render.test.mjs', 'apps/multitenant-blog/tests/tenants-auth.test.mjs', 'apps/multitenant-blog/tests/preflight.test.mjs', 'apps/multitenant-blog/tests/audit-app.test.mjs', 'apps/multitenant-blog/tests/review-app.test.mjs', 'apps/multitenant-blog/tests/rc3-close-paths.test.mjs', 'apps/multitenant-blog/tests/rc4-acquire-deadline.test.mjs', 'apps/multitenant-blog/tests/site-manager.test.mjs'], { ...rebuildLogs, noSkip: true })
   await run('rebuild-postgres-matrix-tests', 'node', ['scripts/pg-test-cluster.mjs', 'with', '--', 'node', '--test', '--test-reporter=tap', 'apps/multitenant-blog/tests/postgres.test.mjs', 'apps/multitenant-blog/tests/matrix.test.mjs'], { ...rebuildLogs, noSkip: true, env: { SYNA_PG_CLUSTER_DIR: path.join(rebuildDir, 'pg') } })
   // Inside the archive the gate self-tests also re-run the deprecation list, the no-old-names scan, the README example, the codemod fixture and the `any` budget.

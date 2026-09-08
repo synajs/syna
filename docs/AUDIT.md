@@ -16,7 +16,7 @@ Paths under `work/v05/` cited in this document (the ISSUES/DECISIONS/STATE ledge
 
 ## Findings and their resolution
 
-Severity is the reviewer's. Status is after the fixes in this workspace. Regression tests: `packages/core/tests/v05-audit-lifecycle.test.mjs` (lifecycle, 14 tests), `packages/core/tests/v05-audit-planning.test.mjs` (planning, 4 tests), `apps/hyla-mini/tests/audit-app.test.mjs` (application, 12 tests) and two new repository-conformance cases run against both backends. Issue numbers refer to `work/v05/ISSUES.md`.
+Severity is the reviewer's. Status is after the fixes in this workspace. Regression tests: `packages/core/tests/disposal/bounded-close.test.mjs` (lifecycle, 14 tests), `packages/core/tests/planning/explain-missing-inputs.test.mjs` (planning, 4 tests), `apps/hyla-mini/tests/audit-app.test.mjs` (application, 12 tests) and two new repository-conformance cases run against both backends. Issue numbers refer to `work/v05/ISSUES.md`.
 
 ### Promise / lifecycle
 
@@ -83,7 +83,7 @@ Severity is the reviewer's. Status is after the fixes in this workspace. Regress
 
 ## Second review round (2026-09-05)
 
-After the audit fixes above, four items were reported by different reviewers. Each was reproduced with a probe against the fixed build, then either fixed with a regression test (`packages/core/tests/v05-review-lifecycle.test.mjs`, 6 tests; `apps/hyla-mini/tests/review-app.test.mjs`, 6 tests) or shown to be inherent to the semantic model and made explicit in the reports. Issue numbers I-50…I-57 in `work/v05/ISSUES.md`; decisions D31…D34.
+After the audit fixes above, four items were reported by different reviewers. Each was reproduced with a probe against the fixed build, then either fixed with a regression test (`packages/core/tests/materialization/retry-and-late-results.test.mjs`, 6 tests; `apps/hyla-mini/tests/review-app.test.mjs`, 6 tests) or shown to be inherent to the semantic model and made explicit in the reports. Issue numbers I-50…I-57 in `work/v05/ISSUES.md`; decisions D31…D34.
 
 | item | finding | status | fix | regression |
 |---|---|---|---|---|

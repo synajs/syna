@@ -1,6 +1,6 @@
---- a/dist/internal/materializer.js
-+++ b/dist/internal/materializer.js
-@@ -597,7 +597,8 @@
+--- a/dist/internal/deadline-queue.js
++++ b/dist/internal/deadline-queue.js
+@@ -190,7 +190,8 @@
          }
          waiter.attempt = attempt;
          waiter.deadlineMs = deadlineMs;
