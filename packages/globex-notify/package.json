@@ -30,7 +30,7 @@
     "build": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@syna/core": "1.0.0-rc.4",
+    "@syna/core": "1.0.0-rc.5",
     "@syna-demo/notify-contract": "1.0.0",
     "@syna-demo/tenant-store": "1.2.0",
     "@syna-demo/logger": "1.1.0"
@@ -39,6 +39,6 @@
     "node": ">=22"
   },
   "devDependencies": {
-    "@syna/tsconfig": "1.0.0-rc.4"
+    "@syna/tsconfig": "1.0.0-rc.5"
   }
 }

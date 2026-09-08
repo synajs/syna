@@ -1,0 +1,222 @@
+{
+  "version": "0.6.0",
+  "status": "COMPLETE",
+  "gate": "scripts/verify-v06.mjs",
+  "ranAt": "2026-09-06T08:53:30.566Z",
+  "commit": "f019402cbef2df874bdfdebbd38aae64be400ea9",
+  "node": "v26.0.0",
+  "recordedFrom": "validation/v0.6-release/manifest.json",
+  "note": "The steps 0.6.0 actually ran, as its own release manifest recorded them. A record, not a script: to reproduce that release, check out the commit above and run these commands in order.",
+  "steps": [
+    {
+      "name": "clean",
+      "command": "npm run clean",
+      "mustRun": true
+    },
+    {
+      "name": "build",
+      "command": "npm run build",
+      "mustRun": true
+    },
+    {
+      "name": "type-tests",
+      "command": "npm run type-tests",
+      "mustRun": true
+    },
+    {
+      "name": "core-tests",
+      "command": "node --test --test-reporter=tap packages/core/tests/contracts.test.mjs packages/core/tests/core.test.mjs packages/core/tests/hardening.test.mjs packages/core/tests/lifecycle.test.mjs packages/core/tests/reference-planner.test.mjs packages/core/tests/semver.test.mjs packages/core/tests/v04-adversarial.test.mjs packages/core/tests/v04-corrections.test.mjs packages/core/tests/v04-finalization.test.mjs packages/core/tests/v04-regressions.test.mjs packages/core/tests/v05-attempts.test.mjs packages/core/tests/v05-audit-lifecycle.test.mjs packages/core/tests/v05-audit-planning.test.mjs packages/core/tests/v05-audit3-lifecycle-planning.test.mjs packages/core/tests/v05-cache-cleanup.test.mjs packages/core/tests/v05-definitions.test.mjs packages/core/tests/v05-explain.test.mjs packages/core/tests/v05-planner.test.mjs packages/core/tests/v05-promises.test.mjs packages/core/tests/v05-realms-override.test.mjs packages/core/tests/v05-review-lifecycle.test.mjs packages/core/tests/v06-m1-limits.test.mjs packages/core/tests/v06-r1-reuse.test.mjs packages/core/tests/v06-r2-anchor.test.mjs packages/core/tests/v06-r3-runtime.test.mjs packages/core/tests/v06-r4-service-ref.test.mjs packages/core/tests/v06-r5-implementation-ref.test.mjs packages/core/tests/v06-r6-dependency-site.test.mjs packages/core/tests/v06-snapshots.test.mjs packages/core/tests/v06-t1-errors.test.mjs",
+      "mustRun": true
+    },
+    {
+      "name": "hyla-filesystem-tests",
+      "command": "node --test --test-reporter=tap apps/hyla-mini/tests/filesystem.test.mjs",
+      "mustRun": true
+    },
+    {
+      "name": "hyla-render-tests",
+      "command": "node --test --test-reporter=tap apps/hyla-mini/tests/render.test.mjs",
+      "mustRun": true
+    },
+    {
+      "name": "hyla-v06-compat-tests",
+      "command": "node --test --test-reporter=tap apps/hyla-mini/tests/v06-compat.test.mjs",
+      "mustRun": true
+    },
+    {
+      "name": "hyla-tenants-auth-preflight-tests",
+      "command": "node --test --test-reporter=tap apps/hyla-mini/tests/tenants-auth.test.mjs apps/hyla-mini/tests/preflight.test.mjs",
+      "mustRun": true
+    },
+    {
+      "name": "hyla-audit-regression-tests",
+      "command": "node --test --test-reporter=tap apps/hyla-mini/tests/audit-app.test.mjs",
+      "mustRun": true
+    },
+    {
+      "name": "hyla-review-regression-tests",
+      "command": "node --test --test-reporter=tap apps/hyla-mini/tests/review-app.test.mjs",
+      "mustRun": true
+    },
+    {
+      "name": "hyla-site-manager-working-set-tests",
+      "command": "node --test --test-reporter=tap --expose-gc apps/hyla-mini/tests/site-manager.test.mjs",
+      "mustRun": true
+    },
+    {
+      "name": "hyla-postgres-and-matrix-tests",
+      "command": "node scripts/pg-test-cluster.mjs with -- node --test --test-reporter=tap apps/hyla-mini/tests/postgres.test.mjs apps/hyla-mini/tests/matrix.test.mjs",
+      "mustRun": true
+    },
+    {
+      "name": "gate-self-tests",
+      "command": "node --test --test-reporter=tap scripts/tests/any-count.test.mjs scripts/tests/api-inventory.test.mjs scripts/tests/deprecations.test.mjs scripts/tests/no-old-names.test.mjs scripts/tests/pg-test-cluster.test.mjs scripts/tests/readme-example.test.mjs scripts/tests/step-runner.test.mjs",
+      "mustRun": true
+    },
+    {
+      "name": "api-inventory",
+      "command": "node scripts/api-inventory.mjs --out <root>/validation/v0.6-release/api-inventory.md --json <root>/validation/v0.6-release/api-inventory.json",
+      "mustRun": true
+    },
+    {
+      "name": "api-inventory-diff",
+      "command": "node scripts/api-inventory.mjs --diff work/v06/API_INVENTORY_BEFORE.json <root>/validation/v0.6-release/api-inventory.json --out <root>/validation/v0.6-release/api-inventory-diff.md",
+      "mustRun": true
+    },
+    {
+      "name": "any-count",
+      "command": "node scripts/any-count.mjs --check scripts/any-baseline-v0.5.0.json",
+      "mustRun": true
+    },
+    {
+      "name": "demos",
+      "command": "npm run demo",
+      "mustRun": true
+    },
+    {
+      "name": "hyla-demo-filesystem",
+      "command": "node apps/hyla-mini/bin/hyla-mini.mjs demo --root <root>/work/demo-content",
+      "mustRun": true
+    },
+    {
+      "name": "benchmarks",
+      "command": "node --expose-gc benchmarks/v0.5-planning.mjs <root>/validation/v0.6-release/benchmark-v0.5.json",
+      "mustRun": true
+    },
+    {
+      "name": "benchmark-compare",
+      "command": "node scripts/benchmark-same-session.mjs --commit 4a67b99 --runs 21 --out-dir <root>/validation/v0.6-release/benchmark-compare",
+      "mustRun": true
+    },
+    {
+      "name": "hyla-request-latency",
+      "command": "node scripts/pg-test-cluster.mjs with -- node benchmarks/hyla-request-latency.mjs <root>/validation/v0.6-release/hyla-request-latency.json",
+      "mustRun": true
+    },
+    {
+      "name": "archive-scan",
+      "command": "internal",
+      "mustRun": true
+    },
+    {
+      "name": "archive-tar",
+      "command": "tar -czf <root>/work/release/syna-v0.6.0-source.tar.gz -C <root>/work/release syna-v0.6.0-source",
+      "mustRun": true
+    },
+    {
+      "name": "archive-zip",
+      "command": "zip -qr <root>/work/release/syna-v0.6.0-source.zip syna-v0.6.0-source",
+      "cwd": "work/release",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-unpack",
+      "command": "tar -xzf <root>/work/release/syna-v0.6.0-source.tar.gz -C /var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-v06-rebuild-AGq5JJ",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-install",
+      "command": "npm ci --no-fund --no-audit",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-v06-rebuild-AGq5JJ/syna-v0.6.0-source",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-build",
+      "command": "npm run build",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-v06-rebuild-AGq5JJ/syna-v0.6.0-source",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-type-tests",
+      "command": "npm run type-tests",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-v06-rebuild-AGq5JJ/syna-v0.6.0-source",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-core-tests",
+      "command": "node --test --test-reporter=tap packages/core/tests/contracts.test.mjs packages/core/tests/core.test.mjs packages/core/tests/hardening.test.mjs packages/core/tests/lifecycle.test.mjs packages/core/tests/reference-planner.test.mjs packages/core/tests/semver.test.mjs packages/core/tests/v04-adversarial.test.mjs packages/core/tests/v04-corrections.test.mjs packages/core/tests/v04-finalization.test.mjs packages/core/tests/v04-regressions.test.mjs packages/core/tests/v05-attempts.test.mjs packages/core/tests/v05-audit-lifecycle.test.mjs packages/core/tests/v05-audit-planning.test.mjs packages/core/tests/v05-audit3-lifecycle-planning.test.mjs packages/core/tests/v05-cache-cleanup.test.mjs packages/core/tests/v05-definitions.test.mjs packages/core/tests/v05-explain.test.mjs packages/core/tests/v05-planner.test.mjs packages/core/tests/v05-promises.test.mjs packages/core/tests/v05-realms-override.test.mjs packages/core/tests/v05-review-lifecycle.test.mjs packages/core/tests/v06-m1-limits.test.mjs packages/core/tests/v06-r1-reuse.test.mjs packages/core/tests/v06-r2-anchor.test.mjs packages/core/tests/v06-r3-runtime.test.mjs packages/core/tests/v06-r4-service-ref.test.mjs packages/core/tests/v06-r5-implementation-ref.test.mjs packages/core/tests/v06-r6-dependency-site.test.mjs packages/core/tests/v06-snapshots.test.mjs packages/core/tests/v06-t1-errors.test.mjs",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-v06-rebuild-AGq5JJ/syna-v0.6.0-source",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-app-tests",
+      "command": "node --test --test-reporter=tap --expose-gc apps/hyla-mini/tests/filesystem.test.mjs apps/hyla-mini/tests/render.test.mjs apps/hyla-mini/tests/v06-compat.test.mjs apps/hyla-mini/tests/tenants-auth.test.mjs apps/hyla-mini/tests/preflight.test.mjs apps/hyla-mini/tests/audit-app.test.mjs apps/hyla-mini/tests/review-app.test.mjs apps/hyla-mini/tests/site-manager.test.mjs",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-v06-rebuild-AGq5JJ/syna-v0.6.0-source",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-postgres-matrix-tests",
+      "command": "node scripts/pg-test-cluster.mjs with -- node --test --test-reporter=tap apps/hyla-mini/tests/postgres.test.mjs apps/hyla-mini/tests/matrix.test.mjs",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-v06-rebuild-AGq5JJ/syna-v0.6.0-source",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-gate-self-tests",
+      "command": "node --test --test-reporter=tap scripts/tests/any-count.test.mjs scripts/tests/api-inventory.test.mjs scripts/tests/deprecations.test.mjs scripts/tests/no-old-names.test.mjs scripts/tests/pg-test-cluster.test.mjs scripts/tests/readme-example.test.mjs scripts/tests/step-runner.test.mjs",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-v06-rebuild-AGq5JJ/syna-v0.6.0-source",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-demo",
+      "command": "node apps/hyla-mini/bin/hyla-mini.mjs demo --root /var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-v06-rebuild-AGq5JJ/demo-content",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-v06-rebuild-AGq5JJ/syna-v0.6.0-source",
+      "mustRun": true
+    },
+    {
+      "name": "pack-core",
+      "command": "npm pack --pack-destination <root>/work/release/pack /var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-v06-rebuild-AGq5JJ/syna-v0.6.0-source/packages/core",
+      "cwd": "work/release/pack",
+      "mustRun": true
+    },
+    {
+      "name": "pack-tsconfig",
+      "command": "npm pack --pack-destination <root>/work/release/pack /var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-v06-rebuild-AGq5JJ/syna-v0.6.0-source/packages/tsconfig",
+      "cwd": "work/release/pack",
+      "mustRun": true
+    },
+    {
+      "name": "consumer-install",
+      "command": "npm install --no-fund --no-audit",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-v06-rebuild-AGq5JJ/consumer",
+      "mustRun": true
+    },
+    {
+      "name": "consumer-build",
+      "command": "npm run build",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-v06-rebuild-AGq5JJ/consumer",
+      "mustRun": true
+    },
+    {
+      "name": "consumer-run",
+      "command": "npm run -s start",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-v06-rebuild-AGq5JJ/consumer",
+      "mustRun": true
+    },
+    {
+      "name": "consumer-smoke-result",
+      "command": "internal",
+      "mustRun": true
+    }
+  ],
+  "fingerprint": "c7a83b6adec8b45eee5c7b709cd67f2c05397f62602d41373a47837f1db9fa2c"
+}

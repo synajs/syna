@@ -1,0 +1,289 @@
+{
+  "version": "1.0.0-rc.2",
+  "status": "COMPLETE",
+  "gate": "scripts/verify-release.mjs",
+  "ranAt": "2026-09-07T07:43:16.968Z",
+  "commit": "46b344f896244065935b9ccd029417dc264c4958",
+  "node": "v26.0.0",
+  "recordedFrom": "validation/v1.0.0-rc.2-release/manifest.json",
+  "note": "The steps 1.0.0-rc.2 actually ran, as its own release manifest recorded them. A record, not a script: to reproduce that release, check out the commit above and run these commands in order.",
+  "steps": [
+    {
+      "name": "clean",
+      "command": "npm run clean",
+      "mustRun": true
+    },
+    {
+      "name": "build",
+      "command": "npm run build",
+      "mustRun": true
+    },
+    {
+      "name": "type-tests",
+      "command": "npm run type-tests",
+      "mustRun": true
+    },
+    {
+      "name": "core-tests",
+      "command": "node --test --test-reporter=tap packages/core/tests/contracts.test.mjs packages/core/tests/core.test.mjs packages/core/tests/hardening.test.mjs packages/core/tests/lifecycle.test.mjs packages/core/tests/reference-planner.test.mjs packages/core/tests/semver.test.mjs packages/core/tests/v04-adversarial.test.mjs packages/core/tests/v04-corrections.test.mjs packages/core/tests/v04-finalization.test.mjs packages/core/tests/v04-regressions.test.mjs packages/core/tests/v05-attempts.test.mjs packages/core/tests/v05-audit-lifecycle.test.mjs packages/core/tests/v05-audit-planning.test.mjs packages/core/tests/v05-audit3-lifecycle-planning.test.mjs packages/core/tests/v05-cache-cleanup.test.mjs packages/core/tests/v05-definitions.test.mjs packages/core/tests/v05-explain.test.mjs packages/core/tests/v05-planner.test.mjs packages/core/tests/v05-promises.test.mjs packages/core/tests/v05-realms-override.test.mjs packages/core/tests/v05-review-lifecycle.test.mjs packages/core/tests/v06-snapshots.test.mjs packages/core/tests/v06-t1-errors.test.mjs packages/core/tests/v07-expired-forms.test.mjs packages/core/tests/v07-s1-waiter-deadline.test.mjs packages/core/tests/v07-s10-as-syna-error.test.mjs packages/core/tests/v07-s2-state-and-ledger.test.mjs packages/core/tests/v07-s6-reuse-errors.test.mjs packages/core/tests/v07-s7-env-state.test.mjs packages/core/tests/v07-s7-invalid-descriptor.test.mjs packages/core/tests/v07-s8-missing-implementation.test.mjs packages/core/tests/v08-deadline-queue.test.mjs packages/core/tests/v08-expired-forms.test.mjs packages/core/tests/v08-implementation-ref.test.mjs packages/core/tests/v08-slot-state.test.mjs",
+      "mustRun": true
+    },
+    {
+      "name": "blog-filesystem-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/filesystem.test.mjs",
+      "mustRun": true
+    },
+    {
+      "name": "blog-render-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/render.test.mjs",
+      "mustRun": true
+    },
+    {
+      "name": "blog-tenants-auth-preflight-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/tenants-auth.test.mjs apps/multitenant-blog/tests/preflight.test.mjs",
+      "mustRun": true
+    },
+    {
+      "name": "blog-audit-regression-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/audit-app.test.mjs",
+      "mustRun": true
+    },
+    {
+      "name": "blog-review-regression-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/review-app.test.mjs",
+      "mustRun": true
+    },
+    {
+      "name": "blog-site-manager-working-set-tests",
+      "command": "node --test --test-reporter=tap --expose-gc apps/multitenant-blog/tests/site-manager.test.mjs",
+      "mustRun": true
+    },
+    {
+      "name": "blog-postgres-and-matrix-tests",
+      "command": "node scripts/pg-test-cluster.mjs with -- node --test --test-reporter=tap apps/multitenant-blog/tests/postgres.test.mjs apps/multitenant-blog/tests/matrix.test.mjs",
+      "mustRun": true
+    },
+    {
+      "name": "gate-self-tests",
+      "command": "node --test --test-reporter=tap scripts/tests/any-count.test.mjs scripts/tests/api-inventory-diff.test.mjs scripts/tests/api-inventory.test.mjs scripts/tests/codemod-v08.test.mjs scripts/tests/deprecations.test.mjs scripts/tests/no-old-names.test.mjs scripts/tests/no-vendor-names.test.mjs scripts/tests/pg-test-cluster.test.mjs scripts/tests/readme-example.test.mjs scripts/tests/step-runner.test.mjs",
+      "mustRun": true
+    },
+    {
+      "name": "api-inventory",
+      "command": "node scripts/api-inventory.mjs --out <root>/validation/v1.0.0-rc.2-release/api-inventory.md --json <root>/validation/v1.0.0-rc.2-release/api-inventory.json",
+      "mustRun": true
+    },
+    {
+      "name": "api-inventory-no-deprecated",
+      "command": "internal",
+      "mustRun": true
+    },
+    {
+      "name": "api-inventory-diff",
+      "command": "node scripts/api-inventory.mjs --diff validation/v1.0.0-rc.1-release/api-inventory.json <root>/validation/v1.0.0-rc.2-release/api-inventory.json --out <root>/validation/v1.0.0-rc.2-release/api-inventory-diff.md",
+      "mustRun": true
+    },
+    {
+      "name": "api-inventory-unchanged",
+      "command": "internal",
+      "mustRun": true
+    },
+    {
+      "name": "api-inventory-frozen",
+      "command": "internal",
+      "mustRun": true
+    },
+    {
+      "name": "codemod-idempotent",
+      "command": "node scripts/codemod-v08.mjs --dry-run --json <root>/validation/v1.0.0-rc.2-release/codemod-idempotent.json",
+      "mustRun": true
+    },
+    {
+      "name": "no-old-reference-tokens",
+      "command": "internal",
+      "mustRun": true
+    },
+    {
+      "name": "no-vendor-names",
+      "command": "internal",
+      "mustRun": true
+    },
+    {
+      "name": "any-count",
+      "command": "node scripts/any-count.mjs --check scripts/any-baseline-v1.0.0-rc.2.json",
+      "mustRun": true
+    },
+    {
+      "name": "demo-01-basics",
+      "command": "node apps/01-basics/dist/index.js",
+      "mustRun": true
+    },
+    {
+      "name": "demo-02-per-tenant",
+      "command": "node apps/02-per-tenant/dist/index.js",
+      "mustRun": true
+    },
+    {
+      "name": "demo-03-user-configurable",
+      "command": "node apps/03-user-configurable/dist/index.js",
+      "mustRun": true
+    },
+    {
+      "name": "demo-04-two-versions",
+      "command": "node apps/04-two-versions/dist/index.js",
+      "mustRun": true
+    },
+    {
+      "name": "demo-05-scheduled-jobs",
+      "command": "node apps/05-scheduled-jobs/dist/index.js",
+      "mustRun": true
+    },
+    {
+      "name": "demo-06-testing",
+      "command": "node apps/06-testing/dist/index.js",
+      "mustRun": true
+    },
+    {
+      "name": "demo-07-failure-modes",
+      "command": "node apps/07-failure-modes/dist/index.js",
+      "mustRun": true
+    },
+    {
+      "name": "blog-demo-filesystem",
+      "command": "node apps/multitenant-blog/bin/multitenant-blog.mjs demo --root <root>/work/demo-content",
+      "mustRun": true
+    },
+    {
+      "name": "benchmarks",
+      "command": "node --expose-gc benchmarks/v0.5-planning.mjs <root>/validation/v1.0.0-rc.2-release/benchmark-v0.5.json",
+      "mustRun": true
+    },
+    {
+      "name": "benchmark-compare",
+      "command": "node scripts/benchmark-same-session.mjs --commit 4a5a978 --baseline-label 1.0.0-rc.1 --record benchmarks/results-v1.0.0-rc.1-baseline-same-machine.json --runs 21 --out-dir <root>/validation/v1.0.0-rc.2-release/benchmark-compare",
+      "mustRun": true
+    },
+    {
+      "name": "blog-request-latency",
+      "command": "node scripts/pg-test-cluster.mjs with -- node benchmarks/blog-request-latency.mjs <root>/validation/v1.0.0-rc.2-release/blog-request-latency.json",
+      "mustRun": true
+    },
+    {
+      "name": "archive-scan",
+      "command": "internal",
+      "mustRun": true
+    },
+    {
+      "name": "archive-tar",
+      "command": "tar -czf <root>/work/release/syna-v1.0.0-rc.2-source.tar.gz -C <root>/work/release syna-v1.0.0-rc.2-source",
+      "mustRun": true
+    },
+    {
+      "name": "archive-zip",
+      "command": "zip -qr <root>/work/release/syna-v1.0.0-rc.2-source.zip syna-v1.0.0-rc.2-source",
+      "cwd": "work/release",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-unpack",
+      "command": "tar -xzf <root>/work/release/syna-v1.0.0-rc.2-source.tar.gz -C /var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-JPvMf8",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-install",
+      "command": "npm ci --no-fund --no-audit",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-JPvMf8/syna-v1.0.0-rc.2-source",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-build",
+      "command": "npm run build",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-JPvMf8/syna-v1.0.0-rc.2-source",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-type-tests",
+      "command": "npm run type-tests",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-JPvMf8/syna-v1.0.0-rc.2-source",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-core-tests",
+      "command": "node --test --test-reporter=tap packages/core/tests/contracts.test.mjs packages/core/tests/core.test.mjs packages/core/tests/hardening.test.mjs packages/core/tests/lifecycle.test.mjs packages/core/tests/reference-planner.test.mjs packages/core/tests/semver.test.mjs packages/core/tests/v04-adversarial.test.mjs packages/core/tests/v04-corrections.test.mjs packages/core/tests/v04-finalization.test.mjs packages/core/tests/v04-regressions.test.mjs packages/core/tests/v05-attempts.test.mjs packages/core/tests/v05-audit-lifecycle.test.mjs packages/core/tests/v05-audit-planning.test.mjs packages/core/tests/v05-audit3-lifecycle-planning.test.mjs packages/core/tests/v05-cache-cleanup.test.mjs packages/core/tests/v05-definitions.test.mjs packages/core/tests/v05-explain.test.mjs packages/core/tests/v05-planner.test.mjs packages/core/tests/v05-promises.test.mjs packages/core/tests/v05-realms-override.test.mjs packages/core/tests/v05-review-lifecycle.test.mjs packages/core/tests/v06-snapshots.test.mjs packages/core/tests/v06-t1-errors.test.mjs packages/core/tests/v07-expired-forms.test.mjs packages/core/tests/v07-s1-waiter-deadline.test.mjs packages/core/tests/v07-s10-as-syna-error.test.mjs packages/core/tests/v07-s2-state-and-ledger.test.mjs packages/core/tests/v07-s6-reuse-errors.test.mjs packages/core/tests/v07-s7-env-state.test.mjs packages/core/tests/v07-s7-invalid-descriptor.test.mjs packages/core/tests/v07-s8-missing-implementation.test.mjs packages/core/tests/v08-deadline-queue.test.mjs packages/core/tests/v08-expired-forms.test.mjs packages/core/tests/v08-implementation-ref.test.mjs packages/core/tests/v08-slot-state.test.mjs",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-JPvMf8/syna-v1.0.0-rc.2-source",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-app-tests",
+      "command": "node --test --test-reporter=tap --expose-gc apps/multitenant-blog/tests/filesystem.test.mjs apps/multitenant-blog/tests/render.test.mjs apps/multitenant-blog/tests/tenants-auth.test.mjs apps/multitenant-blog/tests/preflight.test.mjs apps/multitenant-blog/tests/audit-app.test.mjs apps/multitenant-blog/tests/review-app.test.mjs apps/multitenant-blog/tests/site-manager.test.mjs",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-JPvMf8/syna-v1.0.0-rc.2-source",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-postgres-matrix-tests",
+      "command": "node scripts/pg-test-cluster.mjs with -- node --test --test-reporter=tap apps/multitenant-blog/tests/postgres.test.mjs apps/multitenant-blog/tests/matrix.test.mjs",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-JPvMf8/syna-v1.0.0-rc.2-source",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-gate-self-tests",
+      "command": "node --test --test-reporter=tap scripts/tests/any-count.test.mjs scripts/tests/api-inventory-diff.test.mjs scripts/tests/api-inventory.test.mjs scripts/tests/codemod-v08.test.mjs scripts/tests/deprecations.test.mjs scripts/tests/no-old-names.test.mjs scripts/tests/no-vendor-names.test.mjs scripts/tests/pg-test-cluster.test.mjs scripts/tests/readme-example.test.mjs scripts/tests/step-runner.test.mjs",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-JPvMf8/syna-v1.0.0-rc.2-source",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-codemod-idempotent",
+      "command": "node scripts/codemod-v08.mjs --dry-run",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-JPvMf8/syna-v1.0.0-rc.2-source",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-demo",
+      "command": "node apps/multitenant-blog/bin/multitenant-blog.mjs demo --root /var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-JPvMf8/demo-content",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-JPvMf8/syna-v1.0.0-rc.2-source",
+      "mustRun": true
+    },
+    {
+      "name": "rebuild-examples",
+      "command": "npm run demo",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-JPvMf8/syna-v1.0.0-rc.2-source",
+      "mustRun": true
+    },
+    {
+      "name": "pack-core",
+      "command": "npm pack --pack-destination <root>/work/release/pack /var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-JPvMf8/syna-v1.0.0-rc.2-source/packages/core",
+      "cwd": "work/release/pack",
+      "mustRun": true
+    },
+    {
+      "name": "pack-tsconfig",
+      "command": "npm pack --pack-destination <root>/work/release/pack /var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-JPvMf8/syna-v1.0.0-rc.2-source/packages/tsconfig",
+      "cwd": "work/release/pack",
+      "mustRun": true
+    },
+    {
+      "name": "consumer-install",
+      "command": "npm install --no-fund --no-audit",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-JPvMf8/consumer",
+      "mustRun": true
+    },
+    {
+      "name": "consumer-build",
+      "command": "npm run build",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-JPvMf8/consumer",
+      "mustRun": true
+    },
+    {
+      "name": "consumer-run",
+      "command": "npm run -s start",
+      "cwd": "../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-JPvMf8/consumer",
+      "mustRun": true
+    },
+    {
+      "name": "consumer-smoke-result",
+      "command": "internal",
+      "mustRun": true
+    }
+  ],
+  "fingerprint": "03bc54697bf475332a54286907da2dcb4bd67ffa17a6598fb4bd20ef38cd5f1e"
+}

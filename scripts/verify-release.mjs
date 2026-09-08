@@ -48,57 +48,53 @@ const manifestPath = path.join(validationDir, 'manifest.json')
 const previousManifest = existsSync(manifestPath) ? JSON.parse(readFileSync(manifestPath, 'utf8')) : null
 let postgresInfo = null
 
-// The 1.0.0-rc.3 side of the same-session comparison, measured on this machine with `--no-maglev` on both sides
-// (scripts/benchmark-same-session.mjs, 21 rounds): the recorded 1.0.0-rc.3 baseline — the reference of the
-// informational record-drift check, and the baseline itself only when the commit cannot be exported.
-const BENCHMARK_BASELINE = 'benchmarks/results-v1.0.0-rc.3-baseline-same-machine.json'
-// The 1.0.0-rc.3 source: the release commit of 1.0.0-rc.3. Exported and benchmarked in the same session when the
-// history is available; otherwise the recorded file above is the baseline.
-const BASELINE_COMMIT = '9c57269'
-const BASELINE_LABEL = '1.0.0-rc.3'
-// Rounds per side of the same-session comparison (each round benchmarks both sides); the element-wise median of the
-// rounds is compared, within ±10 %. Both benchmark processes run with `--no-maglev` (scripts/benchmark-same-session.mjs).
-const BENCHMARK_RUNS = 21
-// Rows this release is registered as faster on than the baseline by more than the tolerance. 1.0.0-rc.4 registers
-// none: it is a correctness round and every row is expected within ±10 % of the 1.0.0-rc.3 side of the same session.
-// The mechanism stays (scripts/tests/benchmark-registered-faster.test.mjs asserts it): a registered row still fails
-// when it is slower, an unregistered row still fails when it is faster, and a registered row fails when it is faster
-// than the floor — a registration accounts for an improvement, it never hides a regression.
-const BENCHMARK_REGISTERED_FASTER = []
-const BENCHMARK_REGISTERED_FASTER_FLOOR = '0.30'
-// The `any` budget: the 0.7.0 record (178; 0.8.0 and 1.0.0-rc.1 measured the same count) re-keyed under the 1.0.0-rc.2
-// name of the reference application (apps/multitenant-blog), the deleted demos and fixtures dropped (each carried 0).
-// The seven examples and the rebuilt fixtures are absent from it: they may not use `any` at all.
-const ANY_BASELINE = 'scripts/any-baseline-v1.0.0-rc.2.json'
-// The mutation audit (1.0.0-rc.5): the manual script and the record of its last run. The gate reads the
-// record; it never runs the mutants, which take an isolated copy of the compiled core per mutant.
-const MUTATION_SCRIPT = 'scripts/mutation-audit.mjs'
-const MUTATION_RECORD = 'work/rc5/mutations/RESULTS.json'
-// The public API of 0.8.0 as the 0.8.0 release gate recorded it (commit 38a722e): the frozen surface. This source's
-// inventory must be identical to it, item by item, up to the registrations that have been made against it since.
-const INVENTORY_FROZEN = 'validation/v0.8-release/api-inventory.json'
-// The public API as the 1.0.0-rc.3 release gate recorded it (provenance 5ae7baf): the diff of this source against the
-// previous release candidate, and the assertion that it is exactly the registered increment below.
-const INVENTORY_PREVIOUS = 'validation/v1.0.0-rc.3-release/api-inventory.json'
 /**
- * The registered increment of this release: the items whose signature text may differ from the
- * record of the previous one. Every one of them must differ, and nothing else may — the diff
- * against a record is 0 added, 0 removed, exactly these changed.
- *
- * 1.0.0-rc.4 registers nothing (docs/API_STABILITY.md "No exception — 1.0.0-rc.4",
- * docs/SEMANTIC_CHANGES_RC4.md §8): six defects of the closing path and of the reference
- * application were fixed entirely inside the frozen surface, and §11/§13 were clarified rather
- * than revised. The diff against the 1.0.0-rc.3 record must therefore be empty.
+ * What this release is measured against, and the steps it must run: `scripts/release-profiles/<version>.json`.
+ * The gate carries the machinery; the profile carries everything that changes from one release to the next — the
+ * benchmark baseline and its commit, the inventory records this source must be identical to and the increment
+ * registered against each, the `any` budget, the mutation-audit record, and the ordered list of step names. Every
+ * earlier release has a profile of its own in that directory, extracted from its own manifest: a record of what it
+ * ran, so an old release can be reproduced from its commit without the script that produced it.
  */
-const INVENTORY_REGISTERED_CHANGES = []
-/**
- * The same for the frozen 0.8.0 surface, which is cumulative: every registration since 0.8.0 that
- * still stands. 1.0.0-rc.3 registered three items against it (`attempt-abandoned.phase` gained
- * 'cleanup', and two doc lines describe what the disposal grace bounds); 1.0.0-rc.4 adds none, so the
- * list is rc.3's. The two checks ask different questions: the diff against the previous release
- * candidate must be empty, and the drift from the frozen surface must be exactly what is registered.
- */
-const INVENTORY_FROZEN_REGISTERED_CHANGES = ['RuntimeEvent', 'RuntimeLimits.disposalGraceMs', 'UnsettledAttemptInspection.state']
+const profilePath = path.join(root, 'scripts', 'release-profiles', `${version}.json`)
+if (!existsSync(profilePath)) {
+  throw new Error(`No release profile for ${version}: expected ${path.relative(root, profilePath)}.`)
+}
+const profile = JSON.parse(readFileSync(profilePath, 'utf8'))
+if (profile.version !== version) {
+  throw new Error(`Release profile ${path.relative(root, profilePath)} is for ${profile.version}, not ${version}.`)
+}
+const {
+  benchmark: BENCHMARK,
+  anyBaseline: ANY_BASELINE,
+  inventory: INVENTORY,
+  mutation: MUTATION,
+} = profile.constants
+// The baseline side of the same-session comparison, measured on this machine with `--no-maglev` on both sides
+// (scripts/benchmark-same-session.mjs): the recorded file is the reference of the informational record-drift check,
+// and the baseline itself only when the commit cannot be exported.
+const BENCHMARK_BASELINE = BENCHMARK.baseline
+const BASELINE_COMMIT = BENCHMARK.baselineCommit
+const BASELINE_LABEL = BENCHMARK.baselineLabel
+// Rounds per side (each round benchmarks both sides); the element-wise median of the rounds is compared, within ±10 %.
+const BENCHMARK_RUNS = BENCHMARK.runs
+// Rows this release is registered as faster on than the baseline by more than the tolerance. A registered row still
+// fails when it is slower, an unregistered row still fails when it is faster, and a registered row fails when it is
+// faster than the floor: a registration accounts for an improvement, it never hides a regression
+// (scripts/tests/benchmark-registered-faster.test.mjs asserts all three).
+const BENCHMARK_REGISTERED_FASTER = BENCHMARK.registeredFaster
+const BENCHMARK_REGISTERED_FASTER_FLOOR = BENCHMARK.registeredFasterFloor
+// The public API as the previous release gate recorded it, and the 0.8.0 record: the frozen surface
+// (docs/API_STABILITY.md). This source's inventory must be identical to each, item by item, up to the registrations
+// below. The two checks ask different questions: the diff against the previous release candidate must be empty, and
+// the drift from the frozen surface must be exactly what has been registered against it since 0.8.0 — cumulative.
+const INVENTORY_PREVIOUS = INVENTORY.previous
+const INVENTORY_FROZEN = INVENTORY.frozen
+const INVENTORY_REGISTERED_CHANGES = INVENTORY.registeredChanges
+const INVENTORY_FROZEN_REGISTERED_CHANGES = INVENTORY.frozenRegisteredChanges
+// The mutation audit is manual (scripts/mutation-audit.mjs); the gate reads the record of its last run.
+const MUTATION_SCRIPT = MUTATION.script
+const MUTATION_RECORD = MUTATION.record
 
 const startedAt = new Date()
 const steps = []
@@ -239,8 +235,16 @@ function gitInfo() {
   }
 }
 
-/** Source fingerprint: sha256 over the sorted list of (path, sha256(content)) for every archived source file. */
-function listSourceFiles() {
+/**
+ * The source files of this release. `forArchive` adds `docs/VALIDATION.md`, which is generated
+ * from a run's own manifest after that run and committed with it: it cannot be part of the
+ * fingerprint the run records (the file the fingerprint would cover does not exist yet), but
+ * leaving it out of the tarball too — as 1.0.0-rc.1 did — meant whoever unpacked the archive was
+ * missing the one document that says what was verified. The archived copy is therefore the
+ * previous run's, one release behind, and `validation/<version>-release/manifest.json` in the same
+ * archive is this run's own record.
+ */
+function listSourceFiles({ forArchive = false } = {}) {
   const include = ['packages', 'apps', 'benchmarks', 'docs', 'scripts', 'validation/README.md']
   const rootFiles = ['package.json', 'package-lock.json', 'tsconfig.json', 'README.md', 'README.zh-CN.md', 'LICENSE', 'CHANGELOG.md', '.gitignore', '.npmrc']
   const excludeDir = new Set(['node_modules', 'dist', 'dist-local', '.tsbuildinfo', 'work', 'coverage'])
@@ -262,9 +266,9 @@ function listSourceFiles() {
   const githubDir = path.join(root, '.github')
   if (existsSync(githubDir)) walk(githubDir)
   // docs/VALIDATION.md is generated from this run's manifest after the run and committed with it (one run, one release
-  // commit from 1.0.0-rc.1 on): it is neither fingerprinted nor archived, so the fingerprint and the archive hashes recorded
-  // by the run hold on the commit that carries them.
-  return [...new Set(files)].filter(file => file !== 'docs/VALIDATION.md' && !file.includes('/dist/') && !/^validation\/v[^/]+-dev\//.test(file)).sort()
+  // commit from 1.0.0-rc.1 on), so it is never fingerprinted: the fingerprint the run records has to hold on the commit
+  // that carries it. Since 1.0.0-rc.5 it is archived anyway (see above).
+  return [...new Set(files)].filter(file => (forArchive || file !== 'docs/VALIDATION.md') && !file.includes('/dist/') && !/^validation\/v[^/]+-dev\//.test(file)).sort()
 }
 
 function fingerprint(files) {
@@ -483,7 +487,7 @@ async function releaseGate(sourceFingerprint) {
   const archiveBase = `syna-v${version}-source`
   const stagingDir = path.join(releaseDir, archiveBase)
   mkdirSync(stagingDir, { recursive: true })
-  const files = listSourceFiles()
+  const files = listSourceFiles({ forArchive: true })
   for (const file of files) {
     const target = path.join(stagingDir, file)
     mkdirSync(path.dirname(target), { recursive: true })
@@ -610,6 +614,24 @@ log(`Syna v${version} verify (${release ? 'release' : 'dev'}) — ${sourceFinger
 await developmentGate()
 let releaseResult
 if (release && !insideArchive) releaseResult = await releaseGate(sourceFingerprint)
+
+// The last step of either run: the steps recorded are the steps the profile says this release runs.
+// A gate that quietly stops running a check is a defect of the gate, and only the list can see it.
+{
+  const expected = insideArchive
+    ? profile.steps.dev
+    : release ? [...profile.steps.dev.filter(name => name !== 'release-profile'), ...profile.steps.release] : profile.steps.dev
+  const ran = [...steps.map(step => step.name), 'release-profile']
+  const missing = expected.filter(name => !ran.includes(name))
+  const extra = ran.filter(name => !expected.includes(name))
+  const inOrder = ran.length === expected.length && ran.every((name, index) => name === expected[index])
+  const ok = missing.length === 0 && extra.length === 0 && inOrder
+  const note = `${ran.length} step(s) ran, ${expected.length} in ${path.relative(root, profilePath)}`
+    + `${missing.length > 0 ? `; ${missing.length} missing` : ''}${extra.length > 0 ? `; ${extra.length} not in the profile` : ''}`
+    + `${ok ? '' : inOrder ? '' : '; the order differs'}`
+  steps.push({ name: 'release-profile', ok, exitCode: ok ? 0 : 1, mustRun: true, command: 'internal', log: path.relative(root, profilePath), note, ...(missing.length > 0 ? { missing } : {}), ...(extra.length > 0 ? { extra } : {}) })
+  log(`${ok ? 'ok  ' : 'FAIL'} release-profile (${note})`)
+}
 
 // A manifest that recorded no test counts is not evidence of anything: BLOCKED, never COMPLETE.
 if (!steps.some(step => step.tests)) blocked.push({ step: 'manifest', reason: 'no step recorded test counts; the run was not recorded' })

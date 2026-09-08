@@ -2,7 +2,7 @@
   "name": "syna-workspace",
   "private": true,
   "type": "module",
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0-rc.5",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/synajs/syna.git"
@@ -38,11 +38,7 @@
     "benchmark:v05": "npm run build && node --expose-gc benchmarks/v0.5-planning.mjs benchmarks/results-v0.5.0.json",
     "benchmark:v04-workload": "npm run build && node --expose-gc benchmarks/v0.4-planning.mjs benchmarks/results-v0.4-workload-on-v0.5-same-machine.json",
     "verify": "node scripts/verify-release.mjs --dev",
-    "verify:release": "node scripts/verify-release.mjs --release",
-    "verify:v08": "node scripts/verify-v08.mjs --dev",
-    "verify:v07": "node scripts/verify-v07.mjs --dev",
-    "verify:v06": "node scripts/verify-v06.mjs --dev",
-    "verify:v05": "node scripts/verify-v05.mjs --dev"
+    "verify:release": "node scripts/verify-release.mjs --release"
   },
   "engines": {
     "node": ">=22"

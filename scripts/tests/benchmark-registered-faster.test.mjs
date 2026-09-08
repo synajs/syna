@@ -82,14 +82,16 @@ test('without --faster-ok the comparison is the two-sided ±tolerance it has alw
   assert.equal(within.ok, true, within.stdout)
 })
 
-test('the release gate of 1.0.0-rc.4 registers no row at all, and keeps the floor', () => {
-  // Read, never imported: the gate script runs its whole verification when it is loaded.
-  const source = readFileSync(path.join(root, 'scripts/verify-release.mjs'), 'utf8')
-  const list = source.match(/const BENCHMARK_REGISTERED_FASTER = \[([^\]]*)\]/)
-  assert.ok(list, 'the gate names the registered rows')
-  const rows = [...list[1].matchAll(/'([^']+)'/g)].map(match => match[1])
-  assert.deepEqual(rows, [], 'a correctness round registers nothing: every row is expected within ±10 %')
-  assert.match(source, /const BENCHMARK_REGISTERED_FASTER_FLOOR = '0\.30'/)
+test('this release registers no row at all, and keeps the floor', () => {
+  // Since 1.0.0-rc.5 the registration lives in the release profile, not in the gate script
+  // (scripts/release-profiles/README.md). The profile is read, never the script: loading the
+  // gate would run its whole verification.
+  const version = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8')).version
+  const profile = JSON.parse(readFileSync(path.join(root, `scripts/release-profiles/${version}.json`), 'utf8'))
+  assert.equal(profile.version, version, 'the profile is this release\'s')
+  assert.deepEqual(profile.constants.benchmark.registeredFaster, [],
+    'a correctness round registers nothing: every row is expected within ±10 %')
+  assert.equal(profile.constants.benchmark.registeredFasterFloor, '0.30')
 })
 
 test('an empty registration is the two-sided comparison: a faster row still fails', () => {

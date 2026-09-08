@@ -28,11 +28,11 @@ test('no vendor name or pre-rc.2 application name as a component name or path ou
 })
 
 test('the historical set is what it says: existing records, never the current documents', () => {
-  for (const file of ['docs/AUDIT.md', 'docs/HISTORY.md', 'docs/MIGRATION_V07_TO_V08.md', 'CHANGELOG.md', 'scripts/verify-v08.mjs', 'scripts/any-baseline-v0.7.0.json', 'benchmarks/results-v0.8.0-baseline-same-machine.json', 'validation/v1.0.0-rc.1-release/manifest.json', 'validation/v1.0.0-rc.2-dev/logs/build.log']) {
+  for (const file of ['docs/AUDIT.md', 'docs/HISTORY.md', 'docs/MIGRATION_V07_TO_V08.md', 'CHANGELOG.md', 'scripts/release-profiles/0.8.0.json', 'scripts/release-profiles/1.0.0-rc.1.json', 'scripts/any-baseline-v0.7.0.json', 'benchmarks/results-v0.8.0-baseline-same-machine.json', 'validation/v1.0.0-rc.1-release/manifest.json', 'validation/v1.0.0-rc.2-dev/logs/build.log']) {
     assert.ok(isHistorical(file), `${file} is historical`)
     if (existsSync(path.join(root, file))) assert.ok(true)
   }
-  for (const file of ['README.md', 'docs/API_REFERENCE.md', 'docs/EXAMPLES.md', 'docs/MULTITENANT_BLOG.md', 'docs/DEFERRED.md', 'scripts/verify-release.mjs', 'scripts/validation-doc.mjs', '.github/workflows/ci.yml', 'package.json', 'benchmarks/results-v1.0.0-rc.2-baseline-same-machine.json', 'validation/README.md']) {
+  for (const file of ['README.md', 'docs/API_REFERENCE.md', 'docs/EXAMPLES.md', 'docs/MULTITENANT_BLOG.md', 'docs/DEFERRED.md', 'scripts/verify-release.mjs', 'scripts/release-profiles/1.0.0-rc.5.json', 'scripts/validation-doc.mjs', '.github/workflows/ci.yml', 'package.json', 'benchmarks/results-v1.0.0-rc.2-baseline-same-machine.json', 'validation/README.md']) {
     assert.equal(isHistorical(file), false, `${file} is current`)
   }
 })

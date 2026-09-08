@@ -22,7 +22,9 @@ export const HISTORICAL_FILES = [
   /^docs\/(MIGRATION_V\d+_TO_V\d+|SEMANTIC_CHANGES_V\d+)\.md$/,
   /^CHANGELOG\.md$/,
   /^RELEASE_MANIFEST\.json$/,
-  /^scripts\/verify-v0\d\.mjs$/,
+  // The profiles of earlier releases: the step names they record are the ones those releases ran
+  // (scripts/release-profiles/README.md). The current release's profile is scanned like any other file.
+  /^scripts\/release-profiles\/(0\.\d+\.\d+|1\.0\.0-rc\.[1-4])\.json$/,
   /^scripts\/any-baseline-v0\.\d\.\d\.json$/,
   /^benchmarks\/results-v0\.[0-9.]+(-[a-z0-9-]+)?\.json$/,
   // The task-document package that ships with the workspace (listed in the root SHA256SUMS.txt) and the task books.

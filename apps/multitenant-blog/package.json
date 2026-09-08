@@ -30,7 +30,7 @@
     "test:postgres": "node ../../scripts/pg-test-cluster.mjs with -- node --test tests/postgres.test.mjs tests/matrix.test.mjs"
   },
   "dependencies": {
-    "@syna/core": "1.0.0-rc.4",
+    "@syna/core": "1.0.0-rc.5",
     "ajv": "^8.20.0",
     "pg": "^8.23.0",
     "rehype-sanitize": "^6.0.0",
@@ -43,7 +43,7 @@
     "yaml": "^2.9.0"
   },
   "devDependencies": {
-    "@syna/tsconfig": "1.0.0-rc.4",
+    "@syna/tsconfig": "1.0.0-rc.5",
     "@types/hast": "^3.0.5",
     "@types/mdast": "^4.0.4",
     "@types/pg": "^8.23.1",

@@ -1,0 +1,93 @@
+{
+  "version": "1.0.0-rc.5",
+  "gate": "scripts/verify-release.mjs",
+  "note": "The constants this release's gate runs with, and the steps it must run. The gate reads the constants from here instead of carrying them in its source, and asserts at the end of a run that the steps it recorded are exactly the ones listed below \u2014 a step that silently stops running is a defect, not a quieter gate. Earlier releases have a profile of their own in this directory: a record of what that release actually ran, extracted from its own manifest.",
+  "constants": {
+    "benchmark": {
+      "baseline": "benchmarks/results-v1.0.0-rc.4-baseline-same-machine.json",
+      "baselineCommit": "b691067",
+      "baselineLabel": "1.0.0-rc.4",
+      "runs": 21,
+      "registeredFaster": [],
+      "registeredFasterFloor": "0.30"
+    },
+    "anyBaseline": "scripts/any-baseline-v1.0.0-rc.2.json",
+    "inventory": {
+      "previous": "validation/v1.0.0-rc.4-release/api-inventory.json",
+      "frozen": "validation/v0.8-release/api-inventory.json",
+      "registeredChanges": [],
+      "frozenRegisteredChanges": [
+        "RuntimeEvent",
+        "RuntimeLimits.disposalGraceMs",
+        "UnsettledAttemptInspection.state"
+      ]
+    },
+    "mutation": {
+      "script": "scripts/mutation-audit.mjs",
+      "record": "work/rc5/mutations/RESULTS.json"
+    }
+  },
+  "steps": {
+    "dev": [
+      "clean",
+      "build",
+      "type-tests",
+      "core-tests",
+      "blog-filesystem-tests",
+      "blog-render-tests",
+      "blog-tenants-auth-preflight-tests",
+      "blog-audit-regression-tests",
+      "blog-review-regression-tests",
+      "blog-close-path-tests",
+      "blog-site-manager-working-set-tests",
+      "blog-postgres-and-matrix-tests",
+      "gate-self-tests",
+      "mutation-audit-record",
+      "api-inventory",
+      "api-inventory-no-deprecated",
+      "api-inventory-diff",
+      "api-inventory-unchanged",
+      "api-inventory-frozen",
+      "codemod-idempotent",
+      "no-old-reference-tokens",
+      "no-vendor-names",
+      "any-count",
+      "demo-01-basics",
+      "demo-02-per-tenant",
+      "demo-03-user-configurable",
+      "demo-04-two-versions",
+      "demo-05-scheduled-jobs",
+      "demo-06-testing",
+      "demo-07-failure-modes",
+      "blog-demo-filesystem",
+      "benchmarks",
+      "benchmark-compare",
+      "blog-request-latency",
+      "release-profile"
+    ],
+    "release": [
+      "archive-scan",
+      "archive-tar",
+      "archive-zip",
+      "rebuild-unpack",
+      "rebuild-install",
+      "rebuild-build",
+      "rebuild-type-tests",
+      "rebuild-core-tests",
+      "rebuild-app-tests",
+      "rebuild-postgres-matrix-tests",
+      "rebuild-gate-self-tests",
+      "rebuild-codemod-idempotent",
+      "rebuild-demo",
+      "rebuild-examples",
+      "pack-core",
+      "pack-tsconfig",
+      "consumer-install",
+      "consumer-build",
+      "consumer-run",
+      "consumer-smoke-result",
+      "release-profile"
+    ]
+  },
+  "stepsNote": "`dev` is what `--dev` runs, in order; `release` is what `--release` adds after it. `release-profile` is the last step of either run: it is this check itself."
+}
