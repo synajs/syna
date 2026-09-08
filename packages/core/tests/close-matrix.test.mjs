@@ -230,38 +230,105 @@ test('concurrent destruction: three independent chains are disposed at once whil
   await runtime.dispose()
 })
 
-test('the cleanup step of one Env costs one grace per slot of its longest chain, not one per slot', async () => {
-  const define = makeDefine('rc3.matrix.bound')
-  const graceMs = 40
-  const hang = () => new Promise(() => undefined)
+// "One grace per slot of the longest chain" is two claims, and 1.0.0-rc.4 / G1
+// separates them because putting both on one wall-clock reading made the release
+// gate flaky: `wideElapsed >= graceMs` was a zero-tolerance lower bound on a
+// measured duration, and libuv may fire a timer about a millisecond early while
+// `Date.now()` truncates both readings — 39 ms against a 40 ms budget, in the cloud
+// and in 8 of 3000 local rounds (work/rc4/BASELINE.md §7).
+//
+// The structural claim — each slot's cleanup phase consumes a budget of its own,
+// the phases of independent slots overlap, the phases along a chain do not — is now
+// asserted from the order of observable events and from when budgets are armed and
+// expire, with no reading of elapsed time at all. The wall-clock claim keeps its
+// upper bound (the close really is bounded) and a lower bound with a stated
+// tolerance on a monotonic clock (it really does wait for the budget).
+//
+// Deliberately NOT asserted: an exact number of timers. Five independent slots arm
+// five concurrent budgets today and could legitimately share one tomorrow; what the
+// model promises is the attribution and the ordering, not the mechanism.
 
-  // Five independent slots, every cleanup hung: one budget for the whole level.
+/**
+ * Runs `body` with `globalThis.setTimeout` intercepted (the house style of
+ * work/rc3/probes/site-manager.mjs) and returns every timer armed while it ran,
+ * each with the logical moment it was armed and the moment it fired. Logical, not
+ * measured: this test must say nothing about how long anything took.
+ */
+const recordingTimers = async body => {
+  const realSetTimeout = globalThis.setTimeout
+  const realClearTimeout = globalThis.clearTimeout
+  const armed = []
+  const live = new Map()
+  let sequence = 0
+  globalThis.setTimeout = (callback, delay, ...args) => {
+    const record = { delay, armedAt: sequence += 1, firedAt: undefined }
+    armed.push(record)
+    const timer = realSetTimeout.call(globalThis, (...called) => {
+      record.firedAt = sequence += 1
+      callback(...called)
+    }, delay, ...args)
+    live.set(timer, record)
+    return timer
+  }
+  globalThis.clearTimeout = timer => {
+    live.delete(timer)
+    return realClearTimeout.call(globalThis, timer)
+  }
+  try { await body() }
+  finally {
+    globalThis.setTimeout = realSetTimeout
+    globalThis.clearTimeout = realClearTimeout
+  }
+  return armed
+}
+
+test('structure: five independent hung cleanups spend their budgets at the same time, and a chain of three spends them one after another', async () => {
+  const define = makeDefine('rc4.matrix.structure')
+  const graceMs = 40
+
+  // Wide: five independent slots. Every cleanup announces itself and hangs.
+  const started = []
   const wide = Array.from({ length: 5 }, (_unused, index) => define.service(`wide${index}`, {
-    setup(_deps, { onDispose }) { onDispose(hang); return { index } },
+    setup(_deps, { onDispose }) {
+      onDispose(() => new Promise(() => { started.push(`wide${index}`) }))
+      return { index }
+    },
   }))
   const WideEntry = define.entry('wide', { requires: Object.fromEntries(wide.map((service, index) => [`w${index}`, service])) })
   const runtimeWide = createRuntime({ services: wide, limits: { disposalGraceMs: graceMs } })
   const wideEnv = await runtimeWide.enter(WideEntry)
   await Promise.all(wide.map((_service, index) => wideEnv.deps[`w${index}`].load()))
-  const wideStarted = Date.now()
-  await wideEnv.dispose()
-  const wideElapsed = Date.now() - wideStarted
-  assert.ok(wideElapsed >= graceMs && wideElapsed < graceMs * 3,
-    `five independent hung cleanups cost one budget (took ${wideElapsed} ms, budget ${graceMs} ms)`)
-  assert.equal(wideEnv.state, 'disposed')
-  assert.equal(runtimeWide.inspect().unsettledAttempts.length, 5)
 
-  // A chain of three, every cleanup hung: three budgets, and never more.
-  const deep = chain(define, 'deep', () => hang())
+  const wideTimers = await recordingTimers(() => wideEnv.dispose())
+  const wideBudgets = wideTimers.filter(record => record.delay === graceMs)
+  assert.ok(wideBudgets.length >= 1, 'the level spends a budget')
+  const firstWideExpiry = Math.min(...wideBudgets.filter(record => record.firedAt !== undefined).map(record => record.firedAt))
+  assert.ok(Number.isFinite(firstWideExpiry), 'a budget expired: the close really stopped waiting')
+  assert.ok(wideBudgets.every(record => record.armedAt < firstWideExpiry),
+    'every budget of this level was armed before the first of them expired — the phases overlap, so the level costs one budget of wall-clock time')
+  assert.equal(started.length, 5, 'all five cleanup phases had started')
+  assert.equal(wideEnv.state, 'disposed')
+  assert.equal(runtimeWide.inspect().unsettledAttempts.length, 5, 'each slot was abandoned on a budget of its own')
+  await runtimeWide.dispose()
+
+  // Deep: a chain of three. Each cleanup announces itself and hangs.
+  const chainStarted = []
+  const deep = chain(define, 'deep', name => new Promise(() => { chainStarted.push(name) }))
   const DeepEntry = define.entry('deep', { requires: { head: deep.head } })
   const runtimeDeep = createRuntime({ services: deep.all, limits: { disposalGraceMs: graceMs } })
   const deepEnv = await runtimeDeep.enter(DeepEntry)
   await deepEnv.deps.head.load()
-  const deepStarted = Date.now()
-  await deepEnv.dispose()
-  const deepElapsed = Date.now() - deepStarted
-  assert.ok(deepElapsed >= graceMs * 3 && deepElapsed < graceMs * 3 + 220,
-    `a chain of three hung cleanups costs three budgets (took ${deepElapsed} ms, budget ${graceMs} ms)`)
+
+  const deepTimers = await recordingTimers(() => deepEnv.dispose())
+  const deepBudgets = deepTimers.filter(record => record.delay === graceMs && record.firedAt !== undefined)
+  assert.ok(deepBudgets.length >= 3, `the chain spends one budget per slot (${deepBudgets.length})`)
+  const byArming = [...deepBudgets].sort((left, right) => left.armedAt - right.armedAt)
+  for (let index = 1; index < byArming.length; index += 1) {
+    assert.ok(byArming[index].armedAt > byArming[index - 1].firedAt,
+      'along a chain the next budget is armed only after the previous one expired: the phases are serial, never overlapping')
+  }
+  assert.deepEqual(chainStarted, ['deep1', 'deep2', 'deep3'],
+    'and the cleanups themselves ran dependant-first, one at a time')
   assert.equal(deepEnv.state, 'disposed')
   assert.deepEqual(
     ['deep1', 'deep2', 'deep3'].map(name => stateOf(deepEnv, name)),
@@ -269,4 +336,50 @@ test('the cleanup step of one Env costs one grace per slot of its longest chain,
     'every slot of the chain was reached, dependant-first, and each one abandoned on its own budget',
   )
   assert.equal(runtimeDeep.inspect().unsettledAttempts.length, 3)
+  await runtimeDeep.dispose()
+})
+
+// The wall-clock half. `performance.now()` is monotonic and not truncated to whole
+// milliseconds, and the lower bounds carry TIMER_SLACK_MS because a libuv timer may
+// fire a fraction early — the same slack every other duration assertion in this
+// repository uses. What this proves is that the close really waits for its budget
+// and really stops afterwards; what it cannot prove is an exact duration.
+const TIMER_SLACK_MS = 5
+
+test('wall clock: the close of a wide level costs about one budget and the close of a chain about three, with slack', async () => {
+  const define = makeDefine('rc4.matrix.wallclock')
+  const graceMs = 40
+  const hang = () => new Promise(() => undefined)
+
+  const wide = Array.from({ length: 5 }, (_unused, index) => define.service(`wide${index}`, {
+    setup(_deps, { onDispose }) { onDispose(hang); return { index } },
+  }))
+  const WideEntry = define.entry('wide', { requires: Object.fromEntries(wide.map((service, index) => [`w${index}`, service])) })
+  const runtimeWide = createRuntime({ services: wide, limits: { disposalGraceMs: graceMs } })
+  const wideEnv = await runtimeWide.enter(WideEntry)
+  await Promise.all(wide.map((_service, index) => wideEnv.deps[`w${index}`].load()))
+  const wideStarted = performance.now()
+  await wideEnv.dispose()
+  const wideElapsed = performance.now() - wideStarted
+  assert.ok(wideElapsed >= graceMs - TIMER_SLACK_MS,
+    `the close did wait for its budget (took ${wideElapsed.toFixed(1)} ms, budget ${graceMs} ms, slack ${TIMER_SLACK_MS} ms)`)
+  assert.ok(wideElapsed < graceMs * 3,
+    `and five independent hung cleanups still cost one budget (took ${wideElapsed.toFixed(1)} ms)`)
+  assert.equal(wideEnv.state, 'disposed')
+  await runtimeWide.dispose()
+
+  const deep = chain(define, 'deep', () => hang())
+  const DeepEntry = define.entry('deep', { requires: { head: deep.head } })
+  const runtimeDeep = createRuntime({ services: deep.all, limits: { disposalGraceMs: graceMs } })
+  const deepEnv = await runtimeDeep.enter(DeepEntry)
+  await deepEnv.deps.head.load()
+  const deepStarted = performance.now()
+  await deepEnv.dispose()
+  const deepElapsed = performance.now() - deepStarted
+  assert.ok(deepElapsed >= graceMs * 3 - TIMER_SLACK_MS,
+    `a chain of three hung cleanups waited for three budgets (took ${deepElapsed.toFixed(1)} ms, budget ${graceMs} ms, slack ${TIMER_SLACK_MS} ms)`)
+  assert.ok(deepElapsed < graceMs * 3 + 220,
+    `and never more (took ${deepElapsed.toFixed(1)} ms)`)
+  assert.equal(deepEnv.state, 'disposed')
+  await runtimeDeep.dispose()
 })

@@ -82,15 +82,18 @@ test('without --faster-ok the comparison is the two-sided ±tolerance it has alw
   assert.equal(within.ok, true, within.stdout)
 })
 
-test('the release gate registers exactly the two rows of 1.0.0-rc.3, with a floor', () => {
+test('the release gate of 1.0.0-rc.4 registers no row at all, and keeps the floor', () => {
   // Read, never imported: the gate script runs its whole verification when it is loaded.
   const source = readFileSync(path.join(root, 'scripts/verify-release.mjs'), 'utf8')
   const list = source.match(/const BENCHMARK_REGISTERED_FASTER = \[([^\]]*)\]/)
   assert.ok(list, 'the gate names the registered rows')
   const rows = [...list[1].matchAll(/'([^']+)'/g)].map(match => match[1])
-  assert.deepEqual(rows, [
-    'cases.warm-enter-dispose-300-depth-6.timing.p95Ms',
-    'cases.site-enter-tenant-input-reverse-closure-200.timing.p95Ms',
-  ])
+  assert.deepEqual(rows, [], 'a correctness round registers nothing: every row is expected within ±10 %')
   assert.match(source, /const BENCHMARK_REGISTERED_FASTER_FLOOR = '0\.30'/)
+})
+
+test('an empty registration is the two-sided comparison: a faster row still fails', () => {
+  const result = compare({ subjectP95: 0.3 }, { subjectP95: 0.246 }, ['--faster-ok', '', '--faster-floor', '0.30'])
+  assert.equal(result.ok, false, result.stdout)
+  assert.match(result.stdout, /BENCHMARK COMPARISON FAILED/)
 })

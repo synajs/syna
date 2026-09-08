@@ -48,31 +48,23 @@ const manifestPath = path.join(validationDir, 'manifest.json')
 const previousManifest = existsSync(manifestPath) ? JSON.parse(readFileSync(manifestPath, 'utf8')) : null
 let postgresInfo = null
 
-// The 1.0.0-rc.2 side of the same-session comparison of the 1.0.0-rc.2 release run, measured on this machine with
-// `--no-maglev` on both sides (scripts/benchmark-same-session.mjs, 21 rounds, provenance 46b344f): the recorded
-// 1.0.0-rc.2 baseline — the reference of the informational record-drift check, and the baseline itself only when the
-// commit cannot be exported.
-const BENCHMARK_BASELINE = 'benchmarks/results-v1.0.0-rc.2-baseline-same-machine.json'
-// The 1.0.0-rc.2 source: the release commit of 1.0.0-rc.2 (its core is the 0.8.0 core unchanged). Exported and
-// benchmarked in the same session when the history is available; otherwise the recorded file above is the baseline.
-const BASELINE_COMMIT = 'd7a4410'
-const BASELINE_LABEL = '1.0.0-rc.2'
+// The 1.0.0-rc.3 side of the same-session comparison, measured on this machine with `--no-maglev` on both sides
+// (scripts/benchmark-same-session.mjs, 21 rounds): the recorded 1.0.0-rc.3 baseline — the reference of the
+// informational record-drift check, and the baseline itself only when the commit cannot be exported.
+const BENCHMARK_BASELINE = 'benchmarks/results-v1.0.0-rc.3-baseline-same-machine.json'
+// The 1.0.0-rc.3 source: the release commit of 1.0.0-rc.3. Exported and benchmarked in the same session when the
+// history is available; otherwise the recorded file above is the baseline.
+const BASELINE_COMMIT = '9c57269'
+const BASELINE_LABEL = '1.0.0-rc.3'
 // Rounds per side of the same-session comparison (each round benchmarks both sides); the element-wise median of the
 // rounds is compared, within ±10 %. Both benchmark processes run with `--no-maglev` (scripts/benchmark-same-session.mjs).
 const BENCHMARK_RUNS = 21
-// The two rows 1.0.0-rc.3 is registered as faster on: the p95 of the two end-to-end enter-and-dispose cases, ~14 % and
-// ~18 % below the 1.0.0-rc.2 side of the same session, while their p50 moves by ~2 % and every one of the 116 counter
-// and shape rows is equal — the tail, not the typical cost. The cause is the L3 decoupling: an attempt's reactions and
-// the lifecycle handed to `setup()` are built in scopes of their own, so the context object each attempt allocates is
-// smaller, and a loop that enters and disposes 200–300 slots allocates less and collects less often. It is not the
-// concurrent destruction: a control that kept the 1.0.0-rc.2 sequential order and only bounded each cleanup showed the
-// same two rows at −17.4 % and −18.9 % (work/rc3/STATE.md). A registered row still fails when it is slower than the
-// baseline, and when it is faster by more than the floor below — a registration accounts for an improvement, it never
-// hides a regression, and no other row is affected.
-const BENCHMARK_REGISTERED_FASTER = [
-  'cases.warm-enter-dispose-300-depth-6.timing.p95Ms',
-  'cases.site-enter-tenant-input-reverse-closure-200.timing.p95Ms',
-]
+// Rows this release is registered as faster on than the baseline by more than the tolerance. 1.0.0-rc.4 registers
+// none: it is a correctness round and every row is expected within ±10 % of the 1.0.0-rc.3 side of the same session.
+// The mechanism stays (scripts/tests/benchmark-registered-faster.test.mjs asserts it): a registered row still fails
+// when it is slower, an unregistered row still fails when it is faster, and a registered row fails when it is faster
+// than the floor — a registration accounts for an improvement, it never hides a regression.
+const BENCHMARK_REGISTERED_FASTER = []
 const BENCHMARK_REGISTERED_FASTER_FLOOR = '0.30'
 // The `any` budget: the 0.7.0 record (178; 0.8.0 and 1.0.0-rc.1 measured the same count) re-keyed under the 1.0.0-rc.2
 // name of the reference application (apps/multitenant-blog), the deleted demos and fixtures dropped (each carried 0).
@@ -81,18 +73,20 @@ const ANY_BASELINE = 'scripts/any-baseline-v1.0.0-rc.2.json'
 // The public API of 0.8.0 as the 0.8.0 release gate recorded it (commit 38a722e): the frozen surface. This source's
 // inventory must be identical to it, item by item.
 const INVENTORY_FROZEN = 'validation/v0.8-release/api-inventory.json'
-// The public API as the 1.0.0-rc.2 release gate recorded it (provenance 46b344f; identical to the 1.0.0-rc.1 and 0.8.0
-// records): the diff of this source against the previous release candidate, and the assertion that it is exactly the
-// registered increment below.
-const INVENTORY_PREVIOUS = 'validation/v1.0.0-rc.2-release/api-inventory.json'
+// The public API as the 1.0.0-rc.3 release gate recorded it (provenance 5ae7baf): the diff of this source against the
+// previous release candidate, and the assertion that it is exactly the registered increment below.
+const INVENTORY_PREVIOUS = 'validation/v1.0.0-rc.3-release/api-inventory.json'
 /**
- * The registered increment of 1.0.0-rc.3 (docs/API_STABILITY.md "Registered exception",
- * docs/SEMANTIC_CHANGES_RC3.md §5): the three items whose signature text differs from every
- * record written before it — `attempt-abandoned.phase` gained 'cleanup', and two doc lines
- * describe what the disposal grace now bounds. Every one of them must differ, and nothing
- * else may: the diff against a record is 0 added, 0 removed, exactly these 3 changed.
+ * The registered increment of this release: the items whose signature text may differ from the
+ * record of the previous one. Every one of them must differ, and nothing else may — the diff
+ * against a record is 0 added, 0 removed, exactly these changed.
+ *
+ * 1.0.0-rc.4 registers nothing (docs/API_STABILITY.md "No exception — 1.0.0-rc.4",
+ * docs/SEMANTIC_CHANGES_RC4.md §8): six defects of the closing path and of the reference
+ * application were fixed entirely inside the frozen surface, and §11/§13 were clarified rather
+ * than revised. The diff against the 1.0.0-rc.3 record must therefore be empty.
  */
-const INVENTORY_REGISTERED_CHANGES = ['RuntimeEvent', 'RuntimeLimits.disposalGraceMs', 'UnsettledAttemptInspection.state']
+const INVENTORY_REGISTERED_CHANGES = []
 
 const startedAt = new Date()
 const steps = []
@@ -296,7 +290,7 @@ async function developmentGate() {
   await run('blog-tenants-auth-preflight-tests', 'node', ['--test', '--test-reporter=tap', 'apps/multitenant-blog/tests/tenants-auth.test.mjs', 'apps/multitenant-blog/tests/preflight.test.mjs'], { noSkip: true })
   await run('blog-audit-regression-tests', 'node', ['--test', '--test-reporter=tap', 'apps/multitenant-blog/tests/audit-app.test.mjs'], { noSkip: true })
   await run('blog-review-regression-tests', 'node', ['--test', '--test-reporter=tap', 'apps/multitenant-blog/tests/review-app.test.mjs'], { noSkip: true })
-  await run('blog-close-path-tests', 'node', ['--test', '--test-reporter=tap', 'apps/multitenant-blog/tests/rc3-close-paths.test.mjs'], { noSkip: true })
+  await run('blog-close-path-tests', 'node', ['--test', '--test-reporter=tap', 'apps/multitenant-blog/tests/rc3-close-paths.test.mjs', 'apps/multitenant-blog/tests/rc4-acquire-deadline.test.mjs'], { noSkip: true })
   await run('blog-site-manager-working-set-tests', 'node', ['--test', '--test-reporter=tap', '--expose-gc', 'apps/multitenant-blog/tests/site-manager.test.mjs'], { noSkip: true, env: { SYNA_WORKING_SET_OUT: path.join(validationDir, 'working-set.json') } })
   // Real PostgreSQL: a temporary cluster (or SYNA_TEST_PG_URL). Never skipped; a missing server is BLOCKED.
   const pgStep = await run('blog-postgres-and-matrix-tests', 'node', [
@@ -349,7 +343,7 @@ async function developmentGate() {
       && removed.length === 0 && added.length === 0 && current.items.length === record.items.length
       && current.items.filter(registered).length === INVENTORY_REGISTERED_CHANGES.length
     const note = current
-      ? `${current.items.length} items here, ${record.items.length} in the ${record.version} record (${recordFile}, commit ${record.commit}); 0 added, ${removed.length} removed, ${changed.length} changed — the registered increment of 1.0.0-rc.3${unregistered.length > 0 ? `, and ${unregistered.length} unregistered` : ''}${missing.length > 0 ? `; ${missing.length} registered item did not change` : ''}`
+      ? `${current.items.length} items here, ${record.items.length} in the ${record.version} record (${recordFile}, commit ${record.commit}); 0 added, ${removed.length} removed, ${changed.length} changed — the registered increment of ${version} is ${INVENTORY_REGISTERED_CHANGES.length} item(s)${unregistered.length > 0 ? `, and ${unregistered.length} unregistered` : ''}${missing.length > 0 ? `; ${missing.length} registered item did not change` : ''}`
       : 'no inventory was produced'
     steps.push({ name, ok, exitCode: ok ? 0 : 1, mustRun: true, command: 'internal', log: path.relative(root, logFile), note, ...(changed.length > 0 ? { changed } : {}), ...(added.length > 0 ? { added } : {}), ...(removed.length > 0 ? { removed } : {}), ...(unregistered.length > 0 ? { unregistered } : {}), ...(missing.length > 0 ? { missing } : {}) })
     log(`${ok ? 'ok  ' : 'FAIL'} ${name} (${note})`)
@@ -489,7 +483,7 @@ async function releaseGate(sourceFingerprint) {
   await run('rebuild-build', 'npm', ['run', 'build'], rebuildLogs)
   await run('rebuild-type-tests', 'npm', ['run', 'type-tests'], rebuildLogs)
   await run('rebuild-core-tests', 'node', ['--test', '--test-reporter=tap', ...readdirSync(path.join(unpacked, 'packages/core/tests')).filter(f => f.endsWith('.test.mjs')).sort().map(f => `packages/core/tests/${f}`)], { ...rebuildLogs, noSkip: true })
-  await run('rebuild-app-tests', 'node', ['--test', '--test-reporter=tap', '--expose-gc', 'apps/multitenant-blog/tests/filesystem.test.mjs', 'apps/multitenant-blog/tests/render.test.mjs', 'apps/multitenant-blog/tests/tenants-auth.test.mjs', 'apps/multitenant-blog/tests/preflight.test.mjs', 'apps/multitenant-blog/tests/audit-app.test.mjs', 'apps/multitenant-blog/tests/review-app.test.mjs', 'apps/multitenant-blog/tests/rc3-close-paths.test.mjs', 'apps/multitenant-blog/tests/site-manager.test.mjs'], { ...rebuildLogs, noSkip: true })
+  await run('rebuild-app-tests', 'node', ['--test', '--test-reporter=tap', '--expose-gc', 'apps/multitenant-blog/tests/filesystem.test.mjs', 'apps/multitenant-blog/tests/render.test.mjs', 'apps/multitenant-blog/tests/tenants-auth.test.mjs', 'apps/multitenant-blog/tests/preflight.test.mjs', 'apps/multitenant-blog/tests/audit-app.test.mjs', 'apps/multitenant-blog/tests/review-app.test.mjs', 'apps/multitenant-blog/tests/rc3-close-paths.test.mjs', 'apps/multitenant-blog/tests/rc4-acquire-deadline.test.mjs', 'apps/multitenant-blog/tests/site-manager.test.mjs'], { ...rebuildLogs, noSkip: true })
   await run('rebuild-postgres-matrix-tests', 'node', ['scripts/pg-test-cluster.mjs', 'with', '--', 'node', '--test', '--test-reporter=tap', 'apps/multitenant-blog/tests/postgres.test.mjs', 'apps/multitenant-blog/tests/matrix.test.mjs'], { ...rebuildLogs, noSkip: true, env: { SYNA_PG_CLUSTER_DIR: path.join(rebuildDir, 'pg') } })
   // Inside the archive the gate self-tests also re-run the deprecation list, the no-old-names scan, the README example, the codemod fixture and the `any` budget.
   await run('rebuild-gate-self-tests', 'node', ['--test', '--test-reporter=tap', ...readdirSync(path.join(unpacked, 'scripts/tests')).filter(f => f.endsWith('.test.mjs')).sort().map(f => `scripts/tests/${f}`)], { ...rebuildLogs, noSkip: true })

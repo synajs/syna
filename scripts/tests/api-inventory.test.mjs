@@ -193,14 +193,30 @@ test('1.0: the inventory is the 0.8.0 record item by item — path, kind, signat
   assertOnlyRegisteredChanges(after.items, record.items, 'the 0.8.0 record')
 })
 
-// 1.0.0-rc.3: the previous release candidate's record (the one the 1.0.0-rc.2 release gate wrote,
-// validation/v1.0.0-rc.2-release/api-inventory.json, itself identical to the 1.0.0-rc.1 and 0.8.0 records)
-// differs from this source by exactly the registered increment of this round, and by nothing else.
-const previous = path.join(root, 'validation/v1.0.0-rc.2-release/api-inventory.json')
+// 1.0.0-rc.3: the record the 1.0.0-rc.2 release gate wrote (itself identical to the 1.0.0-rc.1
+// and 0.8.0 records) differs from this source by exactly the registered increment of that round,
+// and by nothing else.
+const beforeRc3 = path.join(root, 'validation/v1.0.0-rc.2-release/api-inventory.json')
 test('1.0.0-rc.3: the inventory differs from the 1.0.0-rc.2 record by exactly the registered increment: 0 added, 0 removed, 3 changed (asserted where the record is present)', () => {
-  if (!existsSync(previous)) return
-  const record = JSON.parse(readFileSync(previous, 'utf8'))
+  if (!existsSync(beforeRc3)) return
+  const record = JSON.parse(readFileSync(beforeRc3, 'utf8'))
   assert.equal(record.version, '1.0.0-rc.2', 'the record is the 1.0.0-rc.2 inventory')
   assert.equal(record.items.length, 374)
   assertOnlyRegisteredChanges(after.items, record.items, '1.0.0-rc.2')
+})
+
+// 1.0.0-rc.4: no registered increment at all. The record of the previous release candidate is
+// this source's inventory item by item — path, kind, signature, JSDoc, deprecation.
+const previous = path.join(root, 'validation/v1.0.0-rc.3-release/api-inventory.json')
+test('1.0.0-rc.4: the inventory is the 1.0.0-rc.3 record item by item — nothing added, removed, changed or re-documented (asserted where the record is present)', () => {
+  if (!existsSync(previous)) return
+  const record = JSON.parse(readFileSync(previous, 'utf8'))
+  assert.equal(record.version, '1.0.0-rc.3', 'the record is the 1.0.0-rc.3 inventory')
+  assert.equal(record.items.length, 374)
+  const key = item => JSON.stringify([item.path, item.kind, item.signature, item.doc ?? '', item.deprecated === true, item.note ?? ''])
+  const recordKeys = new Set(record.items.map(key))
+  const currentKeys = new Set(after.items.map(key))
+  assert.deepEqual(after.items.filter(item => !recordKeys.has(key(item))).map(item => item.path), [], 'nothing in this source is new or different')
+  assert.deepEqual(record.items.filter(item => !currentKeys.has(key(item))).map(item => item.path), [], 'nothing of the record is gone or different')
+  assert.equal(after.items.length, record.items.length)
 })
