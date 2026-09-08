@@ -1,6 +1,6 @@
 --- a/dist/internal/deadline-queue.js
 +++ b/dist/internal/deadline-queue.js
-@@ -190,7 +190,8 @@
+@@ -194,7 +194,8 @@
          }
          waiter.attempt = attempt;
          waiter.deadlineMs = deadlineMs;

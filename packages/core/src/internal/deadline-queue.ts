@@ -33,6 +33,8 @@ class DeadlineQueue {
   private target = Infinity
 
   add(waiter: SetupWaiter, expiresAt: number): void {
+    // Re-arming a waiter that is already queued moves it; `unlink` takes it out of
+    // the count, so the increment below puts back the same one and never a second.
     if (waiter.queued) this.unlink(waiter)
     waiter.expiresAt = expiresAt
     waiter.queued = true
@@ -51,9 +53,10 @@ class DeadlineQueue {
   remove(waiter: SetupWaiter): void {
     if (!waiter.queued) return
     this.unlink(waiter)
-    if (--this.queued === 0) this.timer?.unref()
+    if (this.queued === 0) this.timer?.unref()
   }
 
+  /** Takes the waiter out of the list and out of the count; the only place either changes downwards. */
   private unlink(waiter: SetupWaiter): void {
     if (waiter.prev !== undefined) waiter.prev.next = waiter.next
     else this.head = waiter.next
@@ -62,6 +65,7 @@ class DeadlineQueue {
     waiter.prev = undefined
     waiter.next = undefined
     waiter.queued = false
+    this.queued -= 1
   }
 
   private arm(expiresAt: number): void {
