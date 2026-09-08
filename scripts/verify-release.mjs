@@ -71,7 +71,7 @@ const BENCHMARK_REGISTERED_FASTER_FLOOR = '0.30'
 // The seven examples and the rebuilt fixtures are absent from it: they may not use `any` at all.
 const ANY_BASELINE = 'scripts/any-baseline-v1.0.0-rc.2.json'
 // The public API of 0.8.0 as the 0.8.0 release gate recorded it (commit 38a722e): the frozen surface. This source's
-// inventory must be identical to it, item by item.
+// inventory must be identical to it, item by item, up to the registrations that have been made against it since.
 const INVENTORY_FROZEN = 'validation/v0.8-release/api-inventory.json'
 // The public API as the 1.0.0-rc.3 release gate recorded it (provenance 5ae7baf): the diff of this source against the
 // previous release candidate, and the assertion that it is exactly the registered increment below.
@@ -87,6 +87,14 @@ const INVENTORY_PREVIOUS = 'validation/v1.0.0-rc.3-release/api-inventory.json'
  * than revised. The diff against the 1.0.0-rc.3 record must therefore be empty.
  */
 const INVENTORY_REGISTERED_CHANGES = []
+/**
+ * The same for the frozen 0.8.0 surface, which is cumulative: every registration since 0.8.0 that
+ * still stands. 1.0.0-rc.3 registered three items against it (`attempt-abandoned.phase` gained
+ * 'cleanup', and two doc lines describe what the disposal grace bounds); 1.0.0-rc.4 adds none, so the
+ * list is rc.3's. The two checks ask different questions: the diff against the previous release
+ * candidate must be empty, and the drift from the frozen surface must be exactly what is registered.
+ */
+const INVENTORY_FROZEN_REGISTERED_CHANGES = ['RuntimeEvent', 'RuntimeLimits.disposalGraceMs', 'UnsettledAttemptInspection.state']
 
 const startedAt = new Date()
 const steps = []
@@ -322,12 +330,12 @@ async function developmentGate() {
   // Identity with a recorded inventory, up to the registered increment: every item of the record — path, kind,
   // signature, JSDoc, deprecation — is in this source's inventory unchanged except the registered ones, each of which
   // must differ; nothing is added or removed, so the two item lists have the same size.
-  const identicalTo = (name, recordFile, logFile) => {
+  const identicalTo = (name, recordFile, logFile, registeredChanges) => {
     const inventoryFile = path.join(validationDir, 'api-inventory.json')
     const record = JSON.parse(readFileSync(path.join(root, recordFile), 'utf8'))
     const current = existsSync(inventoryFile) ? JSON.parse(readFileSync(inventoryFile, 'utf8')) : null
     const key = item => JSON.stringify([item.path, item.kind, item.signature, item.doc ?? '', item.deprecated === true, item.note ?? ''])
-    const registered = item => INVENTORY_REGISTERED_CHANGES.includes(item.path)
+    const registered = item => registeredChanges.includes(item.path)
     const recordKeys = new Set(record.items.map(key))
     const currentKeys = new Set(current ? current.items.map(key) : [])
     const gone = current ? record.items.filter(item => !currentKeys.has(key(item))).map(item => item.path) : []
@@ -337,13 +345,13 @@ async function developmentGate() {
     const changed = gone.filter(item => fresh.includes(item))
     const removed = gone.filter(item => !fresh.includes(item))
     const added = fresh.filter(item => !gone.includes(item))
-    const unregistered = [...new Set([...changed, ...removed, ...added])].filter(item => !INVENTORY_REGISTERED_CHANGES.includes(item))
-    const missing = INVENTORY_REGISTERED_CHANGES.filter(item => !changed.includes(item))
+    const unregistered = [...new Set([...changed, ...removed, ...added])].filter(item => !registeredChanges.includes(item))
+    const missing = registeredChanges.filter(item => !changed.includes(item))
     const ok = current !== null && unregistered.length === 0 && missing.length === 0
       && removed.length === 0 && added.length === 0 && current.items.length === record.items.length
-      && current.items.filter(registered).length === INVENTORY_REGISTERED_CHANGES.length
+      && current.items.filter(registered).length === registeredChanges.length
     const note = current
-      ? `${current.items.length} items here, ${record.items.length} in the ${record.version} record (${recordFile}, commit ${record.commit}); 0 added, ${removed.length} removed, ${changed.length} changed — the registered increment of ${version} is ${INVENTORY_REGISTERED_CHANGES.length} item(s)${unregistered.length > 0 ? `, and ${unregistered.length} unregistered` : ''}${missing.length > 0 ? `; ${missing.length} registered item did not change` : ''}`
+      ? `${current.items.length} items here, ${record.items.length} in the ${record.version} record (${recordFile}, commit ${record.commit}); 0 added, ${removed.length} removed, ${changed.length} changed — the registration of ${version} for this comparison is ${registeredChanges.length} item(s)${unregistered.length > 0 ? `, and ${unregistered.length} unregistered` : ''}${missing.length > 0 ? `; ${missing.length} registered item did not change` : ''}`
       : 'no inventory was produced'
     steps.push({ name, ok, exitCode: ok ? 0 : 1, mustRun: true, command: 'internal', log: path.relative(root, logFile), note, ...(changed.length > 0 ? { changed } : {}), ...(added.length > 0 ? { added } : {}), ...(removed.length > 0 ? { removed } : {}), ...(unregistered.length > 0 ? { unregistered } : {}), ...(missing.length > 0 ? { missing } : {}) })
     log(`${ok ? 'ok  ' : 'FAIL'} ${name} (${note})`)
@@ -352,14 +360,14 @@ async function developmentGate() {
     // The doc-aware diff against the previous release candidate, and the assertion that it is exactly the registered
     // increment of this round: 0 added, 0 removed, 3 changed.
     await run('api-inventory-diff', 'node', ['scripts/api-inventory.mjs', '--diff', INVENTORY_PREVIOUS, path.join(validationDir, 'api-inventory.json'), '--out', path.join(validationDir, 'api-inventory-diff.md')])
-    identicalTo('api-inventory-unchanged', INVENTORY_PREVIOUS, path.join(validationDir, 'api-inventory-diff.md'))
+    identicalTo('api-inventory-unchanged', INVENTORY_PREVIOUS, path.join(validationDir, 'api-inventory-diff.md'), INVENTORY_REGISTERED_CHANGES)
   }
   else {
     steps.push({ name: 'api-inventory-diff', ok: true, exitCode: 0, mustRun: false, command: 'internal', log: path.relative(root, path.join(validationDir, 'api-inventory.json')), note: `${INVENTORY_PREVIOUS} is not part of this tree (the records live in the source repository); the inventory of this source was recorded` })
     log(`skip api-inventory-diff (${INVENTORY_PREVIOUS} absent; not a test)`)
   }
   // Frozen surface (docs/API_STABILITY.md): identical to the 0.8.0 record.
-  if (existsSync(path.join(root, INVENTORY_FROZEN))) identicalTo('api-inventory-frozen', INVENTORY_FROZEN, path.join(validationDir, 'api-inventory.json'))
+  if (existsSync(path.join(root, INVENTORY_FROZEN))) identicalTo('api-inventory-frozen', INVENTORY_FROZEN, path.join(validationDir, 'api-inventory.json'), INVENTORY_FROZEN_REGISTERED_CHANGES)
   // v0.8 evidence: the rename codemod makes no edit on the migrated tree and finds no site that needs a hand (idempotent).
   await run('codemod-idempotent', 'node', ['scripts/codemod-v08.mjs', '--dry-run', '--json', path.join(validationDir, 'codemod-idempotent.json')], { expectStdout: output => /^codemod-v08 \(dry run\): 0 edits in 0 files; 0 manual$/m.test(output) })
   // v0.8 evidence (A05): the core source, tests and type tests spell none of the pre-0.8 reference tokens — the old
