@@ -4,7 +4,10 @@
 // (`late-setup-*`) or their setup Promise is collected (`attempt-unreachable`); `dispose()` never rejects because
 // user code ignored cancellation (only a cleanup that threw is a close error), `attempt-abandoned` carries the
 // dependencies list, and `runtime.dispose()` reports a non-empty ledger once as `runtime-attempts-outstanding`.
-// No test here uses `--expose-gc`: the state never depends on garbage collection.
+// No test here uses `--expose-gc`, and no assertion here depends on whether a collection happens: every
+// case keeps the raw setup Promise of its hung attempt reachable, so the attempt can always still
+// settle. The other ending — the Promise found unreachable, its cleanups run, the ledger entry gone —
+// is proved in `materialization/waiter-deadline.test.mjs` under `--expose-gc`.
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
@@ -70,31 +73,29 @@ test('1. a setup that never settles: dispose() fulfils after the grace, the Env 
   await runtime.dispose()
 })
 
-test('2. the state does not depend on the setup Promise: disposed before and after several macrotasks, with the Promise held or released; the ledger keeps the entry until settlement', async () => {
+test('2. the state does not depend on when the setup Promise settles: disposed before and after ten macrotasks, and the ledger keeps both entries for as long as they can still settle', async () => {
   const define = makeDefine('s2-promise-held')
-  let held
-  const Held = define.service('held', { setup: () => { held = new Promise(() => {}); return held } })
-  const Released = define.service('released', { setup: () => new Promise(() => {}) })
-  const Entry = define.entry('entry', { requires: { held: Held, released: Released } })
-  const runtime = createRuntime({ services: [Held, Released], limits: { disposalGraceMs: 20 } })
+  // Both raw Promises stay reachable through their resolvers, so both attempts can still settle at any
+  // point. That is what makes this case about time alone: an attempt whose Promise nothing refers to any
+  // more is closed by the other path (`attempt-unreachable`), and then the ledger is *allowed* to shrink.
+  const pending = []
+  const First = define.service('first', { setup: () => new Promise(resolve => { pending.push(resolve) }) })
+  const Second = define.service('second', { setup: () => new Promise(resolve => { pending.push(resolve) }) })
+  const Entry = define.entry('entry', { requires: { first: First, second: Second } })
+  const runtime = createRuntime({ services: [First, Second], limits: { disposalGraceMs: 20 } })
   const env = await runtime.enter(Entry)
-  void env.deps.held.load().catch(() => undefined)
-  void env.deps.released.load().catch(() => undefined)
+  void env.deps.first.load().catch(() => undefined)
+  void env.deps.second.load().catch(() => undefined)
   await sleep(5)
   await env.dispose()
   assert.equal(env.state, 'disposed')
   assert.deepEqual(env.inspect().abandonedAttempts.map(item => item.state), ['abandoned', 'abandoned'])
-  for (let round = 0; round < 5; round += 1) {
+  for (let round = 0; round < 10; round += 1) {
     await sleep(10)
     assert.equal(env.state, 'disposed')
     assert.equal(runtime.inspect().unsettledAttempts.length, 2)
   }
-  held = undefined // releasing the reference changes nothing the state could observe
-  for (let round = 0; round < 5; round += 1) {
-    await sleep(10)
-    assert.equal(env.state, 'disposed')
-    assert.equal(runtime.inspect().unsettledAttempts.length, 2)
-  }
+  assert.equal(pending.length, 2, 'neither attempt was closed behind the test\'s back: both are still settleable')
   assert.deepEqual(env.inspect().nodes.filter(node => node.kind === 'service').map(node => node.state), ['abandoned', 'abandoned'])
   await runtime.dispose()
 })

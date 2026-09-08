@@ -25,7 +25,12 @@ const deferred = () => {
   return { promise, resolve, reject }
 }
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
-const never = () => new Promise(() => undefined)
+// The hung setups below keep their resolver reachable. An attempt nothing refers to any more has a
+// second, equally real ending: the Runtime proves it can never settle and closes it
+// (`attempt-unreachable`, proved in `materialization/waiter-deadline.test.mjs`), and the ledger is
+// then allowed to shrink. These cases are about the other ending, so they leave nothing to the collector.
+const pending = []
+const never = () => new Promise(resolve => { pending.push(resolve) })
 const timed = async fn => {
   const started = performance.now()
   const outcome = await fn().then(value => ({ ok: true, value }), error => ({ ok: false, error }))

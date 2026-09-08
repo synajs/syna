@@ -70,6 +70,7 @@ guard 留在 `disposeEnv()` 的理由（窗口在那里：跑用户 abort 监听
 | `disposal/cleanup-phase` 的 `sleep` | 用睡眠假定阶段已到位 | 换成阶段闸门：attempt 已开始（`setup()` 跑了）、关闭已进入（停止信号到达 setup）、阶段已到达挂住的那一步、账本已清空。每个用例带独立 watchdog，不作任何断言 |
 | no-overlap 的活跃 waiter | 后续五个 `load()` 都带已 abort 的 signal，在触及共享 attempt 前就被拒绝 | 补一个真正在等的 waiter：它加入同一个 attempt、setup 数不变、在 rollback 仍未放行时按自己的期限离开 |
 | 应用的三处上界（A4） | `< 400` / `< 600` / `< 1000`，且没有下界 | 单调时钟上的上下界对（配置值 −5 ms，配置值 +250 ms），加上一条**改变判据**的新用例：同一场景在 60 ms 与 360 ms 两种配置下各跑一次，断言两次等待之差就是两个配置之差 |
+| 结局由垃圾回收决定的断言（示例 07 第 4 幕、`disposal/bounded-close` F-PL-01、`disposal/state-and-ledger` 用例 2、`materialization/waiters-and-cancellation` K08、`errors/env-state` site 6） | 这些用例的挂起 setup 停在谁都不再引用的 Promise 上。运行时可以证明这样的 attempt 永不结算，于是以 `attempt-unreachable` 关掉它：cleanup 运行、账本清空、slot 变 `disposed`、关闭立即返回。断言写的却是另一种结局（等满宽限期、账本里留着 `abandoned`）；`state-and-ledger` 的文件头还写着“这里没有任何断言依赖 GC”。rc.4 起就是这个形状，`--release` 在从归档解包出来的那棵树上真的撞上了一次（`rebuild-examples`：`close took 2 ms`） | 每个用例把自己挂起 setup 的 resolver 留在手里：attempt 始终可结算，断言的结局就是用例真正制造的那个。另一种结局本来就有确定性的用例（`materialization/waiter-deadline.test.mjs` 在 `--expose-gc` 子进程里强制回收）。判据是“每 10 ms 强制一次 full GC”下整棵核心测试树（338）、应用生命周期用例（65）、七个示例与 blog 演示全绿（`work/rc5/evidence/gc-pressure.md`）；示例打印的那一行与 gate 对它的期望一字未改 |
 
 本轮新增的判据里，没有任何一条是 rc.4 §2.1 禁止的：没有要求同一错误在 `dispose()` 与诊断事件中合计恰好
 一次（`disposal/close-paths.test.mjs:141-173` 断言的合计 2 仍然成立），也没有用精确 timer 数量断言并发或串行。

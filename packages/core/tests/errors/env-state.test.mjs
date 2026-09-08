@@ -181,9 +181,12 @@ test('site 6 SLOT_NOT_LOADABLE { slot, revision, state }: load() on a disposed, 
     await disposing
     await runtime.dispose()
   }
-  // abandoned: a timed-out attempt that never settled before its owner's close finished.
+  // abandoned: a timed-out attempt that never settled before its owner's close finished. The setup keeps
+  // its resolver, so the attempt stays abandoned; one whose Promise nothing refers to any more is closed
+  // as `attempt-unreachable` and the slot ends `disposed` (`materialization/waiter-deadline.test.mjs`).
   {
-    const Stuck = define.service('stuck', { setup: () => new Promise(() => undefined) })
+    const pending = []
+    const Stuck = define.service('stuck', { setup: () => new Promise(resolve => { pending.push(resolve) }) })
     const Root = define.entry('root-stuck', { requires: { stuck: Stuck } })
     const runtime = createRuntime({ services: [Stuck], limits: { loadTimeoutMs: 20, disposalGraceMs: 20 } })
     const env = await runtime.enter(Root)

@@ -117,12 +117,17 @@ const short = (id: string): string => id.slice(id.lastIndexOf('/') + 1)
 
 {
   const events: RuntimeEvent[] = []
+  // The setup below parks on a wake-up this program keeps and never sends (and it ignores the stop
+  // signal). Keeping the handle is part of the demonstration: a hang nothing refers to any more ends
+  // differently, because the runtime can then prove the attempt dead (`attempt-unreachable`) and the
+  // close has nothing left to abandon.
+  const wakeUps: Array<() => void> = []
   const Credentials = define.service('credentials', { setup: () => ({ key: 'k' }) })
   const NeverSettles = define.service('never-settles', {
     requires: { credentials: Credentials },
     async setup({ credentials }) {
       await credentials.load()
-      await new Promise<never>(() => undefined) // ignores the stop signal, never resolves
+      await new Promise<void>(resolve => { wakeUps.push(resolve) }) // nobody ever wakes it
     },
   })
   const World = define.entry('stuck', { requires: { client: NeverSettles } })

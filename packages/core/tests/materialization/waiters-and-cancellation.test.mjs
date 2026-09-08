@@ -195,9 +195,10 @@ test('K08 a Ready instance is never swapped by a later load; concurrent waiters 
 test('K08 disposal abandons an attempt that never settles: the slot is abandoned, the attempt is on the ledger and the Env is disposed', async () => {
   const define = makeDefine('v05.abandoned')
   const events = []
-  const Stuck = define.service({
+  const pending = [] // the setup keeps its resolver: an attempt nothing refers to any more is closed as
+  const Stuck = define.service({ // `attempt-unreachable` instead, which is a different case (waiter-deadline)
     loadTimeoutMs: 20,
-    setup: () => new Promise(() => undefined),
+    setup: () => new Promise(resolve => { pending.push(resolve) }),
   })
   const Entry = define.entry({ requires: { stuck: Stuck } })
   const runtime = createRuntime({
