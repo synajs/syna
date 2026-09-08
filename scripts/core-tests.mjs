@@ -22,7 +22,13 @@ const argv = process.argv.slice(2)
 const list = argv.includes('--list')
 const dirFlag = argv.indexOf('--dir')
 const dir = dirFlag === -1 ? 'packages/core/tests' : argv[dirFlag + 1]
-const passthrough = argv.filter((argument, index) => argument !== '--list' && index !== dirFlag && index !== dirFlag + 1)
+// `--dir` and the path behind it are consumed here rather than passed on — but only when `--dir` is
+// there at all. Without it `indexOf` answers -1, and an index test written against `dirFlag + 1`
+// reads as `index !== 0`: it drops argv[0], the first argument meant for `node --test`. Silently, so
+// `--test-name-pattern` as the first argument stopped filtering and an invalid first option stopped
+// failing the run (`scripts/tests/core-tests-entry.test.mjs`).
+const consumed = dirFlag === -1 ? new Set() : new Set([dirFlag, dirFlag + 1])
+const passthrough = argv.filter((argument, index) => argument !== '--list' && !consumed.has(index))
 
 const walk = (current) => readdirSync(path.resolve(root, current), { withFileTypes: true }).flatMap(entry =>
   entry.isDirectory() ? walk(path.join(current, entry.name)) : entry.name.endsWith(SUFFIX) ? [path.join(current, entry.name)] : [])
