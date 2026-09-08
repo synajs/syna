@@ -1,0 +1,11 @@
+--- ORIGINAL/packages/core/dist/internal/materializer.js
++++ MUTANT/packages/core/dist/internal/materializer.js
+@@ -597,7 +597,7 @@
+         }
+         waiter.attempt = attempt;
+         waiter.deadlineMs = deadlineMs;
+-        deadlines.add(waiter, performance.now() + Math.max(0, deadlineMs));
++        deadlines.add(waiter, performance.now() + Math.max(0, deadlineMs * 4)); // MUTANT: fourfold timeout
+     }
+     disarm(waiter) {
+         deadlines.remove(waiter);

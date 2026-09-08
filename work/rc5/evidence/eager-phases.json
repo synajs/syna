@@ -1,0 +1,214 @@
+{
+  "node": "v22.16.0",
+  "target": "/mnt/data/syna-rc4-review/source/packages/core/dist/index.js",
+  "outputs": [
+    {
+      "name": "lazy-control",
+      "eager": false,
+      "timeout": 60,
+      "grace": 2000,
+      "rawRejectedAt": 22.981841000000003,
+      "abortAt": 82.246431,
+      "cleanupStartedAt": 23.148116000000016,
+      "cleanupDoneAt": 73.49728400000001,
+      "publicAt": 73.053289,
+      "outcome": {
+        "code": "LOAD_TIMEOUT",
+        "note": "The deadline ended this wait while the rollback of the failed setup was still running. The attempt is not overdue; its cleanups keep running and the slot accepts no overlapping attempt until they end."
+      },
+      "beforeRelease": {
+        "ledger": [],
+        "live": 1
+      },
+      "events": [],
+      "samples": []
+    },
+    {
+      "name": "eager-grace-40",
+      "eager": true,
+      "timeout": 60,
+      "grace": 40,
+      "rawRejectedAt": 10.011680000000013,
+      "abortAt": 60.88633200000004,
+      "cleanupStartedAt": 10.048012999999997,
+      "cleanupDoneAt": 101.983179,
+      "publicAt": 101.86417399999999,
+      "outcome": {
+        "code": "ENTRY_ACTIVATION_FAILED",
+        "cause": "LOAD_TIMEOUT",
+        "note": "The deadline ended this wait while the rollback of the failed setup was still running. The attempt is not overdue; its cleanups keep running and the slot accepts no overlapping attempt until they end."
+      },
+      "beforeRelease": {
+        "ledger": [
+          "rolling-back"
+        ],
+        "live": 0
+      },
+      "events": [
+        {
+          "at": 101.82874200000003,
+          "type": "attempt-abandoned",
+          "phase": "rollback"
+        },
+        {
+          "at": 102.01532700000001,
+          "type": "attempt-failed-late"
+        }
+      ],
+      "samples": []
+    },
+    {
+      "name": "eager-grace-250",
+      "eager": true,
+      "timeout": 60,
+      "grace": 250,
+      "rawRejectedAt": 11.077951000000041,
+      "abortAt": 61.67972500000002,
+      "cleanupStartedAt": 11.121455000000026,
+      "cleanupDoneAt": 312.50136800000007,
+      "publicAt": 312.288404,
+      "outcome": {
+        "code": "ENTRY_ACTIVATION_FAILED",
+        "cause": "LOAD_TIMEOUT",
+        "note": "The deadline ended this wait while the rollback of the failed setup was still running. The attempt is not overdue; its cleanups keep running and the slot accepts no overlapping attempt until they end."
+      },
+      "beforeRelease": {
+        "ledger": [
+          "rolling-back"
+        ],
+        "live": 0
+      },
+      "events": [
+        {
+          "at": 312.22800500000005,
+          "type": "attempt-abandoned",
+          "phase": "rollback"
+        },
+        {
+          "at": 312.52726600000005,
+          "type": "attempt-failed-late"
+        }
+      ],
+      "samples": []
+    },
+    {
+      "name": "eager-default-grace",
+      "eager": true,
+      "timeout": 60,
+      "grace": 2000,
+      "rawRejectedAt": 10.724901999999929,
+      "abortAt": 61.70063700000003,
+      "cleanupStartedAt": 10.772722999999928,
+      "cleanupDoneAt": 2064.3490859999997,
+      "publicAt": 2064.2566389999997,
+      "outcome": {
+        "code": "ENTRY_ACTIVATION_FAILED",
+        "cause": "LOAD_TIMEOUT",
+        "note": "The deadline ended this wait while the rollback of the failed setup was still running. The attempt is not overdue; its cleanups keep running and the slot accepts no overlapping attempt until they end."
+      },
+      "beforeRelease": {
+        "ledger": [
+          "rolling-back"
+        ],
+        "live": 0
+      },
+      "events": [
+        {
+          "at": 2064.225493,
+          "type": "attempt-abandoned",
+          "phase": "rollback"
+        },
+        {
+          "at": 2064.5178739999997,
+          "type": "attempt-failed-late"
+        }
+      ],
+      "samples": []
+    },
+    {
+      "name": "default-grace-release-1200",
+      "eager": true,
+      "timeout": 60,
+      "grace": 2000,
+      "releaseAt": 1200,
+      "rawRejectedAt": 10.943643000000066,
+      "abortAt": 61.625136999999995,
+      "cleanupStartedAt": 10.986066000000392,
+      "cleanupDoneAt": 1199.9778100000003,
+      "publicAt": 1200.192286,
+      "outcome": {
+        "code": "ENTRY_ACTIVATION_FAILED",
+        "cause": "LOAD_TIMEOUT",
+        "note": "The deadline ended this wait while the rollback of the failed setup was still running. The attempt is not overdue; its cleanups keep running and the slot accepts no overlapping attempt until they end."
+      },
+      "beforeRelease": {
+        "ledger": [],
+        "live": 0
+      },
+      "events": [
+        {
+          "at": 1200.060802,
+          "type": "attempt-failed-late"
+        }
+      ],
+      "samples": [
+        {
+          "at": 99.9274360000004,
+          "settled": false,
+          "abortAt": 61.625136999999995,
+          "live": 1,
+          "events": []
+        },
+        {
+          "at": 300.4087010000003,
+          "settled": false,
+          "abortAt": 61.625136999999995,
+          "live": 1,
+          "events": []
+        },
+        {
+          "at": 600.1349760000003,
+          "settled": false,
+          "abortAt": 61.625136999999995,
+          "live": 1,
+          "events": []
+        }
+      ]
+    },
+    {
+      "name": "raw-pending-control",
+      "eager": true,
+      "timeout": 60,
+      "grace": 90,
+      "abortAt": 61.730159999999614,
+      "publicAt": 152.38378599999942,
+      "outcome": {
+        "code": "ENTRY_ACTIVATION_FAILED",
+        "cause": "LOAD_TIMEOUT",
+        "note": "The deadline ended this wait while setup was still pending. The attempt keeps running; its result is adopted if the owner Env is still ready, and discarded only if the owner closes."
+      },
+      "beforeRelease": {
+        "ledger": [
+          "abandoned"
+        ],
+        "live": 0
+      },
+      "events": [
+        {
+          "at": 61.55860699999994,
+          "type": "attempt-overdue"
+        },
+        {
+          "at": 152.1583839999994,
+          "type": "attempt-abandoned",
+          "phase": "setup"
+        },
+        {
+          "at": 152.66921699999966,
+          "type": "attempt-succeeded-late"
+        }
+      ],
+      "samples": []
+    }
+  ]
+}

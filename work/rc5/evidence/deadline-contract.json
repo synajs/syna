@@ -1,0 +1,35 @@
+{
+  "target": "/mnt/data/syna-rc4-review/source/packages/core/dist/index.js",
+  "node": "v22.16.0",
+  "method": "controlled global clock and timer driver in probe process only; no timer-count oracle",
+  "results": [
+    {
+      "name": "eager-two-phases",
+      "status": "PASS",
+      "abortAt": 60,
+      "settledAt": 2060,
+      "loadTimeoutMs": 60,
+      "graceMs": 2000,
+      "events": [
+        {
+          "type": "attempt-abandoned",
+          "at": 2060
+        }
+      ]
+    },
+    {
+      "name": "lazy-and-late-joiner",
+      "status": "PASS",
+      "first": {
+        "code": "LOAD_TIMEOUT",
+        "at": 40
+      },
+      "second": {
+        "code": "LOAD_TIMEOUT",
+        "at": 110
+      },
+      "secondJoinedAt": 70,
+      "setups": 1
+    }
+  ]
+}

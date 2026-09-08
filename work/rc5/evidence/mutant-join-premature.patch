@@ -1,0 +1,20 @@
+--- ORIGINAL/packages/core/dist/runtime.js
++++ MUTANT/packages/core/dist/runtime.js
+@@ -242,7 +242,7 @@
+      */
+     async joinClose() {
+         await null;
+-        await this.disposePromise;
++        return; // MUTANT: reentrant observer fulfils instead of joining the close
+     }
+     [Symbol.asyncDispose]() {
+         return this.dispose();
+@@ -343,7 +343,7 @@
+     /** As `EnvImpl.joinClose()`: one microtask behind this close's own prologue. */
+     async joinClose() {
+         await null;
+-        await this.disposePromise;
++        return; // MUTANT: reentrant observer fulfils instead of joining the close
+     }
+     async disposeRuntime() {
+         {

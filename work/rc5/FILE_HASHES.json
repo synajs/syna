@@ -1,0 +1,22 @@
+{
+  "README_ZH.md": "e7a1d3e82fee6d3af603516868d948cd726557a82be31df2ed99334a6215d519",
+  "probes/close-guards.mjs": "47fc400400f120e1c6b6cbaed4eb062d9731a76514d943d19aa994cb4bea02b5",
+  "probes/deadline-contract.mjs": "4f6f947c379328093462a6e58f0ceff52bd063977c7de3d883a65e119d928564",
+  "probes/eager-phases.mjs": "0a08d767c23c7d0f3516e263ed646ad540c9d4ee17e4a08258c09b315a6d18bc",
+  "probes/mutation-audit.py": "8827833e3b171c485b003e332ea99ccacd1f6a0a406a9c7f7eb20660bc299731",
+  "evidence/CI_RELEASE_MANIFEST.json": "f4c19086e96a741dbf2b092f5217bf9293e92dded1ddeec8e90030fd979631db",
+  "evidence/close-guards.json": "b8202ed6be31c248b9f4c14762cc9831d3babf289c0fc0d401ce94b36ee6937d",
+  "evidence/deadline-contract.json": "2884692736b5468a1a984a729a62f03b0ccf71d5301ec858304ad568368baf39",
+  "evidence/eager-phases.json": "672411c72d91e5c30745327ddb261031611be2799b1c061fecccd329200605b2",
+  "evidence/independent-kills-deadline-mutant.json": "c045977c48db04bb4c825bf01ca87ed444edd01f8c29c69bdd2a0cd6e5678f17",
+  "evidence/independent-kills-join-mutant.log": "b18e2f68124f82bff90cda3bc1e7e423e7dcccc5d5db2f40ebf43928e44fe46c",
+  "evidence/mutant-deadline-4x.log": "6e6d4b70e6a9a3ed362842e2f17087ad7d22187d196395df25672c57cf3ddb71",
+  "evidence/mutant-deadline-4x.patch": "3dcc95681a9c7eced5778a61b8b439cb9d7213f5268d1490e5b86967acd9c3bd",
+  "evidence/mutant-join-premature.log": "b3226ab9fb07c6adc6b3bbe798e82f5eb0647ad0461113502138a9bf50622948",
+  "evidence/mutant-join-premature.patch": "01ca296b5fe7a6a878d57b9e22c09cc9c9608625853c752bde2d249167e5635d",
+  "evidence/mutation-results.json": "c59c97e75a8756d9bf0dbb6e752fbac49045834bf82f8e995e99054271c5f137",
+  "evidence/rc4-original-tests.log": "636562c8768cd379946f8cdff988b9b501ac03794be98bfb9e53a109c1b447f0",
+  "evidence/source-and-scope.json": "9bfdef18df4aa599bddeaf10469bf1e36822d2bb854cbf7b83e6d3413e07a304",
+  "evidence/source-diff-checks.json": "54cc641dab9bb2559f909879e3e37489894713e43809a5f441443a81e858cf1f",
+  "evidence/source-excerpts.md": "aa30a29e673919e5552f184acf5b32a228a1d2ca92db96ced1c1875d77928ad1"
+}

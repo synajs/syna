@@ -1,0 +1,193 @@
+{
+  "node": "v22.16.0",
+  "target": "/mnt/data/syna-rc4-review/source/packages/core/dist/index.js",
+  "results": [
+    {
+      "name": "same-env",
+      "status": "PASS",
+      "before": {
+        "innerState": "pending",
+        "outerState": "pending",
+        "childState": "disposing",
+        "rootState": "ready",
+        "cleanups": 1,
+        "starts": 0
+      },
+      "statesAtListener": {
+        "child": "disposing",
+        "root": "ready"
+      },
+      "outcomes": [
+        "rejected",
+        "rejected"
+      ],
+      "sameReason": true,
+      "cleanupCalls": 1
+    },
+    {
+      "name": "async-dispose",
+      "status": "PASS",
+      "before": {
+        "innerState": "pending",
+        "outerState": "pending",
+        "childState": "disposing",
+        "rootState": "ready",
+        "cleanups": 1,
+        "starts": 0
+      },
+      "statesAtListener": {
+        "child": "disposing",
+        "root": "ready"
+      },
+      "outcomes": [
+        "rejected",
+        "rejected"
+      ],
+      "sameReason": true,
+      "cleanupCalls": 1
+    },
+    {
+      "name": "child-to-parent",
+      "status": "PASS",
+      "before": {
+        "innerState": "pending",
+        "outerState": "pending",
+        "childState": "disposing",
+        "rootState": "disposing",
+        "cleanups": 1,
+        "starts": 0
+      },
+      "statesAtListener": {
+        "child": "disposing",
+        "root": "ready"
+      },
+      "outcomes": [
+        "rejected",
+        "rejected"
+      ],
+      "sameReason": false,
+      "cleanupCalls": 1
+    },
+    {
+      "name": "parent-to-child",
+      "status": "PASS",
+      "before": {
+        "innerState": "pending",
+        "outerState": "pending",
+        "childState": "disposing",
+        "rootState": "disposing",
+        "cleanups": 1,
+        "starts": 0
+      },
+      "statesAtListener": {
+        "child": "disposing",
+        "root": "disposing"
+      },
+      "outcomes": [
+        "rejected",
+        "rejected"
+      ],
+      "sameReason": false,
+      "cleanupCalls": 1
+    },
+    {
+      "name": "root-to-root",
+      "status": "PASS",
+      "before": {
+        "innerState": "pending",
+        "outerState": "pending",
+        "childState": "disposing",
+        "rootState": "disposing",
+        "cleanups": 1,
+        "starts": 0
+      },
+      "statesAtListener": {
+        "child": "disposing",
+        "root": "disposing"
+      },
+      "outcomes": [
+        "rejected",
+        "rejected"
+      ],
+      "sameReason": true,
+      "cleanupCalls": 1
+    },
+    {
+      "name": "root-to-runtime",
+      "status": "PASS",
+      "before": {
+        "innerState": "pending",
+        "outerState": "pending",
+        "childState": "disposing",
+        "rootState": "disposing",
+        "cleanups": 1,
+        "starts": 0
+      },
+      "statesAtListener": {
+        "child": "disposing",
+        "root": "disposing"
+      },
+      "outcomes": [
+        "rejected",
+        "rejected"
+      ],
+      "sameReason": false,
+      "cleanupCalls": 1
+    },
+    {
+      "name": "runtime-to-runtime",
+      "status": "PASS",
+      "before": {
+        "innerState": "pending",
+        "outerState": "pending",
+        "childState": "disposing",
+        "rootState": "disposing",
+        "cleanups": 1,
+        "starts": 0
+      },
+      "statesAtListener": {
+        "child": "disposing",
+        "root": "disposing"
+      },
+      "outcomes": [
+        "rejected",
+        "rejected"
+      ],
+      "sameReason": true,
+      "cleanupCalls": 1
+    },
+    {
+      "name": "runtime-to-child",
+      "status": "PASS",
+      "before": {
+        "innerState": "pending",
+        "outerState": "pending",
+        "childState": "disposing",
+        "rootState": "disposing",
+        "cleanups": 1,
+        "starts": 0
+      },
+      "statesAtListener": {
+        "child": "disposing",
+        "root": "disposing"
+      },
+      "outcomes": [
+        "rejected",
+        "rejected"
+      ],
+      "sameReason": false,
+      "cleanupCalls": 1
+    },
+    {
+      "name": "actual-onEvent-reentry",
+      "status": "PASS",
+      "calls": 1,
+      "bothObserveSameError": true
+    },
+    {
+      "name": "benign-onEvent-control",
+      "status": "OBSERVED",
+      "callbackCalls": 0
+    }
+  ]
+}

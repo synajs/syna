@@ -1,0 +1,54 @@
+[
+  {
+    "name": "join-premature",
+    "explanation": "Both joinClose methods yield once then fulfil; real close remains intact. Tests must assert INNER observer outcome to reject this.",
+    "command": [
+      "node",
+      "--test",
+      "--test-reporter=tap",
+      "packages/core/tests/rc4-cleanup-phase.test.mjs",
+      "packages/core/tests/rc4-close-invariants.test.mjs",
+      "packages/core/tests/rc4-graph-property.test.mjs",
+      "packages/core/tests/rc4-retention.test.mjs",
+      "packages/core/tests/rc4-waiter-termination.test.mjs"
+    ],
+    "exit": 0,
+    "counts": {
+      "tests": 55,
+      "pass": 55,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "testFiles": [
+      "rc4-cleanup-phase.test.mjs",
+      "rc4-close-invariants.test.mjs",
+      "rc4-graph-property.test.mjs",
+      "rc4-retention.test.mjs",
+      "rc4-waiter-termination.test.mjs"
+    ],
+    "scope": "scratch compiled copy only; originals untouched"
+  },
+  {
+    "name": "deadline-4x",
+    "explanation": "Every attempt deadline is armed for four times its configured timeout; reported timeout details unchanged.",
+    "command": [
+      "node",
+      "--test",
+      "--test-reporter=tap",
+      "packages/core/tests/rc4-waiter-termination.test.mjs"
+    ],
+    "exit": 0,
+    "counts": {
+      "tests": 8,
+      "pass": 8,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "testFiles": [
+      "rc4-waiter-termination.test.mjs"
+    ],
+    "scope": "scratch compiled copy only; originals untouched"
+  }
+]

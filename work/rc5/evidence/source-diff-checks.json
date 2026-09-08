@@ -1,0 +1,35 @@
+{
+  "comparison": "extracted rc3 CI archive versus rc4 CI archive; no guessed Git state",
+  "checks": [
+    {
+      "path": "packages/core/src/internal/entry-planner.ts",
+      "identicalToRC3": true,
+      "rc4Sha256": "fe6c77b39092632a17ad711469d28dc564995038db54b386250f112dfd94299d"
+    },
+    {
+      "path": "packages/core/src/internal/graph-builder.ts",
+      "identicalToRC3": true,
+      "rc4Sha256": "4a015654491a433703d399b9cfa9c074b1f0e98602885b39fe790ef4fecfbf75"
+    },
+    {
+      "path": "packages/core/src/internal/definition-compiler.ts",
+      "identicalToRC3": true,
+      "rc4Sha256": "3d5f55d6df3db982e86f00458695978da62089c4baeed42c2cc7c7802998f0af"
+    },
+    {
+      "path": "packages/core/src/internal/plan-cache.ts",
+      "identicalToRC3": true,
+      "rc4Sha256": "23f4652c6456b3263072387157f5f10f3564757687f103b1fa73500f344d95cc"
+    },
+    {
+      "path": "scripts/benchmark-compare.mjs",
+      "identicalToRC3": true,
+      "rc4Sha256": "d2b121c34406cfa0824bed9c23aa9fa2f5c7032ed7f05ba1c7df5504ea9fdcc1"
+    }
+  ],
+  "changedExistingScriptFiles": [
+    "scripts/verify-release.mjs",
+    "scripts/tests/api-inventory.test.mjs",
+    "scripts/tests/benchmark-registered-faster.test.mjs"
+  ]
+}

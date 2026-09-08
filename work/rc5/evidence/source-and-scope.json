@@ -1,0 +1,90 @@
+{
+  "repository": "synajs/syna",
+  "commit": "b691067b4b9156f4897b2386f088dcda36a288d2",
+  "gateProvenance": {
+    "commit": "b691067b4b9156f4897b2386f088dcda36a288d2",
+    "dirty": false,
+    "modified": [],
+    "untracked": []
+  },
+  "CI": {
+    "run": 34193542725,
+    "artifact": 10043171791,
+    "artifactSHA256": "46cedea3acfbf17ebb9e9ec82e1408184b38f5654c82c3b2cd2c99629fb9a8b3",
+    "status": "COMPLETE",
+    "steps": 53,
+    "source": {
+      "algorithm": "sha256(path\\nsha256(content)\\n...)",
+      "files": 347,
+      "digest": "5fd91c2e98864f10c1fb46e332f6c7f6ffbf842e4ac03c323a43b85c3ec11f94"
+    },
+    "environment": {
+      "node": "v22.23.2",
+      "platform": "linux",
+      "arch": "x64",
+      "cwd": ".",
+      "gitProvenance": {
+        "commit": "b691067b4b9156f4897b2386f088dcda36a288d2",
+        "dirty": false,
+        "modified": [],
+        "untracked": []
+      },
+      "postgres": {
+        "server": "PostgreSQL 16.15",
+        "url": "postgres://syna@127.0.0.1:54329/postgres",
+        "origin": "temporary cluster"
+      }
+    }
+  },
+  "local": {
+    "node": "v22.16.0",
+    "semverActual": "7.6.3",
+    "semverDeclared": "^7.8.5",
+    "execution": "unchanged CI compiled core; exact-version lifecycle probes; isolated dependency substitution; no lockfile rebuild",
+    "notPerformed": [
+      "full npm ci/build",
+      "PostgreSQL integration locally",
+      "full release gate locally",
+      "21-round comparative benchmark locally"
+    ]
+  },
+  "integrity": [
+    {
+      "path": "packages/core/src/runtime.ts",
+      "sha256": "7a9514d2200c016c625f3d7e6259734a156672359dd4d4760b8024215da52c25"
+    },
+    {
+      "path": "packages/core/src/internal/materializer.ts",
+      "sha256": "4a3dc71c2e431e0127581208c182b8136200c8277094cbf7c483babb22a33269"
+    },
+    {
+      "path": "docs/SEMANTIC_MODEL.md",
+      "sha256": "a1e959bf79462861620a56eb15c0219d50ecec5f7fa6cbeaa50a88c39f5c5910"
+    },
+    {
+      "path": "docs/SEMANTIC_CHANGES_RC4.md",
+      "sha256": "ace29091ba96f4388b60b182b00fb96e0058b66e1ea1fd0cecbd70849a9f1f81"
+    },
+    {
+      "path": "packages/core/tests/rc4-retention.test.mjs",
+      "sha256": "da2494c5103c39d1ee7ad683fdae3c392f2da760b0353d55d8c736acbc4059ef"
+    },
+    {
+      "path": "packages/core/tests/rc4-close-invariants.test.mjs",
+      "sha256": "422acca5ca6a78d191fd07855dbe5a96f05e52af0ca996a7fcef5f21572a7657"
+    },
+    {
+      "path": "packages/core/tests/rc4-graph-property.test.mjs",
+      "sha256": "af83c4a7dcb8a27fed7a9374c8c0331a4f8165c9bbebc120dccb8504f2805dc3"
+    },
+    {
+      "path": "packages/core/tests/rc4-waiter-termination.test.mjs",
+      "sha256": "8ad274d118e8fae74cf7afe1bfa28bdc3d70db5e8281801de930351c3553cc1b"
+    },
+    {
+      "path": "packages/core/tests/rc4-cleanup-phase.test.mjs",
+      "sha256": "bf7b751940c8748f833f60224d40e48a0c6a27871023b452dbed257e17b4d401"
+    }
+  ],
+  "mutations": "isolated compiled copies only; original source and compiled core not edited"
+}

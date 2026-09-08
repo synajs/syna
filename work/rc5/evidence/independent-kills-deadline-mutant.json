@@ -1,0 +1,11 @@
+{
+  "target": "/mnt/data/syna-rc4-review/mutations/deadline-4x/packages/core/dist/index.js",
+  "node": "v22.16.0",
+  "method": "controlled global clock and timer driver in probe process only; no timer-count oracle",
+  "results": [],
+  "failure": {
+    "name": "AssertionError",
+    "message": "eager waiter must time out at 60, independently of rollback grace\n\nundefined !== 60\n",
+    "stack": "AssertionError [ERR_ASSERTION]: eager waiter must time out at 60, independently of rollback grace\n\nundefined !== 60\n\n    at file:///mnt/data/syna-rc4-review/probes/deadline-contract.mjs:24:27"
+  }
+}

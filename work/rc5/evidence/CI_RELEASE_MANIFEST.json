@@ -1,0 +1,877 @@
+{
+  "name": "Syna v1.0.0-rc.4 + multitenant-blog",
+  "version": "1.0.0-rc.4",
+  "gate": "scripts/verify-release.mjs",
+  "status": "COMPLETE",
+  "mode": "release",
+  "generatedAt": "2026-09-08T06:16:27.066Z",
+  "startedAt": "2026-09-08T06:12:53.470Z",
+  "environment": {
+    "node": "v22.23.2",
+    "platform": "linux",
+    "arch": "x64",
+    "cwd": ".",
+    "gitProvenance": {
+      "commit": "b691067b4b9156f4897b2386f088dcda36a288d2",
+      "dirty": false,
+      "modified": [],
+      "untracked": []
+    },
+    "postgres": {
+      "server": "PostgreSQL 16.15",
+      "url": "postgres://syna@127.0.0.1:54329/postgres",
+      "origin": "temporary cluster"
+    }
+  },
+  "source": {
+    "algorithm": "sha256(path\\nsha256(content)\\n...)",
+    "files": 347,
+    "digest": "5fd91c2e98864f10c1fb46e332f6c7f6ffbf842e4ac03c323a43b85c3ec11f94"
+  },
+  "steps": [
+    {
+      "name": "clean",
+      "command": "npm run clean",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:12:53.540Z",
+      "endedAt": "2026-09-08T06:12:53.658Z",
+      "durationMs": 118,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/clean.log",
+      "ok": true
+    },
+    {
+      "name": "build",
+      "command": "npm run build",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:12:53.659Z",
+      "endedAt": "2026-09-08T06:13:12.482Z",
+      "durationMs": 18823,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/build.log",
+      "ok": true
+    },
+    {
+      "name": "type-tests",
+      "command": "npm run type-tests",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:13:12.482Z",
+      "endedAt": "2026-09-08T06:13:20.398Z",
+      "durationMs": 7916,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/type-tests.log",
+      "ok": true
+    },
+    {
+      "name": "core-tests",
+      "command": "node --test --test-reporter=tap packages/core/tests/close-matrix.test.mjs packages/core/tests/contracts.test.mjs packages/core/tests/core.test.mjs packages/core/tests/hardening.test.mjs packages/core/tests/lifecycle.test.mjs packages/core/tests/rc3-close-paths.test.mjs packages/core/tests/rc4-cleanup-phase.test.mjs packages/core/tests/rc4-close-invariants.test.mjs packages/core/tests/rc4-graph-property.test.mjs packages/core/tests/rc4-retention.test.mjs packages/core/tests/rc4-waiter-termination.test.mjs packages/core/tests/reference-planner.test.mjs packages/core/tests/semver.test.mjs packages/core/tests/v04-adversarial.test.mjs packages/core/tests/v04-corrections.test.mjs packages/core/tests/v04-finalization.test.mjs packages/core/tests/v04-regressions.test.mjs packages/core/tests/v05-attempts.test.mjs packages/core/tests/v05-audit-lifecycle.test.mjs packages/core/tests/v05-audit-planning.test.mjs packages/core/tests/v05-audit3-lifecycle-planning.test.mjs packages/core/tests/v05-cache-cleanup.test.mjs packages/core/tests/v05-definitions.test.mjs packages/core/tests/v05-explain.test.mjs packages/core/tests/v05-planner.test.mjs packages/core/tests/v05-promises.test.mjs packages/core/tests/v05-realms-override.test.mjs packages/core/tests/v05-review-lifecycle.test.mjs packages/core/tests/v06-snapshots.test.mjs packages/core/tests/v06-t1-errors.test.mjs packages/core/tests/v07-expired-forms.test.mjs packages/core/tests/v07-s1-waiter-deadline.test.mjs packages/core/tests/v07-s10-as-syna-error.test.mjs packages/core/tests/v07-s2-state-and-ledger.test.mjs packages/core/tests/v07-s6-reuse-errors.test.mjs packages/core/tests/v07-s7-env-state.test.mjs packages/core/tests/v07-s7-invalid-descriptor.test.mjs packages/core/tests/v07-s8-missing-implementation.test.mjs packages/core/tests/v08-deadline-queue.test.mjs packages/core/tests/v08-expired-forms.test.mjs packages/core/tests/v08-implementation-ref.test.mjs packages/core/tests/v08-slot-state.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:13:20.399Z",
+      "endedAt": "2026-09-08T06:13:29.635Z",
+      "durationMs": 9236,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 322,
+        "pass": 322,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/core-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-filesystem-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/filesystem.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:13:29.635Z",
+      "endedAt": "2026-09-08T06:13:31.864Z",
+      "durationMs": 2229,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 69,
+        "pass": 69,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/blog-filesystem-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-render-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/render.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:13:31.864Z",
+      "endedAt": "2026-09-08T06:13:32.465Z",
+      "durationMs": 601,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 8,
+        "pass": 8,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/blog-render-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-tenants-auth-preflight-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/tenants-auth.test.mjs apps/multitenant-blog/tests/preflight.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:13:32.465Z",
+      "endedAt": "2026-09-08T06:13:33.479Z",
+      "durationMs": 1014,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 12,
+        "pass": 12,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/blog-tenants-auth-preflight-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-audit-regression-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/audit-app.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:13:33.479Z",
+      "endedAt": "2026-09-08T06:13:40.405Z",
+      "durationMs": 6926,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 22,
+        "pass": 22,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/blog-audit-regression-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-review-regression-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/review-app.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:13:40.406Z",
+      "endedAt": "2026-09-08T06:13:42.772Z",
+      "durationMs": 2366,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 8,
+        "pass": 8,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/blog-review-regression-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-close-path-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/rc3-close-paths.test.mjs apps/multitenant-blog/tests/rc4-acquire-deadline.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:13:42.773Z",
+      "endedAt": "2026-09-08T06:13:44.151Z",
+      "durationMs": 1378,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 11,
+        "pass": 11,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/blog-close-path-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-site-manager-working-set-tests",
+      "command": "node --test --test-reporter=tap --expose-gc apps/multitenant-blog/tests/site-manager.test.mjs",
+      "env": {
+        "SYNA_WORKING_SET_OUT": "<root>/validation/v1.0.0-rc.4-release/working-set.json"
+      },
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:13:44.151Z",
+      "endedAt": "2026-09-08T06:13:53.185Z",
+      "durationMs": 9034,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 14,
+        "pass": 14,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/blog-site-manager-working-set-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-postgres-and-matrix-tests",
+      "command": "node scripts/pg-test-cluster.mjs with -- node --test --test-reporter=tap apps/multitenant-blog/tests/postgres.test.mjs apps/multitenant-blog/tests/matrix.test.mjs",
+      "env": {
+        "SYNA_PG_CLUSTER_DIR": "<root>/work/pg-release"
+      },
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:13:53.185Z",
+      "endedAt": "2026-09-08T06:13:57.438Z",
+      "durationMs": 4253,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 45,
+        "pass": 45,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/blog-postgres-and-matrix-tests.log",
+      "ok": true
+    },
+    {
+      "name": "gate-self-tests",
+      "command": "node --test --test-reporter=tap scripts/tests/any-count.test.mjs scripts/tests/api-inventory-diff.test.mjs scripts/tests/api-inventory.test.mjs scripts/tests/benchmark-registered-faster.test.mjs scripts/tests/codemod-v08.test.mjs scripts/tests/deprecations.test.mjs scripts/tests/no-old-names.test.mjs scripts/tests/no-vendor-names.test.mjs scripts/tests/pg-test-cluster.test.mjs scripts/tests/readme-example.test.mjs scripts/tests/step-runner.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:13:57.439Z",
+      "endedAt": "2026-09-08T06:14:18.288Z",
+      "durationMs": 20849,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 38,
+        "pass": 38,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/gate-self-tests.log",
+      "ok": true
+    },
+    {
+      "name": "api-inventory",
+      "command": "node scripts/api-inventory.mjs --out <root>/validation/v1.0.0-rc.4-release/api-inventory.md --json <root>/validation/v1.0.0-rc.4-release/api-inventory.json",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:14:18.288Z",
+      "endedAt": "2026-09-08T06:14:26.454Z",
+      "durationMs": 8166,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/api-inventory.log",
+      "ok": true
+    },
+    {
+      "name": "api-inventory-no-deprecated",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/v1.0.0-rc.4-release/api-inventory.json",
+      "note": "374 items, 0 @deprecated"
+    },
+    {
+      "name": "api-inventory-diff",
+      "command": "node scripts/api-inventory.mjs --diff validation/v1.0.0-rc.3-release/api-inventory.json <root>/validation/v1.0.0-rc.4-release/api-inventory.json --out <root>/validation/v1.0.0-rc.4-release/api-inventory-diff.md",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:14:26.456Z",
+      "endedAt": "2026-09-08T06:14:26.846Z",
+      "durationMs": 390,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/api-inventory-diff.log",
+      "ok": true
+    },
+    {
+      "name": "api-inventory-unchanged",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/v1.0.0-rc.4-release/api-inventory-diff.md",
+      "note": "374 items here, 374 in the 1.0.0-rc.3 record (validation/v1.0.0-rc.3-release/api-inventory.json, commit 5ae7baf); 0 added, 0 removed, 0 changed — the registration of 1.0.0-rc.4 for this comparison is 0 item(s)"
+    },
+    {
+      "name": "api-inventory-frozen",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/v1.0.0-rc.4-release/api-inventory.json",
+      "note": "374 items here, 374 in the 0.8.0 record (validation/v0.8-release/api-inventory.json, commit 38a722e); 0 added, 0 removed, 3 changed — the registration of 1.0.0-rc.4 for this comparison is 3 item(s)",
+      "changed": [
+        "RuntimeEvent",
+        "RuntimeLimits.disposalGraceMs",
+        "UnsettledAttemptInspection.state"
+      ]
+    },
+    {
+      "name": "codemod-idempotent",
+      "command": "node scripts/codemod-v08.mjs --dry-run --json <root>/validation/v1.0.0-rc.4-release/codemod-idempotent.json",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:14:26.853Z",
+      "endedAt": "2026-09-08T06:14:29.419Z",
+      "durationMs": 2566,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/codemod-idempotent.log",
+      "ok": true
+    },
+    {
+      "name": "no-old-reference-tokens",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/v1.0.0-rc.4-release/old-reference-tokens.json",
+      "note": "63 files scanned, 0 hits"
+    },
+    {
+      "name": "no-vendor-names",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/v1.0.0-rc.4-release/vendor-name-scan.json",
+      "note": "240 files scanned, 0 hits, 12 allowed literals of the application"
+    },
+    {
+      "name": "any-count",
+      "command": "node scripts/any-count.mjs --check scripts/any-baseline-v1.0.0-rc.2.json",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:14:29.460Z",
+      "endedAt": "2026-09-08T06:14:30.176Z",
+      "durationMs": 716,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/any-count.log",
+      "ok": true
+    },
+    {
+      "name": "demo-01-basics",
+      "command": "node apps/01-basics/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:14:30.176Z",
+      "endedAt": "2026-09-08T06:14:30.259Z",
+      "durationMs": 83,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/demo-01-basics.log",
+      "ok": true
+    },
+    {
+      "name": "demo-02-per-tenant",
+      "command": "node apps/02-per-tenant/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:14:30.259Z",
+      "endedAt": "2026-09-08T06:14:30.359Z",
+      "durationMs": 100,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/demo-02-per-tenant.log",
+      "ok": true
+    },
+    {
+      "name": "demo-03-user-configurable",
+      "command": "node apps/03-user-configurable/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:14:30.360Z",
+      "endedAt": "2026-09-08T06:14:30.459Z",
+      "durationMs": 99,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/demo-03-user-configurable.log",
+      "ok": true
+    },
+    {
+      "name": "demo-04-two-versions",
+      "command": "node apps/04-two-versions/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:14:30.460Z",
+      "endedAt": "2026-09-08T06:14:30.559Z",
+      "durationMs": 99,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/demo-04-two-versions.log",
+      "ok": true
+    },
+    {
+      "name": "demo-05-scheduled-jobs",
+      "command": "node apps/05-scheduled-jobs/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:14:30.560Z",
+      "endedAt": "2026-09-08T06:14:30.654Z",
+      "durationMs": 94,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/demo-05-scheduled-jobs.log",
+      "ok": true
+    },
+    {
+      "name": "demo-06-testing",
+      "command": "node apps/06-testing/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:14:30.654Z",
+      "endedAt": "2026-09-08T06:14:30.752Z",
+      "durationMs": 98,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/demo-06-testing.log",
+      "ok": true
+    },
+    {
+      "name": "demo-07-failure-modes",
+      "command": "node apps/07-failure-modes/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:14:30.752Z",
+      "endedAt": "2026-09-08T06:14:31.309Z",
+      "durationMs": 557,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/demo-07-failure-modes.log",
+      "ok": true
+    },
+    {
+      "name": "blog-demo-filesystem",
+      "command": "node apps/multitenant-blog/bin/multitenant-blog.mjs demo --root <root>/work/demo-content",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:14:31.309Z",
+      "endedAt": "2026-09-08T06:14:31.904Z",
+      "durationMs": 595,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/blog-demo-filesystem.log",
+      "ok": true
+    },
+    {
+      "name": "benchmarks",
+      "command": "node --expose-gc benchmarks/v0.5-planning.mjs <root>/validation/v1.0.0-rc.4-release/benchmark-v0.5.json",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:14:31.906Z",
+      "endedAt": "2026-09-08T06:14:40.581Z",
+      "durationMs": 8675,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/benchmarks.log",
+      "ok": true
+    },
+    {
+      "name": "benchmark-compare",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": false,
+      "command": "internal",
+      "log": "validation/v1.0.0-rc.4-release/benchmark-v0.5.json",
+      "note": "not comparable on this host (platform: baseline darwin, host linux; arch: baseline arm64, host x64; cpu: baseline Apple M4 Pro, host AMD EPYC 7763 64-Core Processor; cpuCount: baseline 14, host 4; node: baseline v26, host v22); the same-machine comparison is recorded only on the baseline's machine"
+    },
+    {
+      "name": "blog-request-latency",
+      "command": "node scripts/pg-test-cluster.mjs with -- node benchmarks/blog-request-latency.mjs <root>/validation/v1.0.0-rc.4-release/blog-request-latency.json",
+      "env": {
+        "SYNA_PG_CLUSTER_DIR": "<root>/work/pg-release"
+      },
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:14:40.585Z",
+      "endedAt": "2026-09-08T06:14:44.872Z",
+      "durationMs": 4287,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/blog-request-latency.log",
+      "ok": true
+    },
+    {
+      "name": "archive-scan",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/v1.0.0-rc.4-release/archive-scan.json"
+    },
+    {
+      "name": "archive-tar",
+      "command": "tar -czf <root>/work/release/syna-v1.0.0-rc.4-source.tar.gz -C <root>/work/release syna-v1.0.0-rc.4-source",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:14:44.914Z",
+      "endedAt": "2026-09-08T06:14:45.027Z",
+      "durationMs": 113,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/archive-tar.log",
+      "ok": true
+    },
+    {
+      "name": "archive-zip",
+      "command": "zip -qr <root>/work/release/syna-v1.0.0-rc.4-source.zip syna-v1.0.0-rc.4-source",
+      "cwd": "work/release",
+      "startedAt": "2026-09-08T06:14:45.028Z",
+      "endedAt": "2026-09-08T06:14:45.121Z",
+      "durationMs": 93,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/archive-zip.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-unpack",
+      "command": "tar -xzf <root>/work/release/syna-v1.0.0-rc.4-source.tar.gz -C /tmp/syna-release-rebuild-RQJQ0L",
+      "cwd": ".",
+      "startedAt": "2026-09-08T06:14:45.124Z",
+      "endedAt": "2026-09-08T06:14:45.148Z",
+      "durationMs": 24,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/rebuild-unpack.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-install",
+      "command": "npm ci --no-fund --no-audit",
+      "cwd": "../../../../../tmp/syna-release-rebuild-RQJQ0L/syna-v1.0.0-rc.4-source",
+      "startedAt": "2026-09-08T06:14:45.148Z",
+      "endedAt": "2026-09-08T06:14:46.373Z",
+      "durationMs": 1225,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/rebuild-install.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-build",
+      "command": "npm run build",
+      "cwd": "../../../../../tmp/syna-release-rebuild-RQJQ0L/syna-v1.0.0-rc.4-source",
+      "startedAt": "2026-09-08T06:14:46.373Z",
+      "endedAt": "2026-09-08T06:15:05.062Z",
+      "durationMs": 18689,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/rebuild-build.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-type-tests",
+      "command": "npm run type-tests",
+      "cwd": "../../../../../tmp/syna-release-rebuild-RQJQ0L/syna-v1.0.0-rc.4-source",
+      "startedAt": "2026-09-08T06:15:05.062Z",
+      "endedAt": "2026-09-08T06:15:12.949Z",
+      "durationMs": 7887,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/rebuild-type-tests.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-core-tests",
+      "command": "node --test --test-reporter=tap packages/core/tests/close-matrix.test.mjs packages/core/tests/contracts.test.mjs packages/core/tests/core.test.mjs packages/core/tests/hardening.test.mjs packages/core/tests/lifecycle.test.mjs packages/core/tests/rc3-close-paths.test.mjs packages/core/tests/rc4-cleanup-phase.test.mjs packages/core/tests/rc4-close-invariants.test.mjs packages/core/tests/rc4-graph-property.test.mjs packages/core/tests/rc4-retention.test.mjs packages/core/tests/rc4-waiter-termination.test.mjs packages/core/tests/reference-planner.test.mjs packages/core/tests/semver.test.mjs packages/core/tests/v04-adversarial.test.mjs packages/core/tests/v04-corrections.test.mjs packages/core/tests/v04-finalization.test.mjs packages/core/tests/v04-regressions.test.mjs packages/core/tests/v05-attempts.test.mjs packages/core/tests/v05-audit-lifecycle.test.mjs packages/core/tests/v05-audit-planning.test.mjs packages/core/tests/v05-audit3-lifecycle-planning.test.mjs packages/core/tests/v05-cache-cleanup.test.mjs packages/core/tests/v05-definitions.test.mjs packages/core/tests/v05-explain.test.mjs packages/core/tests/v05-planner.test.mjs packages/core/tests/v05-promises.test.mjs packages/core/tests/v05-realms-override.test.mjs packages/core/tests/v05-review-lifecycle.test.mjs packages/core/tests/v06-snapshots.test.mjs packages/core/tests/v06-t1-errors.test.mjs packages/core/tests/v07-expired-forms.test.mjs packages/core/tests/v07-s1-waiter-deadline.test.mjs packages/core/tests/v07-s10-as-syna-error.test.mjs packages/core/tests/v07-s2-state-and-ledger.test.mjs packages/core/tests/v07-s6-reuse-errors.test.mjs packages/core/tests/v07-s7-env-state.test.mjs packages/core/tests/v07-s7-invalid-descriptor.test.mjs packages/core/tests/v07-s8-missing-implementation.test.mjs packages/core/tests/v08-deadline-queue.test.mjs packages/core/tests/v08-expired-forms.test.mjs packages/core/tests/v08-implementation-ref.test.mjs packages/core/tests/v08-slot-state.test.mjs",
+      "cwd": "../../../../../tmp/syna-release-rebuild-RQJQ0L/syna-v1.0.0-rc.4-source",
+      "startedAt": "2026-09-08T06:15:12.949Z",
+      "endedAt": "2026-09-08T06:15:22.209Z",
+      "durationMs": 9260,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 322,
+        "pass": 322,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/rebuild-core-tests.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-app-tests",
+      "command": "node --test --test-reporter=tap --expose-gc apps/multitenant-blog/tests/filesystem.test.mjs apps/multitenant-blog/tests/render.test.mjs apps/multitenant-blog/tests/tenants-auth.test.mjs apps/multitenant-blog/tests/preflight.test.mjs apps/multitenant-blog/tests/audit-app.test.mjs apps/multitenant-blog/tests/review-app.test.mjs apps/multitenant-blog/tests/rc3-close-paths.test.mjs apps/multitenant-blog/tests/rc4-acquire-deadline.test.mjs apps/multitenant-blog/tests/site-manager.test.mjs",
+      "cwd": "../../../../../tmp/syna-release-rebuild-RQJQ0L/syna-v1.0.0-rc.4-source",
+      "startedAt": "2026-09-08T06:15:22.209Z",
+      "endedAt": "2026-09-08T06:15:36.907Z",
+      "durationMs": 14698,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 144,
+        "pass": 144,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/rebuild-app-tests.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-postgres-matrix-tests",
+      "command": "node scripts/pg-test-cluster.mjs with -- node --test --test-reporter=tap apps/multitenant-blog/tests/postgres.test.mjs apps/multitenant-blog/tests/matrix.test.mjs",
+      "env": {
+        "SYNA_PG_CLUSTER_DIR": "/tmp/syna-release-rebuild-RQJQ0L/pg"
+      },
+      "cwd": "../../../../../tmp/syna-release-rebuild-RQJQ0L/syna-v1.0.0-rc.4-source",
+      "startedAt": "2026-09-08T06:15:36.907Z",
+      "endedAt": "2026-09-08T06:15:39.983Z",
+      "durationMs": 3076,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 45,
+        "pass": 45,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/rebuild-postgres-matrix-tests.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-gate-self-tests",
+      "command": "node --test --test-reporter=tap scripts/tests/any-count.test.mjs scripts/tests/api-inventory-diff.test.mjs scripts/tests/api-inventory.test.mjs scripts/tests/benchmark-registered-faster.test.mjs scripts/tests/codemod-v08.test.mjs scripts/tests/deprecations.test.mjs scripts/tests/no-old-names.test.mjs scripts/tests/no-vendor-names.test.mjs scripts/tests/pg-test-cluster.test.mjs scripts/tests/readme-example.test.mjs scripts/tests/step-runner.test.mjs",
+      "cwd": "../../../../../tmp/syna-release-rebuild-RQJQ0L/syna-v1.0.0-rc.4-source",
+      "startedAt": "2026-09-08T06:15:39.983Z",
+      "endedAt": "2026-09-08T06:16:00.078Z",
+      "durationMs": 20095,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 38,
+        "pass": 38,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/rebuild-gate-self-tests.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-codemod-idempotent",
+      "command": "node scripts/codemod-v08.mjs --dry-run",
+      "cwd": "../../../../../tmp/syna-release-rebuild-RQJQ0L/syna-v1.0.0-rc.4-source",
+      "startedAt": "2026-09-08T06:16:00.078Z",
+      "endedAt": "2026-09-08T06:16:02.594Z",
+      "durationMs": 2516,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/rebuild-codemod-idempotent.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-demo",
+      "command": "node apps/multitenant-blog/bin/multitenant-blog.mjs demo --root /tmp/syna-release-rebuild-RQJQ0L/demo-content",
+      "cwd": "../../../../../tmp/syna-release-rebuild-RQJQ0L/syna-v1.0.0-rc.4-source",
+      "startedAt": "2026-09-08T06:16:02.594Z",
+      "endedAt": "2026-09-08T06:16:03.187Z",
+      "durationMs": 593,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/rebuild-demo.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-examples",
+      "command": "npm run demo",
+      "cwd": "../../../../../tmp/syna-release-rebuild-RQJQ0L/syna-v1.0.0-rc.4-source",
+      "startedAt": "2026-09-08T06:16:03.187Z",
+      "endedAt": "2026-09-08T06:16:23.737Z",
+      "durationMs": 20550,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/rebuild-examples.log",
+      "ok": true
+    },
+    {
+      "name": "pack-core",
+      "command": "npm pack --pack-destination <root>/work/release/pack /tmp/syna-release-rebuild-RQJQ0L/syna-v1.0.0-rc.4-source/packages/core",
+      "cwd": "work/release/pack",
+      "startedAt": "2026-09-08T06:16:23.738Z",
+      "endedAt": "2026-09-08T06:16:24.156Z",
+      "durationMs": 418,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/pack-core.log",
+      "ok": true
+    },
+    {
+      "name": "pack-tsconfig",
+      "command": "npm pack --pack-destination <root>/work/release/pack /tmp/syna-release-rebuild-RQJQ0L/syna-v1.0.0-rc.4-source/packages/tsconfig",
+      "cwd": "work/release/pack",
+      "startedAt": "2026-09-08T06:16:24.156Z",
+      "endedAt": "2026-09-08T06:16:24.439Z",
+      "durationMs": 283,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/pack-tsconfig.log",
+      "ok": true
+    },
+    {
+      "name": "consumer-install",
+      "command": "npm install --no-fund --no-audit",
+      "cwd": "../../../../../tmp/syna-release-rebuild-RQJQ0L/consumer",
+      "startedAt": "2026-09-08T06:16:24.440Z",
+      "endedAt": "2026-09-08T06:16:25.742Z",
+      "durationMs": 1302,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/consumer-install.log",
+      "ok": true
+    },
+    {
+      "name": "consumer-build",
+      "command": "npm run build",
+      "cwd": "../../../../../tmp/syna-release-rebuild-RQJQ0L/consumer",
+      "startedAt": "2026-09-08T06:16:25.742Z",
+      "endedAt": "2026-09-08T06:16:26.724Z",
+      "durationMs": 982,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/consumer-build.log",
+      "ok": true
+    },
+    {
+      "name": "consumer-run",
+      "command": "npm run -s start",
+      "cwd": "../../../../../tmp/syna-release-rebuild-RQJQ0L/consumer",
+      "startedAt": "2026-09-08T06:16:26.725Z",
+      "endedAt": "2026-09-08T06:16:26.911Z",
+      "durationMs": 186,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/v1.0.0-rc.4-release/logs/consumer-run.log",
+      "ok": true
+    },
+    {
+      "name": "consumer-smoke-result",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/v1.0.0-rc.4-release/logs/consumer-run.log",
+      "output": {
+        "result": 84,
+        "revision": "7.3.1",
+        "explainOk": true,
+        "missing": "smoke.consumer/input/answer/v1",
+        "abandoned": 0,
+        "revisions": "7.3.1",
+        "slots": "ready,ready"
+      }
+    }
+  ],
+  "totals": {
+    "steps": 53,
+    "failed": 0,
+    "skippedTests": 0,
+    "tests": 1098,
+    "passed": 1098,
+    "distinctTests": 549,
+    "rebuildTests": 549
+  },
+  "blocked": [],
+  "previousRun": {
+    "generatedAt": "2026-09-08T04:40:13.709Z",
+    "commit": "e96871b5acb7f175e38e69db8bcfa342b343fb21",
+    "sourceDigest": "fce61dd33eab3122029c09e63b97a00c6eff067684107b32cbe9a24f8b0002b9",
+    "status": "COMPLETE",
+    "sameStepList": true,
+    "sameTestCounts": true,
+    "differences": []
+  },
+  "release": {
+    "archives": [
+      {
+        "path": "work/release/syna-v1.0.0-rc.4-source.tar.gz",
+        "bytes": 851663,
+        "sha256": "4a381dec424183724ba4ad9910677b65977634cc49d1dfb97c4fb7445f29fcfd"
+      },
+      {
+        "path": "work/release/syna-v1.0.0-rc.4-source.zip",
+        "bytes": 1116176,
+        "sha256": "0d3aa58a01761a6e89db2de5cafa71b7210131664de38fdef6e5d01b037c8254"
+      }
+    ],
+    "packed": [
+      {
+        "path": "work/release/pack/syna-core-1.0.0-rc.4.tgz",
+        "bytes": 125434,
+        "sha256": "6f8665b13535316c0a113a3ffc9d3f77153bf8287f2c96b8f542891f3529839c"
+      },
+      {
+        "path": "work/release/pack/syna-tsconfig-1.0.0-rc.4.tgz",
+        "bytes": 1585,
+        "sha256": "a4fc0c61d4060358c78575a726fed303def82a0f22edce8bb90472d1e0716a91"
+      }
+    ],
+    "sourceFingerprint": {
+      "algorithm": "sha256(path\\nsha256(content)\\n...)",
+      "files": 347,
+      "digest": "5fd91c2e98864f10c1fb46e332f6c7f6ffbf842e4ac03c323a43b85c3ec11f94"
+    },
+    "rebuiltFrom": "work/release/syna-v1.0.0-rc.4-source.tar.gz"
+  }
+}
