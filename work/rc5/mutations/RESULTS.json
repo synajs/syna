@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-09-08T17:19:27.663Z",
+  "generatedAt": "2026-09-08T17:37:05.800Z",
   "node": "v26.0.0",
-  "commit": "be0ba792e27fe0bd157b55e6e2b10685b9991140",
+  "commit": "d06bcf934fee2bf29e9365f878346fd743fc7b94",
   "status": "ALL_KILLED",
   "inputs": {
     "packages/core/src/runtime.ts": "7a9514d2200c016c625f3d7e6259734a156672359dd4d4760b8024215da52c25",
     "packages/core/tests/disposal/close-reentry.test.mjs": "2d8c0a00bb8ae5558aa2357bebe89e99a3677e0b9f4b43590e51294a985f0335",
     "packages/core/tests/disposal/cleanup-phase.test.mjs": "994c60cddce74c31953e1f09a0df8862b92abfabc512f914c28d3863a44a3f8a",
-    "packages/core/src/internal/materializer.ts": "690090edabab6c32afc64b33b732a1e455a8600b506c717ce46204dc3e9b93d5",
+    "packages/core/src/internal/deadline-queue.ts": "2bd91b0dba1b21e62ca3047fbfad348fd1055dd95349573ce31811d22696872f",
     "packages/core/tests/materialization/waiter-termination.test.mjs": "ca35f5eb91cfdfb8141b5846ad4ecd47a2147c9b017bf5f7705d59a6c82780c9",
     "packages/core/tests/materialization/deadline-clock.test.mjs": "d7d37b79816e8f2cd16bcb86447b79461a5eb0bd2ad55fe0acfeb3476eea0e61"
   },
@@ -56,7 +56,7 @@
       "title": "every waiter deadline is armed for four times its configured timeout",
       "explanation": "A waiter is armed at four times its `loadTimeoutMs`; the error it eventually reports still names the configured value. A test kills this only by observing when the deadline fires — a controlled clock, or the phase the run has reached — rather than by an upper bound wide enough to hold both.",
       "compiledFile": "packages/core/dist/internal/deadline-queue.js",
-      "source": "packages/core/src/internal/materializer.ts",
+      "source": "packages/core/src/internal/deadline-queue.ts",
       "patch": "work/rc5/mutations/deadline-4x.patch",
       "log": "work/rc5/mutations/deadline-4x.log",
       "tests": [

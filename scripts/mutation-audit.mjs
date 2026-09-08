@@ -63,7 +63,7 @@ export const MUTANTS = [
     replace: 'deadlines.add(waiter, performance.now() + Math.max(0, deadlineMs * 4)); /* MUTANT M2 */',
     occurrences: 1,
     files: 1,
-    source: 'packages/core/src/internal/materializer.ts',
+    source: 'packages/core/src/internal/deadline-queue.ts',
     explanation:
       'A waiter is armed at four times its `loadTimeoutMs`; the error it eventually reports '
       + 'still names the configured value. A test kills this only by observing when the '
