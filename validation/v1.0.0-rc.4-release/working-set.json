@@ -1,0 +1,89 @@
+{
+  "generatedAt": "2026-09-08T04:36:36.517Z",
+  "tenants": 120,
+  "capacity": 6,
+  "maxRecordsPerPhase": {
+    "hot": 3,
+    "rotate": 6,
+    "tail": 6,
+    "mixed": 6
+  },
+  "maxSiteEnvsAlive": 6,
+  "finalStats": {
+    "capacity": 6,
+    "reservedForRequests": 1,
+    "records": 0,
+    "active": 0,
+    "idle": 0,
+    "creating": 0,
+    "draining": 0,
+    "disposing": 0,
+    "leases": 0,
+    "pendingAcquires": 0,
+    "waitingByPurpose": {
+      "request": 0,
+      "build": 0,
+      "background": 0
+    },
+    "inFlightConfigReads": 0,
+    "inFlightAcquires": 0,
+    "evictions": 480,
+    "creations": 481,
+    "creationFailures": 0,
+    "disposalFailures": 0,
+    "rejectedForCapacity": 0,
+    "closed": false
+  },
+  "planCache": {
+    "hits": 482,
+    "misses": 6,
+    "entries": 6,
+    "evictions": 0,
+    "limit": 512
+  },
+  "heapSamples": [
+    {
+      "label": "start",
+      "heapUsed": 19773568,
+      "records": 0,
+      "disposing": 0,
+      "liveEnvs": 2
+    },
+    {
+      "label": "after-hot",
+      "heapUsed": 20911584,
+      "records": 3,
+      "disposing": 0,
+      "liveEnvs": 5
+    },
+    {
+      "label": "after-rotation",
+      "heapUsed": 21282288,
+      "records": 6,
+      "disposing": 0,
+      "liveEnvs": 8
+    },
+    {
+      "label": "after-tail",
+      "heapUsed": 21294328,
+      "records": 5,
+      "disposing": 0,
+      "liveEnvs": 7
+    },
+    {
+      "label": "after-mixed",
+      "heapUsed": 21437232,
+      "records": 6,
+      "disposing": 0,
+      "liveEnvs": 8
+    },
+    {
+      "label": "after-idle-sweep",
+      "heapUsed": 20937848,
+      "records": 0,
+      "disposing": 0,
+      "liveEnvs": 2
+    }
+  ],
+  "gcExposed": true
+}

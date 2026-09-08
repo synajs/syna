@@ -1,0 +1,78 @@
+{
+  "files": 240,
+  "hits": [],
+  "allowed": [
+    {
+      "file": "apps/multitenant-blog/bin/multitenant-blog.mjs",
+      "line": 60,
+      "literal": "hyla_mini",
+      "reason": "the default PostgreSQL schema name of the application"
+    },
+    {
+      "file": "apps/multitenant-blog/src/data/postgres/migrations.ts",
+      "line": 110,
+      "literal": "hyla-mini:migrations:",
+      "reason": "the migration advisory-lock namespace (PostgreSQL)"
+    },
+    {
+      "file": "apps/multitenant-blog/src/data/postgres/store.ts",
+      "line": 94,
+      "literal": "hyla-mini:tenant:",
+      "reason": "the per-tenant advisory-lock namespace (PostgreSQL)"
+    },
+    {
+      "file": "apps/multitenant-blog/src/data/postgres/store.ts",
+      "line": 211,
+      "literal": "hyla-mini:domain:",
+      "reason": "the per-host advisory-lock namespace (PostgreSQL)"
+    },
+    {
+      "file": "apps/multitenant-blog/src/site/http.ts",
+      "line": 113,
+      "literal": "[hyla-mini http]",
+      "reason": "the error-log prefix of the HTTP server"
+    },
+    {
+      "file": "apps/multitenant-blog/src/site/http.ts",
+      "line": 205,
+      "literal": "[hyla-mini static]",
+      "reason": "the error-log prefix of the static server"
+    },
+    {
+      "file": "apps/multitenant-blog/src/site/inputs.ts",
+      "line": 91,
+      "literal": "[hyla-mini sites]",
+      "reason": "the error-log prefix of the site manager"
+    },
+    {
+      "file": "apps/multitenant-blog/src/site/static-builder.ts",
+      "line": 90,
+      "literal": "record.builder !== 'hyla-mini'",
+      "reason": "the same tag, checked when a previous build is recognised"
+    },
+    {
+      "file": "apps/multitenant-blog/src/site/static-builder.ts",
+      "line": 91,
+      "literal": "builder \"hyla-mini\"",
+      "reason": "the same tag, named in the BAD_MANIFEST message and the document"
+    },
+    {
+      "file": "apps/multitenant-blog/src/site/static-builder.ts",
+      "line": 333,
+      "literal": "builder: 'hyla-mini'",
+      "reason": "the tag of a static build manifest this builder wrote (on disk)"
+    },
+    {
+      "file": "docs/MULTITENANT_BLOG.md",
+      "line": 43,
+      "literal": "hyla-mini:tenant:",
+      "reason": "the per-tenant advisory-lock namespace (PostgreSQL)"
+    },
+    {
+      "file": "docs/MULTITENANT_BLOG.md",
+      "line": 83,
+      "literal": "builder: \"hyla-mini\"",
+      "reason": "the same tag, named in the document"
+    }
+  ]
+}

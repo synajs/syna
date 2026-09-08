@@ -22,10 +22,12 @@ and the caller's deadline and the resource's cleanup are different clocks.
 - `9a08b18` `test(gate)` **G1**: the wall-clock lower bound split into a structural half and a
   wall-clock half with a stated tolerance; the gate re-keyed to 1.0.0-rc.3 with no registered
   increment and no registered faster row; the recorded rc.3 baseline.
-- `<docs>` `docs`: §11 and §13 clarified, `docs/SEMANTIC_CHANGES_RC4.md`, the reference and stability
+- `b4f271c` `docs`: §11 and §13 clarified, `docs/SEMANTIC_CHANGES_RC4.md`, the reference and stability
   documents, the history, the changelog, and this file.
-- `<release>` `release(rc.4)`: the version of every package and the lockfile.
-- `<evidence>` `release(rc.4)`: the gate run, `docs/VALIDATION.md` and the release manifest.
+- `4a97e34` `release(rc.4)`: the version of every package and the lockfile.
+- `e96871b` `fix(gate)`: the frozen-surface inventory check carries its own registration, which is
+  cumulative — the first release run was PARTIAL on it (below).
+- the evidence commit: the gate run, `docs/VALIDATION.md` and the release manifest.
 
 ## What each item became
 
@@ -126,6 +128,40 @@ median of 21 rounds are exactly what they were. Two shapes were enough — `EnvI
 rc.3's one line with the re-entrancy guard moved into `disposeEnv()`, where the window actually is,
 and the close walks nothing it does not have to (one indexed pass over the owned slots; both broadcast
 passes descend only when there are children). With those, all 23 rows are within ±10 %.
+
+## The release gate on `e96871b` — COMPLETE
+
+```
+== COMPLETE == 1098 test executions (549 distinct cases, 549 re-run in the rebuilt copy),
+               1098 passed, 0 failed steps, 0 skipped tests
+53 steps, provenance e96871b dirty=false, 380 source files,
+fingerprint fce61dd33eab3122029c09e63b97a00c6eff067684107b32cbe9a24f8b0002b9
+PostgreSQL 17.10 on a temporary cluster (127.0.0.1:54329)
+```
+
+| archive | bytes | sha256 |
+|---|---|---|
+| `work/release/syna-v1.0.0-rc.4-source.tar.gz` | 914569 | `8ffa2e4fdc3ef66d8c1563767a4bba69b3f2458c24518ee6c080d6ff01002034` |
+| `work/release/syna-v1.0.0-rc.4-source.zip` | 1142150 | `cd3ea37cfedf27feb5e50b67b6a579a3d1c2bc50326b100efb937067af4ed04e` |
+| `work/release/pack/syna-core-1.0.0-rc.4.tgz` | 125301 | `e480b525e18b00f255d9f9a02b641b99472ef45da5c2bae7181427d0403b45a6` |
+| `work/release/pack/syna-tsconfig-1.0.0-rc.4.tgz` | 1573 | `323a48b260731ee74b03ff28cdf6bf1a3a29f6eae3d55cf604a68b8623de071a` |
+
+The COMPLETE reading is from the archive: `rebuild-unpack` … `rebuild-examples` unpack
+`syna-v1.0.0-rc.4-source.tar.gz` into a scratch directory, install from the lockfile, build and re-run
+every suite there (322 core, 144 app, 45 PostgreSQL, 38 gate self-tests), then `pack-core` /
+`pack-tsconfig` / `consumer-install` / `consumer-build` / `consumer-run` install the packed tarballs
+into a fresh consumer project and run it.
+
+### The first run, and what it found
+
+The first release run was PARTIAL on one step: `api-inventory-frozen` (374 items on both sides,
+0 added, 0 removed, **3 changed**, all unregistered). `identicalTo()` used a single registration list
+for both inventory comparisons, which held while a release's increment over the previous candidate
+was also the whole drift from the frozen 0.8.0 surface — rc.3's three items were both. rc.4 registers
+nothing, so the shared list demanded that rc.3's three registered items be registered again. The two
+comparisons now carry their own lists (`e96871b`): the diff against the previous candidate must be
+exactly this release's increment (empty), and the drift from the frozen surface must be exactly what
+has been registered against it since 0.8.0. Nothing about the surface itself changed.
 
 ## Acceptance (§5 of the task book)
 
