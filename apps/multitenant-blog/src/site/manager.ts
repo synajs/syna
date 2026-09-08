@@ -218,32 +218,54 @@ export const SiteEnvironmentManager = define.service('site-environment-manager',
 
     /** Callers waiting for a shared configuration read; a shutdown ends their wait without cancelling the read. */
     const configWaiters = new Set<(error: Error) => void>()
+    /** Callers waiting for a shared site creation; a shutdown ends their wait without cancelling the creation. */
+    const creationWaiters = new Set<(error: Error) => void>()
 
     /**
-     * One caller's wait on the shared read, bounded by what is left of the
+     * One caller's wait on something shared — the configuration round-trip, the
+     * creation of a site, the close of a record — bounded by what is left of the
      * acquire deadline (docs/MULTITENANT_BLOG.md: one deadline for the whole
-     * acquire). The round-trip itself is never cancelled — other acquirers of
-     * the tenant are still joined to it — only this caller's wait ends.
+     * acquire) and ended by a shutdown.
+     *
+     * Only this caller's wait ends. The shared task is never cancelled: it keeps
+     * running, keeps whatever it acquired and stays available to everyone else
+     * joined to it. A deadline that belonged to the task instead of to the caller
+     * would fail the second acquirer because the first one grew impatient, would
+     * count that impatience as a creation failure of the tenant (arming the
+     * backoff), and would leave a half-created Env with no owner.
      */
-    const readConfigWithin = (tenantId: string, deadline: number): Promise<SiteConfig> => {
-      const pending = readConfig(tenantId)
-      return new Promise<SiteConfig>((resolve, reject) => {
-        const end = (settle: () => void): void => {
-          clearTimeout(timer)
-          configWaiters.delete(cancel)
-          settle()
-        }
-        const cancel = (error: Error): void => end(() => reject(error))
-        const timer = setTimeout(
-          () => cancel(new SiteCapacityError(
-            `Site ${tenantId} configuration was not read within ${settings.acquireTimeoutMs} ms while acquiring.`,
-          )),
-          Math.max(0, Math.min(settings.acquireTimeoutMs, deadline - Date.now())),
-        )
-        configWaiters.add(cancel)
-        pending.then(config => end(() => resolve(config)), error => end(() => reject(error)))
-      })
-    }
+    const waitWithin = <T>(
+      pending: Promise<T>,
+      deadline: number,
+      waiters: Set<(error: Error) => void>,
+      timedOut: () => Error,
+    ): Promise<T> => new Promise<T>((resolve, reject) => {
+      const end = (settle: () => void): void => {
+        clearTimeout(timer)
+        waiters.delete(cancel)
+        settle()
+      }
+      const cancel = (error: Error): void => end(() => reject(error))
+      const timer = setTimeout(() => cancel(timedOut()), Math.max(0, Math.min(settings.acquireTimeoutMs, deadline - Date.now())))
+      waiters.add(cancel)
+      pending.then(value => end(() => resolve(value)), error => end(() => reject(error)))
+    })
+
+    const readConfigWithin = (tenantId: string, deadline: number): Promise<SiteConfig> =>
+      waitWithin(readConfig(tenantId), deadline, configWaiters, () => new SiteCapacityError(
+        `Site ${tenantId} configuration was not read within ${settings.acquireTimeoutMs} ms while acquiring.`,
+      ))
+
+    /**
+     * One acquirer's wait on the creation of a site — its own `create()` or one it
+     * joined through `record.creation`. It covers everything inside the creation:
+     * `boundSites.enter()`, the context load and the authenticator load, none of
+     * which takes a deadline or a signal of its own.
+     */
+    const awaitCreationWithin = (record: SiteRecord, pending: Promise<void>, deadline: number): Promise<void> =>
+      waitWithin(pending, deadline, creationWaiters, () => new SiteCapacityError(
+        `Site ${record.tenantId} environment ${record.key} was not created within ${settings.acquireTimeoutMs} ms while acquiring.`,
+      ))
 
     /** Records whose Env is being closed: no longer under their key (a successor may be created at once) but still occupying their unit until the close settles. */
     const closing = new Set<SiteRecord>()
@@ -400,6 +422,11 @@ export const SiteEnvironmentManager = define.service('site-environment-manager',
 
     const create = (record: SiteRecord, config: SiteConfig): Promise<void> => {
       record.creation = (async () => {
+        // The creation holds the record, not the acquirer that started it: an
+        // acquirer whose own deadline passes stops waiting, while the world it
+        // started keeps its unit of capacity and its place under its key until it
+        // is finished — or has failed and closed itself.
+        record.leases += 1
         let env: Env<typeof SiteEntry['requires']> | undefined
         try {
           env = await boundSites.enter({
@@ -454,6 +481,10 @@ export const SiteEnvironmentManager = define.service('site-environment-manager',
             await disposeRecord(record)
           }
           throw error
+        }
+        finally {
+          record.leases -= 1
+          settle(record) // rotated to draining while it was being created → close it now
         }
       })()
       return record.creation
@@ -524,26 +555,18 @@ export const SiteEnvironmentManager = define.service('site-environment-manager',
             record = { key, tenantId, configRevision: config.configRevision, generation, state: 'creating', leases: 0, lastReleasedAt: Date.now() }
             records.set(key, record)
             reservations -= 1 // the record now counts as live capacity
-            record.leases += 1 // hold the record while creating so eviction cannot take it
-            try {
-              await create(record, config)
-            }
-            finally {
-              record.leases -= 1
-              settle(record) // rotated to draining while it was being created → close it now
-            }
+            // The creation itself holds the record; this acquirer only waits for it,
+            // within the one deadline of this acquire.
+            await awaitCreationWithin(record, create(record, config), deadline)
           }
           else {
             releaseReservation() // somebody else inserted the record meanwhile: the unit is free again, and the queue is told
           }
         }
         if (record.state === 'creating' && record.creation) {
-          record.leases += 1
-          try { await record.creation }
-          finally {
-            record.leases -= 1
-            settle(record)
-          }
+          // Joining somebody else's creation is a wait like any other: bounded by
+          // this acquirer's deadline, and it never becomes the creation's deadline.
+          await awaitCreationWithin(record, record.creation, deadline)
         }
         const env = record.env
         const context = record.context
@@ -629,9 +652,12 @@ export const SiteEnvironmentManager = define.service('site-environment-manager',
           clearTimeout(waiter.timer)
           waiter.reject(new SiteManagerClosedError())
         }
-        // In-flight acquirers stop waiting here; the store round-trips they were
-        // joined to are not cancelled and are not waited for either.
+        // In-flight acquirers stop waiting here, wherever they are waiting: the
+        // store round-trips and the site creations they were joined to are not
+        // cancelled and are not waited for either. A creation that is still running
+        // owns its Env and closes it when it finds the manager closed.
         for (const cancel of [...configWaiters]) cancel(new SiteManagerClosedError())
+        for (const cancel of [...creationWaiters]) cancel(new SiteManagerClosedError())
         const deadline = Date.now() + settings.shutdownTimeoutMs
         while (liveRecords().some(record => record.leases > 0) && Date.now() < deadline) {
           await new Promise(resolve => setTimeout(resolve, 10))

@@ -608,7 +608,11 @@ test('F-AP3-04 a creation cut short by shutdown() fails with SITE_MANAGER_CLOSED
     const manager = await harness.app.app.deps.sites.load()
     const runtime = harness.app.runtime
     const liveBefore = runtime.inspect().liveEnvCount
-    const acquiring = manager.acquire('slow', 'request').then(lease => { lease.release(); return 'lease' }, error => error)
+    let acquireEndedAt = 0
+    const acquiring = manager.acquire('slow', 'request').then(
+      lease => { lease.release(); acquireEndedAt = Date.now(); return 'lease' },
+      error => { acquireEndedAt = Date.now(); return error },
+    )
     await sleep(60) // inside enter(): the authenticator's setup is running
     assert.equal(manager.records().find(record => record.tenantId === 'slow')?.state, 'creating')
     const started = Date.now()
@@ -616,7 +620,11 @@ test('F-AP3-04 a creation cut short by shutdown() fails with SITE_MANAGER_CLOSED
     assert.ok(Date.now() - started < 1_000, 'shutdown() is bounded by its timeout plus the SiteEnv close, not by the creation')
     const outcome = await acquiring
     assert.equal(outcome.code, 'SITE_MANAGER_CLOSED', `the acquirer is refused as closed, not with the Runtime's state error: ${outcome.message ?? outcome}`)
-    assert.equal(outcome.cause?.code, 'ENV_CLOSED', 'the underlying error travels as the cause')
+    // 1.0.0-rc.4 / A4: the shutdown ends the caller's wait where it stands instead of
+    // letting it run to the end of the creation, so the refusal carries no cause —
+    // at that moment the creation has not failed, and it may yet succeed. The wait
+    // ends well before the authenticator's 300 ms setup would have returned.
+    assert.ok(acquireEndedAt - started < 200, `the acquirer stops waiting at the shutdown, not at the end of the creation (${acquireEndedAt - started} ms)`)
     assert.equal(manager.stats().creationFailures, 0, 'a shutdown is not a creation failure and starts no backoff')
     assert.equal(report.unreleasedLeases.length, 1, 'the creator\'s hold on the creating record is reported, as documented (R-2/R-3)')
     await waitUntil(() => runtime.inspect().liveEnvCount === liveBefore)
