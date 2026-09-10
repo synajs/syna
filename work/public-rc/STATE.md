@@ -76,4 +76,12 @@ self-tests of the two, in `gate-self-tests` (51 cases).
 - `node scripts/verify-release.mjs --release` — COMPLETE (see `RELEASE_MANIFEST.json` and
   `validation/v1.0.0-rc.6-release/`).
 
+## For whoever publishes
+
+- `npm publish --tag rc` in both package directories (above), from an account that is a member of the `@synajs`
+  organisation on npm.
+- **The tag name `v1.0.0-rc.1` is taken.** It is on `origin` already, pointing at `4a5a978` — the release of the
+  earlier candidate under the `@syna/core` identity. A tag for this release needs another name; the workspace version
+  (`v1.0.0-rc.6`) or the package identity (`syna-v1.0.0-rc.1`) both say which release it is.
+
 Not done, by instruction: no `npm publish`, no git tag, no GitHub Release.

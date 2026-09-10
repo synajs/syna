@@ -272,15 +272,17 @@ const runtime = createRuntime({
 
 ## 诊断
 
-有三个问题可以在不创建任何东西的前提下问出来：
+有两个问题可以在什么都还没创建时问出来，还有一个是问一个已经存在的世界：
 
 ```ts
-const check = await runtime.check(TenantEntry, { tenant })          // 这个世界能不能规划出来？不能的话为什么
+const check = await runtime.check(TenantEntry, { tenant })          // 这个世界能不能规划出来？
+if (!check.ok) console.log(check.error.code)                        // 不能的话，是哪个错误码说明了原因
+
 const plan = await runtime.explain(TenantEntry, { tenant })         // 它会创建、复用还是 fork 什么，以及为什么
 if (plan.ok) console.log(plan.services, plan.forks.map(fork => `${fork.placement} ${fork.label}`))
 
 const env = await runtime.enter(App)
-console.log(env.inspect().nodes)                                    // 这个世界实际有什么，逐个 slot
+console.log(env.inspect().nodes)                                    // 一个世界实际有什么，逐个 slot
 ```
 
 `check()` 与 `explain()` 只做规划——不创建任何 Service，也不打开任何世界。`explain()` 会点名它将创建、复用或 fork 的每个节点以及每次 fork 的成因，这是"一个世界创建的东西比预期多"时首先该读的东西。失败是带 `code` 和结构化 `details` 的 `SynaError`；`isSynaError(error, 'MISSING_INPUT')` 可以把它收窄到一种。具体形状见 [docs/API_REFERENCE.md][api-reference]。

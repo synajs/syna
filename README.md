@@ -309,15 +309,17 @@ Nothing else changes: the same Entries, the same worlds, the same cleanups.
 
 ## Diagnostics
 
-Three questions can be asked without creating anything:
+Two questions can be answered before anything is created, and one about a world that already exists:
 
 ```ts
-const check = await runtime.check(TenantEntry, { tenant })          // would this world plan? if not, why
+const check = await runtime.check(TenantEntry, { tenant })          // would this world plan?
+if (!check.ok) console.log(check.error.code)                        // and if not, which code says why
+
 const plan = await runtime.explain(TenantEntry, { tenant })         // what it would create, reuse or fork, and why
 if (plan.ok) console.log(plan.services, plan.forks.map(fork => `${fork.placement} ${fork.label}`))
 
 const env = await runtime.enter(App)
-console.log(env.inspect().nodes)                                    // what this world actually has, slot by slot
+console.log(env.inspect().nodes)                                    // what a world actually has, slot by slot
 ```
 
 `check()` and `explain()` only plan — no Service is created and no world is opened. `explain()` names every node it
