@@ -1,0 +1,24 @@
+{
+  "readme": {
+    "sha256": "bab17b124caccf75782a57335557b065bc748fb57bd4b1f4d8e39dfbb34deffa",
+    "files": [
+      "package.json",
+      "tsconfig.json",
+      "src/main.ts",
+      "src/tenants.ts"
+    ],
+    "programs": [
+      "src/main.ts",
+      "src/tenants.ts"
+    ]
+  },
+  "tarball": "syna-1.0.0-rc.1.tgz",
+  "installed": [
+    "@types/node",
+    "semver",
+    "syna",
+    "typescript",
+    "undici-types"
+  ],
+  "problems": []
+}
