@@ -11,11 +11,22 @@
 // @deprecated item, the rename codemod idempotent over the tree, no pre-0.8 reference token in the core, the
 // benchmarks and their budgets.
 //
+// 1.0.0-rc.6 is the workspace's validation line for the first *public* release candidate: what it publishes restarts at
+// `syna@1.0.0-rc.1` and `@synajs/tsconfig@1.0.0-rc.1` (the runtime was developed and validated under the temporary
+// `@syna/core` identity through the earlier candidates, docs/HISTORY.md; syna-public-rename). Three steps came with
+// them: `no-legacy-package-names` (no current file installs, imports or extends a package that will not be on the
+// registry), `pack-metadata` (the two tarballs are the packages the profile declares, carry what their `files` says
+// and no more, ask a consumer for nothing of this workspace, and the runtime's README is the canonical root README
+// byte for byte)
+// and `readme-consumer-*` (a project whose package.json, tsconfig.json and programs are the blocks of that README,
+// with the packed runtime tarball as its only dependency, printing what the README says it prints).
+//
 //   node scripts/verify-release.mjs --dev       G0: build + type tests + core/regression + real PostgreSQL/FS + app matrix + tooling
 //                                                + API inventory (0 deprecated items; identical to the 0.8.0 record; unchanged since 1.0.0-rc.1)
 //                                                + codemod idempotency + old-token scan + same-machine benchmark comparison with 1.0.0-rc.1
-//                                                + `any` budget + the seven examples + the multitenant-blog demo + benchmarks
-//   node scripts/verify-release.mjs --release   G0 + G1: source archive, rebuild from the archive in an empty dir, pack + consumer smoke,
+//                                                + package-identity scan + `any` budget + the seven examples + the multitenant-blog demo + benchmarks
+//   node scripts/verify-release.mjs --release   G0 + G1: source archive, rebuild from the archive in an empty dir, pack + tarball audit +
+//                                                consumer smoke + the README's own programs in a project built from the README,
 //                                                release manifest and SHA256SUMS. Prints COMPLETE / PARTIAL / BLOCKED and exits 0 only on COMPLETE.
 //
 // This is a transparent runner: every sub-command is spawned, awaited, and recorded with exit code, timing,
@@ -28,6 +39,8 @@ import { constants, cpus, tmpdir } from 'node:os'
 import path from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
+import { scanPackageNames } from './lib/package-name-scan.mjs'
+import { readmePrograms } from './lib/readme-programs.mjs'
 import { createStepRunner } from './lib/step-runner.mjs'
 import { scanVendorNames } from './lib/vendor-name-scan.mjs'
 
@@ -69,6 +82,7 @@ const {
   anyBaseline: ANY_BASELINE,
   inventory: INVENTORY,
   mutation: MUTATION,
+  packages: PACKAGES,
 } = profile.constants
 // The baseline side of the same-session comparison, measured on this machine with `--no-maglev` on both sides
 // (scripts/benchmark-same-session.mjs): the recorded file is the reference of the informational record-drift check,
@@ -246,7 +260,7 @@ function gitInfo() {
  */
 function listSourceFiles({ forArchive = false } = {}) {
   const include = ['packages', 'apps', 'benchmarks', 'docs', 'scripts', 'validation/README.md']
-  const rootFiles = ['package.json', 'package-lock.json', 'tsconfig.json', 'README.md', 'README.zh-CN.md', 'LICENSE', 'CHANGELOG.md', '.gitignore', '.npmrc']
+  const rootFiles = ['package.json', 'package-lock.json', 'tsconfig.json', 'README.md', 'README.zh-CN.md', 'CONTRIBUTING.md', 'LICENSE', 'CHANGELOG.md', '.gitignore', '.npmrc']
   const excludeDir = new Set(['node_modules', 'dist', 'dist-local', '.tsbuildinfo', 'work', 'coverage'])
   const files = []
   const walk = (dir) => {
@@ -439,6 +453,20 @@ async function developmentGate() {
     steps.push({ name: 'no-vendor-names', ok, exitCode: ok ? 0 : 1, mustRun: true, command: 'internal', log: path.relative(root, scanFile), note, ...(scan.hits.length > 0 ? { hits: scan.hits.map(hit => `${hit.file}:${hit.line} [${hit.name}] ${hit.text}`) } : {}) })
     log(`${ok ? 'ok  ' : 'FAIL'} no-vendor-names (${note})`)
   }
+  // 1.0.0-rc.1 evidence (the first public candidate): no current file installs, imports or extends the temporary
+  // package identities `@syna/core` and `@syna/tsconfig` (syna-public-rename). The record keeps them — history,
+  // migrations, recorded runs, ledgers, benchmark records — and the two current lines that spell one on purpose (the
+  // runtime's own nominal package identity, which is serialized, and the sentence of docs/API_STABILITY.md that names
+  // it) are allowed by literal and listed, so the allow-list stays visible (scripts/lib/package-name-scan.mjs).
+  {
+    const scan = scanPackageNames(root)
+    const scanFile = path.join(validationDir, 'package-name-scan.json')
+    writeFileSync(scanFile, JSON.stringify({ files: scan.files.length, hits: scan.hits, allowed: scan.allowed, marked: scan.marked }, null, 2))
+    const ok = scan.hits.length === 0
+    const note = `${scan.files.length} files scanned, ${scan.hits.length} hits, ${scan.allowed.length} allowed lines of the frozen identity, ${scan.marked.length} explaining the rename`
+    steps.push({ name: 'no-legacy-package-names', ok, exitCode: ok ? 0 : 1, mustRun: true, command: 'internal', log: path.relative(root, scanFile), note, ...(scan.hits.length > 0 ? { hits: scan.hits.map(hit => `${hit.file}:${hit.line} [${hit.name}] ${hit.text}`) } : {}) })
+    log(`${ok ? 'ok  ' : 'FAIL'} no-legacy-package-names (${note})`)
+  }
   // `any` per file at or under the 0.7.0 record re-keyed for this line (files absent from it may not use `any` at all).
   await run('any-count', 'node', ['scripts/any-count.mjs', '--check', ANY_BASELINE])
   // The seven examples, one step each: the program asserts its own results (exit 1 otherwise) and must print the
@@ -478,6 +506,117 @@ function glob(dir, suffix, base = root) {
   const walk = (current) => readdirSync(path.join(base, current), { withFileTypes: true }).flatMap(entry =>
     entry.isDirectory() ? walk(path.join(current, entry.name)) : entry.name.endsWith(suffix) ? [path.join(current, entry.name)] : [])
   return walk(dir).sort()
+}
+
+/**
+ * What the two tarballs of this release are (1.0.0-rc.1, the first public candidate). The names, the versions and the
+ * directories come from the release profile, not from the tree, so a rename cannot pass unnoticed: the manifest inside
+ * each tarball must be the package the profile declares. The runtime tarball must carry exactly what its `files` says —
+ * `package.json`, `README.md`, `LICENSE` and `dist/` — with the README byte for byte the canonical root README (npm and
+ * GitHub show one document), and it must not ask a consumer for the temporary package identity or for the tsconfig
+ * preset package, which belongs to package authors.
+ */
+function packMetadata(runtimePack, tsconfigPack) {
+  const problems = []
+  const listing = pack => {
+    if (!pack.item) {
+      problems.push(`${pack.file}: npm pack produced no such tarball (${pack.declared.name}@${pack.declared.version})`)
+      return []
+    }
+    const result = spawnSync('tar', ['-tzf', path.join(root, pack.item.path)], { encoding: 'utf8' })
+    if (result.status !== 0) {
+      problems.push(`${pack.file}: tar -tzf exited ${result.status}`)
+      return []
+    }
+    return result.stdout.split('\n').filter(Boolean).map(entry => entry.replace(/^package\//, '')).filter(entry => entry !== '' && !entry.endsWith('/'))
+  }
+  const contents = (pack, file) => spawnSync('tar', ['-xzOf', path.join(root, pack.item.path), `package/${file}`], { encoding: 'utf8' }).stdout
+  for (const pack of [runtimePack, tsconfigPack]) {
+    if (pack.manifest.name !== pack.declared.name) problems.push(`${pack.declared.directory}: name is ${pack.manifest.name}, the profile declares ${pack.declared.name}`)
+    if (pack.manifest.version !== pack.declared.version) problems.push(`${pack.declared.name}: version is ${pack.manifest.version}, the profile declares ${pack.declared.version}`)
+  }
+  const runtimeEntries = listing(runtimePack)
+  const tsconfigEntries = listing(tsconfigPack)
+  const REQUIRED = ['package.json', 'README.md', 'LICENSE', 'dist/index.js', 'dist/index.d.ts']
+  for (const file of REQUIRED) if (!runtimeEntries.includes(file)) problems.push(`${runtimePack.file}: ${file} is missing`)
+  // `files: ["dist", "README.md", "LICENSE"]` — anything else is monorepo material that escaped into the package.
+  for (const entry of runtimeEntries) {
+    if (!entry.startsWith('dist/') && !['package.json', 'README.md', 'LICENSE'].includes(entry)) problems.push(`${runtimePack.file}: ${entry} is not part of the published package`)
+  }
+  const TSCONFIG_FILES = ['package.json', 'README.md', 'LICENSE', 'node-app.json', 'node-library.json']
+  for (const file of TSCONFIG_FILES) if (!tsconfigEntries.includes(file)) problems.push(`${tsconfigPack.file}: ${file} is missing`)
+  for (const entry of tsconfigEntries) if (!TSCONFIG_FILES.includes(entry)) problems.push(`${tsconfigPack.file}: ${entry} is not part of the published package`)
+  // The runtime a consumer installs asks for `semver` and for nothing of this workspace.
+  if (runtimePack.item) {
+    const packedManifest = JSON.parse(contents(runtimePack, 'package.json'))
+    for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
+      for (const name of Object.keys(packedManifest[field] ?? {})) {
+        if (name.startsWith('@syna/') || name === '@synajs/tsconfig' || name.startsWith('@syna-demo/') || name.startsWith('@syna-app/')) {
+          problems.push(`${runtimePack.file}: ${field} asks for ${name}`)
+        }
+      }
+    }
+    const canonical = readFileSync(path.join(root, 'README.md'), 'utf8')
+    if (contents(runtimePack, 'README.md') !== canonical) problems.push(`${runtimePack.file}: README.md is not the canonical root README`)
+  }
+  const auditFile = path.join(validationDir, 'pack-audit.json')
+  writeFileSync(auditFile, JSON.stringify({
+    runtime: { file: runtimePack.file, declared: runtimePack.declared, entries: runtimeEntries },
+    tsconfig: { file: tsconfigPack.file, declared: tsconfigPack.declared, entries: tsconfigEntries },
+    problems,
+  }, null, 2))
+  const ok = problems.length === 0
+  const note = `${runtimePack.file} (${runtimeEntries.length} files), ${tsconfigPack.file} (${tsconfigEntries.length} files), ${problems.length} problem(s)`
+  steps.push({ name: 'pack-metadata', ok, exitCode: ok ? 0 : 1, mustRun: true, command: 'internal', log: path.relative(root, auditFile), note, ...(problems.length > 0 ? { problems } : {}) })
+  log(`${ok ? 'ok  ' : 'FAIL'} pack-metadata (${note})`)
+}
+
+/**
+ * The README consumer (1.0.0-rc.1): a project that exists only because the canonical README says so. Its
+ * `package.json`, its `tsconfig.json` and its programs are the blocks of the README, read out of the document itself
+ * (`scripts/lib/readme-programs.mjs`); its one dependency is the runtime tarball this run packed — what
+ * `npm install syna@rc` would fetch — and TypeScript is a build tool of the consumer, not a dependency of the runtime.
+ * Each program must print exactly what the README says it prints, and nothing of this workspace may appear in the
+ * installed tree: not the temporary package identity, and not the tsconfig preset package.
+ */
+async function readmeConsumer(directory, runtimePack) {
+  const { files, outputs } = readmePrograms(readFileSync(path.join(root, 'README.md'), 'utf8'))
+  mkdirSync(directory, { recursive: true })
+  for (const { file, code } of files) {
+    mkdirSync(path.dirname(path.join(directory, file)), { recursive: true })
+    writeFileSync(path.join(directory, file), code)
+  }
+  const workspaceManifest = readFileSync(path.join(root, 'package.json'), 'utf8')
+  const manifest = JSON.parse(readFileSync(path.join(directory, 'package.json'), 'utf8'))
+  manifest.dependencies = { syna: `file:${path.join(root, runtimePack.item.path)}` }
+  manifest.devDependencies = {
+    typescript: workspaceManifest.match(/"typescript": "([^"]+)"/)[1],
+    '@types/node': workspaceManifest.match(/"@types\/node": "([^"]+)"/)[1],
+  }
+  writeFileSync(path.join(directory, 'package.json'), `${JSON.stringify(manifest, null, 2)}\n`)
+  await run('readme-consumer-install', 'npm', ['install', '--no-fund', '--no-audit'], { cwd: directory })
+  await run('readme-consumer-build', 'node', ['node_modules/typescript/bin/tsc', '-p', 'tsconfig.json', '--pretty', 'false'], { cwd: directory })
+  for (const [file, printed] of outputs) {
+    const built = file.replace(/^src\//, 'dist/').replace(/\.ts$/, '.js')
+    await run(`readme-consumer-${path.basename(file, '.ts')}`, 'node', [built], { cwd: directory, expectStdout: output => output === printed })
+  }
+  const lock = existsSync(path.join(directory, 'package-lock.json')) ? JSON.parse(readFileSync(path.join(directory, 'package-lock.json'), 'utf8')) : { packages: {} }
+  const installed = Object.keys(lock.packages ?? {}).filter(key => key.startsWith('node_modules/')).map(key => key.slice('node_modules/'.length))
+  const problems = []
+  for (const name of installed) {
+    if (name.startsWith('@syna/') || name === '@synajs/tsconfig') problems.push(`the README consumer installed ${name}`)
+  }
+  if (!installed.includes('syna')) problems.push('the README consumer did not install syna')
+  if (files.some(item => item.file === 'tsconfig.json') === false) problems.push('the README prints no tsconfig.json of its own')
+  const resultFile = path.join(validationDir, 'readme-consumer.json')
+  writeFileSync(resultFile, JSON.stringify({
+    readme: { sha256: createHash('sha256').update(readFileSync(path.join(root, 'README.md'))).digest('hex'), files: files.map(item => item.file), programs: [...outputs.keys()] },
+    tarball: runtimePack.file, installed, problems,
+  }, null, 2))
+  const ok = problems.length === 0
+  const note = `${files.length} README files, ${outputs.size} program(s) run, ${installed.length} package(s) installed, ${problems.length} problem(s)`
+  steps.push({ name: 'readme-consumer-result', ok, exitCode: ok ? 0 : 1, mustRun: true, command: 'internal', log: path.relative(root, resultFile), note, ...(problems.length > 0 ? { problems } : {}) })
+  log(`${ok ? 'ok  ' : 'FAIL'} readme-consumer-result (${note})`)
 }
 
 async function releaseGate(sourceFingerprint) {
@@ -537,28 +676,47 @@ async function releaseGate(sourceFingerprint) {
   // Package tarball + independent consumer project.
   const packDir = path.join(releaseDir, 'pack')
   mkdirSync(packDir, { recursive: true })
-  await run('pack-core', 'npm', ['pack', '--pack-destination', packDir, path.join(unpacked, 'packages/core')], { cwd: packDir })
-  await run('pack-tsconfig', 'npm', ['pack', '--pack-destination', packDir, path.join(unpacked, 'packages/tsconfig')], { cwd: packDir })
+  await run('pack-core', 'npm', ['pack', '--pack-destination', packDir, path.join(unpacked, PACKAGES.runtime.directory)], { cwd: packDir })
+  await run('pack-tsconfig', 'npm', ['pack', '--pack-destination', packDir, path.join(unpacked, PACKAGES.tsconfig.directory)], { cwd: packDir })
   const packed = readdirSync(packDir).filter(file => file.endsWith('.tgz')).map(file => ({ path: path.relative(root, path.join(packDir, file)), bytes: statSync(path.join(packDir, file)).size, sha256: sha256File(path.join(packDir, file)) }))
+  // The tarball of a package is the one npm names from the manifest: `syna-1.0.0-rc.1.tgz`,
+  // `synajs-tsconfig-1.0.0-rc.1.tgz`. Matching by substring would let one stand in for the other.
+  const packedTarball = key => {
+    const declared = PACKAGES[key]
+    const manifest = JSON.parse(readFileSync(path.join(unpacked, declared.directory, 'package.json'), 'utf8'))
+    const file = `${declared.name.replace('@', '').replace('/', '-')}-${declared.version}.tgz`
+    return { declared, manifest, file, item: packed.find(entry => path.basename(entry.path) === file) }
+  }
+  const runtimePack = packedTarball('runtime')
+  const tsconfigPack = packedTarball('tsconfig')
+  packMetadata(runtimePack, tsconfigPack)
   const consumerDir = path.join(rebuildDir, 'consumer')
   mkdirSync(consumerDir, { recursive: true })
-  const coreTgz = packed.find(item => item.path.includes('syna-core'))
-  const tsconfigTgz = packed.find(item => item.path.includes('syna-tsconfig'))
+  const coreTgz = runtimePack.item
   writeFileSync(path.join(consumerDir, 'package.json'), JSON.stringify({
     name: '@smoke/consumer', version: '7.3.1', private: true, type: 'module',
     imports: { '#syna/package': './package.json' },
     syna: { id: 'smoke.consumer' },
     scripts: { build: 'tsc -p tsconfig.json', start: 'node dist/index.js' },
-    dependencies: { '@syna/core': `file:${path.join(root, coreTgz.path)}` },
-    devDependencies: { '@syna/tsconfig': `file:${path.join(root, tsconfigTgz.path)}`, typescript: readFileSync(path.join(root, 'package.json'), 'utf8').match(/"typescript": "([^"]+)"/)[1], '@types/node': readFileSync(path.join(root, 'package.json'), 'utf8').match(/"@types\/node": "([^"]+)"/)[1] },
+    dependencies: { syna: `file:${path.join(root, coreTgz.path)}` },
+    devDependencies: { typescript: readFileSync(path.join(root, 'package.json'), 'utf8').match(/"typescript": "([^"]+)"/)[1], '@types/node': readFileSync(path.join(root, 'package.json'), 'utf8').match(/"@types\/node": "([^"]+)"/)[1] },
   }, null, 2))
-  writeFileSync(path.join(consumerDir, 'tsconfig.json'), JSON.stringify({ extends: '@syna/tsconfig/node-app.json', compilerOptions: { rootDir: 'src', outDir: 'dist', composite: false, sourceMap: false }, include: ['src/**/*.ts'] }, null, 2))
+  // A standalone tsconfig, not the preset package: `@synajs/tsconfig` is for package authors, and a consumer of the
+  // runtime must not need it (docs/PACKAGE_AUTHORING.md). These are the settings the README prints.
+  writeFileSync(path.join(consumerDir, 'tsconfig.json'), JSON.stringify({
+    compilerOptions: {
+      target: 'ES2022', module: 'NodeNext', moduleResolution: 'NodeNext', resolveJsonModule: true, strict: true,
+      exactOptionalPropertyTypes: true, noUncheckedIndexedAccess: true, verbatimModuleSyntax: true, skipLibCheck: true,
+      lib: ['ES2022', 'ESNext.Disposable'], rootDir: 'src', outDir: 'dist',
+    },
+    include: ['src/**/*.ts'],
+  }, null, 2))
   mkdirSync(path.join(consumerDir, 'src'), { recursive: true })
   // The consumer uses the 0.8 surface only (`Env` and `SlotState` types, `limits.loadTimeoutMs`, `derive({ reuse })`,
   // `catalog.revisions(family)`, `anchor`, `reuse`, `isSynaError` narrowing, `env.inspect().abandonedAttempts`) against the
   // packed declarations; a pre-0.8 name would not compile.
   writeFileSync(path.join(consumerDir, 'src/index.ts'), `import packageJson from '#syna/package' with { type: 'json' }
-import { createRuntime, definePackage, isSynaError, type Env, type InputRef, type Runtime, type SlotState } from '@syna/core'
+import { createRuntime, definePackage, isSynaError, type Env, type InputRef, type Runtime, type SlotState } from 'syna'
 
 const define = definePackage(packageJson)
 const Answer = define.input<number>('answer')
@@ -602,6 +760,7 @@ await runtime.dispose()
     && smokeJson?.revisions === '7.3.1' && typeof smokeJson?.slots === 'string' && smokeJson.slots.split(',').includes('ready')
   steps.push({ name: 'consumer-smoke-result', ok: smokeOk, exitCode: smokeOk ? 0 : 1, mustRun: true, command: 'internal', log: smoke.log, output: smokeJson })
   log(`${smokeOk ? 'ok  ' : 'FAIL'} consumer-smoke-result ${smokeOutput}`)
+  await readmeConsumer(path.join(rebuildDir, 'readme-consumer'), runtimePack)
   rmSync(rebuildDir, { recursive: true, force: true })
   return { archives, packed, sourceFingerprint, rebuiltFrom: path.relative(root, tarPath) }
 }

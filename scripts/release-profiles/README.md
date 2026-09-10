@@ -11,11 +11,16 @@ history; what they *ran* is in this directory, taken from the manifests they wro
 
 ## The current release
 
-`1.0.0-rc.5.json` is read by the gate on every run. It carries:
+`1.0.0-rc.6.json` is read by the gate on every run. It carries:
 
 - **`constants`** — the benchmark baseline (file, commit, label, rounds, registered
   improvements), the `any` budget, the inventory records this source must be identical to and
-  the increment registered against each, and the mutation-audit record the gate reads.
+  the increment registered against each, the mutation-audit record the gate reads, and — since
+  the first public candidate — **`packages`**: the two packages this workspace publishes, by
+  directory, name and version. The gate packs those directories, expects the tarball names npm
+  writes from them, and checks the manifest inside each against this declaration, so a rename
+  cannot pass unnoticed. The workspace version that names this file is its own validation line
+  and not a package version (`docs/HISTORY.md`).
 - **`steps.dev`** — what `--dev` runs, in order. **`steps.release`** — what `--release` adds
   after it. The last step of either run is `release-profile`, which compares the steps the run
   actually recorded with these lists and fails when they differ. A gate that quietly stops
@@ -46,3 +51,8 @@ and cited without unpacking an archive or checking out a tree.
 | `1.0.0-rc.2` | `46b344f` | 52 | `03bc5469…` |
 | `1.0.0-rc.3` | `5ae7baf` | 53 | `b8f89b73…` |
 | `1.0.0-rc.4` | `e96871b` | 53 | `fce61dd3…` |
+| `1.0.0-rc.5` | `64f5221` | 55 | `37516046…` |
+
+`1.0.0-rc.5.json` is the first in the newer form (constants plus step lists, the form the gate
+reads) rather than a record extracted from a manifest; the row above is from its manifest,
+`validation/v1.0.0-rc.5-release/manifest.json`.
