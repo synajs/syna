@@ -1,0 +1,995 @@
+{
+  "name": "Syna v1.0.0-rc.6 + multitenant-blog",
+  "version": "1.0.0-rc.6",
+  "packages": {
+    "runtime": {
+      "directory": "packages/core",
+      "name": "syna",
+      "version": "1.0.0-rc.1"
+    },
+    "tsconfig": {
+      "directory": "packages/tsconfig",
+      "name": "@synajs/tsconfig",
+      "version": "1.0.0-rc.1"
+    }
+  },
+  "validation": "validation/public/syna-v1.0.0-rc.1-release",
+  "gate": "scripts/verify-release.mjs",
+  "status": "COMPLETE",
+  "mode": "release",
+  "generatedAt": "2026-09-10T20:11:30.894Z",
+  "startedAt": "2026-09-10T20:07:19.800Z",
+  "environment": {
+    "node": "v26.0.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cwd": ".",
+    "gitProvenance": {
+      "commit": "5cf16efaa766b99ef52a454f8ab7672ff3c0a533",
+      "dirty": false,
+      "modified": [],
+      "untracked": []
+    },
+    "postgres": {
+      "server": "PostgreSQL 17.10",
+      "url": "postgres://syna@127.0.0.1:54329/postgres",
+      "origin": "temporary cluster"
+    }
+  },
+  "source": {
+    "algorithm": "sha256(path\\nsha256(content)\\n...)",
+    "files": 404,
+    "digest": "f8383620d4cf8491a8fdb2bf44de1eb2db1e8dd267bc0a981e2fd53c219512e5"
+  },
+  "steps": [
+    {
+      "name": "clean",
+      "command": "npm run clean",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:07:19.857Z",
+      "endedAt": "2026-09-10T20:07:19.995Z",
+      "durationMs": 138,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/clean.log",
+      "ok": true
+    },
+    {
+      "name": "build",
+      "command": "npm run build",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:07:19.995Z",
+      "endedAt": "2026-09-10T20:07:28.028Z",
+      "durationMs": 8033,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/build.log",
+      "ok": true
+    },
+    {
+      "name": "type-tests",
+      "command": "npm run type-tests",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:07:28.028Z",
+      "endedAt": "2026-09-10T20:07:31.630Z",
+      "durationMs": 3602,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/type-tests.log",
+      "ok": true
+    },
+    {
+      "name": "core-tests",
+      "command": "node --test --test-reporter=tap packages/core/tests/disposal/bounded-close.test.mjs packages/core/tests/disposal/cleanup-phase.test.mjs packages/core/tests/disposal/close-matrix.test.mjs packages/core/tests/disposal/close-paths.test.mjs packages/core/tests/disposal/close-reentry.test.mjs packages/core/tests/disposal/retention.test.mjs packages/core/tests/disposal/state-and-ledger.test.mjs packages/core/tests/errors/env-state.test.mjs packages/core/tests/errors/foreign-errors.test.mjs packages/core/tests/errors/invalid-descriptor.test.mjs packages/core/tests/errors/missing-implementation.test.mjs packages/core/tests/errors/reuse-errors.test.mjs packages/core/tests/errors/syna-error.test.mjs packages/core/tests/inventory/expired-forms-0.7.test.mjs packages/core/tests/inventory/expired-forms-0.8.test.mjs packages/core/tests/inventory/snapshots.test.mjs packages/core/tests/materialization/deadline-clock.test.mjs packages/core/tests/materialization/deadline-queue.test.mjs packages/core/tests/materialization/hardening.test.mjs packages/core/tests/materialization/retry-and-late-results.test.mjs packages/core/tests/materialization/setup-and-sharing.test.mjs packages/core/tests/materialization/waiter-deadline.test.mjs packages/core/tests/materialization/waiter-termination.test.mjs packages/core/tests/materialization/waiters-and-cancellation.test.mjs packages/core/tests/planning/all-implementations-and-budgets.test.mjs packages/core/tests/planning/binding-and-version-ranges.test.mjs packages/core/tests/planning/candidate-identity-and-drift.test.mjs packages/core/tests/planning/contracts.test.mjs packages/core/tests/planning/definitions-and-ownership.test.mjs packages/core/tests/planning/explain-missing-inputs.test.mjs packages/core/tests/planning/explain.test.mjs packages/core/tests/planning/override-and-private-realms.test.mjs packages/core/tests/planning/parent-only-reuse.test.mjs packages/core/tests/planning/plan-cache-equivalence.test.mjs packages/core/tests/planning/plan-cache-lineages.test.mjs packages/core/tests/planning/realms-and-owner-anchoring.test.mjs packages/core/tests/planning/request-envs-and-templates.test.mjs packages/core/tests/planning/semver.test.mjs packages/core/tests/property/graph-invariants.test.mjs packages/core/tests/property/reference-planner.test.mjs packages/core/tests/refs/implementation-ref.test.mjs packages/core/tests/refs/refs-and-payloads.test.mjs packages/core/tests/refs/slot-state.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:07:31.630Z",
+      "endedAt": "2026-09-10T20:07:34.635Z",
+      "durationMs": 3005,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 340,
+        "pass": 340,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/core-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-filesystem-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/filesystem.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:07:34.635Z",
+      "endedAt": "2026-09-10T20:07:35.641Z",
+      "durationMs": 1006,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 69,
+        "pass": 69,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/blog-filesystem-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-render-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/render.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:07:35.641Z",
+      "endedAt": "2026-09-10T20:07:35.938Z",
+      "durationMs": 297,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 8,
+        "pass": 8,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/blog-render-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-tenants-auth-preflight-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/tenants-auth.test.mjs apps/multitenant-blog/tests/preflight.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:07:35.938Z",
+      "endedAt": "2026-09-10T20:07:36.357Z",
+      "durationMs": 419,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 12,
+        "pass": 12,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/blog-tenants-auth-preflight-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-audit-regression-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/audit-app.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:07:36.357Z",
+      "endedAt": "2026-09-10T20:07:41.755Z",
+      "durationMs": 5398,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 22,
+        "pass": 22,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/blog-audit-regression-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-review-regression-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/review-app.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:07:41.755Z",
+      "endedAt": "2026-09-10T20:07:43.378Z",
+      "durationMs": 1623,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 8,
+        "pass": 8,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/blog-review-regression-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-close-path-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/rc3-close-paths.test.mjs apps/multitenant-blog/tests/rc4-acquire-deadline.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:07:43.378Z",
+      "endedAt": "2026-09-10T20:07:44.665Z",
+      "durationMs": 1287,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 12,
+        "pass": 12,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/blog-close-path-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-site-manager-working-set-tests",
+      "command": "node --test --test-reporter=tap --expose-gc apps/multitenant-blog/tests/site-manager.test.mjs",
+      "env": {
+        "SYNA_WORKING_SET_OUT": "<root>/validation/public/syna-v1.0.0-rc.1-release/working-set.json"
+      },
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:07:44.665Z",
+      "endedAt": "2026-09-10T20:07:50.010Z",
+      "durationMs": 5345,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 14,
+        "pass": 14,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/blog-site-manager-working-set-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-postgres-and-matrix-tests",
+      "command": "node scripts/pg-test-cluster.mjs with -- node --test --test-reporter=tap apps/multitenant-blog/tests/postgres.test.mjs apps/multitenant-blog/tests/matrix.test.mjs",
+      "env": {
+        "SYNA_PG_CLUSTER_DIR": "<root>/work/pg-release"
+      },
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:07:50.010Z",
+      "endedAt": "2026-09-10T20:07:52.534Z",
+      "durationMs": 2524,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 45,
+        "pass": 45,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/blog-postgres-and-matrix-tests.log",
+      "ok": true
+    },
+    {
+      "name": "gate-self-tests",
+      "command": "node --test --test-reporter=tap scripts/tests/any-count.test.mjs scripts/tests/api-inventory-diff.test.mjs scripts/tests/api-inventory.test.mjs scripts/tests/benchmark-registered-faster.test.mjs scripts/tests/codemod-v08.test.mjs scripts/tests/core-tests-entry.test.mjs scripts/tests/deprecations.test.mjs scripts/tests/no-legacy-package-names.test.mjs scripts/tests/no-old-names.test.mjs scripts/tests/no-vendor-names.test.mjs scripts/tests/pg-test-cluster.test.mjs scripts/tests/readme-example.test.mjs scripts/tests/readme-snippets.test.mjs scripts/tests/step-runner.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:07:52.535Z",
+      "endedAt": "2026-09-10T20:07:57.335Z",
+      "durationMs": 4800,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 53,
+        "pass": 53,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/gate-self-tests.log",
+      "ok": true
+    },
+    {
+      "name": "mutation-audit-record",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "work/rc5/mutations/RESULTS.json",
+      "note": "2 mutant(s) recorded 2026-09-08T19:29:42.647Z on v26.0.0, 0 survived, 6 input file(s) checked"
+    },
+    {
+      "name": "api-inventory",
+      "command": "node scripts/api-inventory.mjs --out <root>/validation/public/syna-v1.0.0-rc.1-release/api-inventory.md --json <root>/validation/public/syna-v1.0.0-rc.1-release/api-inventory.json",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:07:57.336Z",
+      "endedAt": "2026-09-10T20:08:01.000Z",
+      "durationMs": 3664,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/api-inventory.log",
+      "ok": true
+    },
+    {
+      "name": "api-inventory-no-deprecated",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/syna-v1.0.0-rc.1-release/api-inventory.json",
+      "note": "374 items, 0 @deprecated"
+    },
+    {
+      "name": "api-inventory-diff",
+      "command": "node scripts/api-inventory.mjs --diff validation/v1.0.0-rc.5-release/api-inventory.json <root>/validation/public/syna-v1.0.0-rc.1-release/api-inventory.json --out <root>/validation/public/syna-v1.0.0-rc.1-release/api-inventory-diff.md",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:08:01.001Z",
+      "endedAt": "2026-09-10T20:08:01.161Z",
+      "durationMs": 160,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/api-inventory-diff.log",
+      "ok": true
+    },
+    {
+      "name": "api-inventory-unchanged",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/syna-v1.0.0-rc.1-release/api-inventory-diff.md",
+      "note": "374 items here, 374 in the 1.0.0-rc.5 record (validation/v1.0.0-rc.5-release/api-inventory.json, commit 64f5221); 0 added, 0 removed, 0 changed — the registration of 1.0.0-rc.6 for this comparison is 0 item(s)"
+    },
+    {
+      "name": "api-inventory-frozen",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/syna-v1.0.0-rc.1-release/api-inventory.json",
+      "note": "374 items here, 374 in the 0.8.0 record (validation/v0.8-release/api-inventory.json, commit 38a722e); 0 added, 0 removed, 3 changed — the registration of 1.0.0-rc.6 for this comparison is 3 item(s)",
+      "changed": [
+        "RuntimeEvent",
+        "RuntimeLimits.disposalGraceMs",
+        "UnsettledAttemptInspection.state"
+      ]
+    },
+    {
+      "name": "codemod-idempotent",
+      "command": "node scripts/codemod-v08.mjs --dry-run --json <root>/validation/public/syna-v1.0.0-rc.1-release/codemod-idempotent.json",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:08:01.164Z",
+      "endedAt": "2026-09-10T20:08:01.936Z",
+      "durationMs": 772,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/codemod-idempotent.log",
+      "ok": true
+    },
+    {
+      "name": "no-old-reference-tokens",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/syna-v1.0.0-rc.1-release/old-reference-tokens.json",
+      "note": "69 files scanned, 0 hits"
+    },
+    {
+      "name": "no-vendor-names",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/syna-v1.0.0-rc.1-release/vendor-name-scan.json",
+      "note": "260 files scanned, 0 hits, 12 allowed literals of the application"
+    },
+    {
+      "name": "no-legacy-package-names",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/syna-v1.0.0-rc.1-release/package-name-scan.json",
+      "note": "255 files scanned, 0 hits, 4 allowed lines of the frozen identity, 5 explaining the rename"
+    },
+    {
+      "name": "any-count",
+      "command": "node scripts/any-count.mjs --check scripts/any-baseline-v1.0.0-rc.2.json",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:08:01.979Z",
+      "endedAt": "2026-09-10T20:08:02.206Z",
+      "durationMs": 227,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/any-count.log",
+      "ok": true
+    },
+    {
+      "name": "demo-01-basics",
+      "command": "node apps/01-basics/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:08:02.206Z",
+      "endedAt": "2026-09-10T20:08:02.275Z",
+      "durationMs": 69,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/demo-01-basics.log",
+      "ok": true
+    },
+    {
+      "name": "demo-02-per-tenant",
+      "command": "node apps/02-per-tenant/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:08:02.275Z",
+      "endedAt": "2026-09-10T20:08:02.358Z",
+      "durationMs": 83,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/demo-02-per-tenant.log",
+      "ok": true
+    },
+    {
+      "name": "demo-03-user-configurable",
+      "command": "node apps/03-user-configurable/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:08:02.358Z",
+      "endedAt": "2026-09-10T20:08:02.442Z",
+      "durationMs": 84,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/demo-03-user-configurable.log",
+      "ok": true
+    },
+    {
+      "name": "demo-04-two-versions",
+      "command": "node apps/04-two-versions/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:08:02.442Z",
+      "endedAt": "2026-09-10T20:08:02.527Z",
+      "durationMs": 85,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/demo-04-two-versions.log",
+      "ok": true
+    },
+    {
+      "name": "demo-05-scheduled-jobs",
+      "command": "node apps/05-scheduled-jobs/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:08:02.527Z",
+      "endedAt": "2026-09-10T20:08:02.607Z",
+      "durationMs": 80,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/demo-05-scheduled-jobs.log",
+      "ok": true
+    },
+    {
+      "name": "demo-06-testing",
+      "command": "node apps/06-testing/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:08:02.607Z",
+      "endedAt": "2026-09-10T20:08:02.694Z",
+      "durationMs": 87,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/demo-06-testing.log",
+      "ok": true
+    },
+    {
+      "name": "demo-07-failure-modes",
+      "command": "node apps/07-failure-modes/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:08:02.694Z",
+      "endedAt": "2026-09-10T20:08:03.269Z",
+      "durationMs": 575,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/demo-07-failure-modes.log",
+      "ok": true
+    },
+    {
+      "name": "blog-demo-filesystem",
+      "command": "node apps/multitenant-blog/bin/multitenant-blog.mjs demo --root <root>/work/demo-content",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:08:03.271Z",
+      "endedAt": "2026-09-10T20:08:03.558Z",
+      "durationMs": 287,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/blog-demo-filesystem.log",
+      "ok": true
+    },
+    {
+      "name": "benchmarks",
+      "command": "node --expose-gc benchmarks/v0.5-planning.mjs <root>/validation/public/syna-v1.0.0-rc.1-release/benchmark-v0.5.json",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:08:03.559Z",
+      "endedAt": "2026-09-10T20:08:07.046Z",
+      "durationMs": 3487,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/benchmarks.log",
+      "ok": true
+    },
+    {
+      "name": "benchmark-compare",
+      "command": "node scripts/benchmark-same-session.mjs --commit b691067 --baseline-label 1.0.0-rc.4 --record benchmarks/results-v1.0.0-rc.4-baseline-same-machine.json --runs 21 --faster-ok  --faster-floor 0.30 --out-dir <root>/validation/public/syna-v1.0.0-rc.1-release/benchmark-compare",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:08:07.058Z",
+      "endedAt": "2026-09-10T20:10:45.096Z",
+      "durationMs": 158038,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/benchmark-compare.log",
+      "ok": true
+    },
+    {
+      "name": "blog-request-latency",
+      "command": "node scripts/pg-test-cluster.mjs with -- node benchmarks/blog-request-latency.mjs <root>/validation/public/syna-v1.0.0-rc.1-release/blog-request-latency.json",
+      "env": {
+        "SYNA_PG_CLUSTER_DIR": "<root>/work/pg-release"
+      },
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:10:45.097Z",
+      "endedAt": "2026-09-10T20:10:47.101Z",
+      "durationMs": 2004,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/blog-request-latency.log",
+      "ok": true
+    },
+    {
+      "name": "archive-scan",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/syna-v1.0.0-rc.1-release/archive-scan.json"
+    },
+    {
+      "name": "archive-tar",
+      "command": "tar -czf <root>/work/release/syna-v1.0.0-rc.6-source.tar.gz -C <root>/work/release syna-v1.0.0-rc.6-source",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:10:47.233Z",
+      "endedAt": "2026-09-10T20:10:47.460Z",
+      "durationMs": 227,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/archive-tar.log",
+      "ok": true
+    },
+    {
+      "name": "archive-zip",
+      "command": "zip -qr <root>/work/release/syna-v1.0.0-rc.6-source.zip syna-v1.0.0-rc.6-source",
+      "cwd": "work/release",
+      "startedAt": "2026-09-10T20:10:47.460Z",
+      "endedAt": "2026-09-10T20:10:47.529Z",
+      "durationMs": 69,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/archive-zip.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-unpack",
+      "command": "tar -xzf <root>/work/release/syna-v1.0.0-rc.6-source.tar.gz -C /var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C",
+      "cwd": ".",
+      "startedAt": "2026-09-10T20:10:47.531Z",
+      "endedAt": "2026-09-10T20:10:47.697Z",
+      "durationMs": 166,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-unpack.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-install",
+      "command": "npm ci --no-fund --no-audit",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-09-10T20:10:47.697Z",
+      "endedAt": "2026-09-10T20:10:48.314Z",
+      "durationMs": 617,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-install.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-build",
+      "command": "npm run build",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-09-10T20:10:48.314Z",
+      "endedAt": "2026-09-10T20:10:56.809Z",
+      "durationMs": 8495,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-build.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-type-tests",
+      "command": "npm run type-tests",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-09-10T20:10:56.810Z",
+      "endedAt": "2026-09-10T20:11:00.529Z",
+      "durationMs": 3719,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-type-tests.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-core-tests",
+      "command": "node --test --test-reporter=tap packages/core/tests/disposal/bounded-close.test.mjs packages/core/tests/disposal/cleanup-phase.test.mjs packages/core/tests/disposal/close-matrix.test.mjs packages/core/tests/disposal/close-paths.test.mjs packages/core/tests/disposal/close-reentry.test.mjs packages/core/tests/disposal/retention.test.mjs packages/core/tests/disposal/state-and-ledger.test.mjs packages/core/tests/errors/env-state.test.mjs packages/core/tests/errors/foreign-errors.test.mjs packages/core/tests/errors/invalid-descriptor.test.mjs packages/core/tests/errors/missing-implementation.test.mjs packages/core/tests/errors/reuse-errors.test.mjs packages/core/tests/errors/syna-error.test.mjs packages/core/tests/inventory/expired-forms-0.7.test.mjs packages/core/tests/inventory/expired-forms-0.8.test.mjs packages/core/tests/inventory/snapshots.test.mjs packages/core/tests/materialization/deadline-clock.test.mjs packages/core/tests/materialization/deadline-queue.test.mjs packages/core/tests/materialization/hardening.test.mjs packages/core/tests/materialization/retry-and-late-results.test.mjs packages/core/tests/materialization/setup-and-sharing.test.mjs packages/core/tests/materialization/waiter-deadline.test.mjs packages/core/tests/materialization/waiter-termination.test.mjs packages/core/tests/materialization/waiters-and-cancellation.test.mjs packages/core/tests/planning/all-implementations-and-budgets.test.mjs packages/core/tests/planning/binding-and-version-ranges.test.mjs packages/core/tests/planning/candidate-identity-and-drift.test.mjs packages/core/tests/planning/contracts.test.mjs packages/core/tests/planning/definitions-and-ownership.test.mjs packages/core/tests/planning/explain-missing-inputs.test.mjs packages/core/tests/planning/explain.test.mjs packages/core/tests/planning/override-and-private-realms.test.mjs packages/core/tests/planning/parent-only-reuse.test.mjs packages/core/tests/planning/plan-cache-equivalence.test.mjs packages/core/tests/planning/plan-cache-lineages.test.mjs packages/core/tests/planning/realms-and-owner-anchoring.test.mjs packages/core/tests/planning/request-envs-and-templates.test.mjs packages/core/tests/planning/semver.test.mjs packages/core/tests/property/graph-invariants.test.mjs packages/core/tests/property/reference-planner.test.mjs packages/core/tests/refs/implementation-ref.test.mjs packages/core/tests/refs/refs-and-payloads.test.mjs packages/core/tests/refs/slot-state.test.mjs",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-09-10T20:11:00.529Z",
+      "endedAt": "2026-09-10T20:11:03.553Z",
+      "durationMs": 3024,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 340,
+        "pass": 340,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-core-tests.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-app-tests",
+      "command": "node --test --test-reporter=tap --expose-gc apps/multitenant-blog/tests/filesystem.test.mjs apps/multitenant-blog/tests/render.test.mjs apps/multitenant-blog/tests/tenants-auth.test.mjs apps/multitenant-blog/tests/preflight.test.mjs apps/multitenant-blog/tests/audit-app.test.mjs apps/multitenant-blog/tests/review-app.test.mjs apps/multitenant-blog/tests/rc3-close-paths.test.mjs apps/multitenant-blog/tests/rc4-acquire-deadline.test.mjs apps/multitenant-blog/tests/site-manager.test.mjs",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-09-10T20:11:03.553Z",
+      "endedAt": "2026-09-10T20:11:09.220Z",
+      "durationMs": 5667,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 145,
+        "pass": 145,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-app-tests.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-postgres-matrix-tests",
+      "command": "node scripts/pg-test-cluster.mjs with -- node --test --test-reporter=tap apps/multitenant-blog/tests/postgres.test.mjs apps/multitenant-blog/tests/matrix.test.mjs",
+      "env": {
+        "SYNA_PG_CLUSTER_DIR": "/var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/pg"
+      },
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-09-10T20:11:09.220Z",
+      "endedAt": "2026-09-10T20:11:11.671Z",
+      "durationMs": 2451,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 45,
+        "pass": 45,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-postgres-matrix-tests.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-gate-self-tests",
+      "command": "node --test --test-reporter=tap scripts/tests/any-count.test.mjs scripts/tests/api-inventory-diff.test.mjs scripts/tests/api-inventory.test.mjs scripts/tests/benchmark-registered-faster.test.mjs scripts/tests/codemod-v08.test.mjs scripts/tests/core-tests-entry.test.mjs scripts/tests/deprecations.test.mjs scripts/tests/no-legacy-package-names.test.mjs scripts/tests/no-old-names.test.mjs scripts/tests/no-vendor-names.test.mjs scripts/tests/pg-test-cluster.test.mjs scripts/tests/readme-example.test.mjs scripts/tests/readme-snippets.test.mjs scripts/tests/step-runner.test.mjs",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-09-10T20:11:11.671Z",
+      "endedAt": "2026-09-10T20:11:16.198Z",
+      "durationMs": 4527,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 53,
+        "pass": 53,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-gate-self-tests.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-codemod-idempotent",
+      "command": "node scripts/codemod-v08.mjs --dry-run",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-09-10T20:11:16.198Z",
+      "endedAt": "2026-09-10T20:11:17.014Z",
+      "durationMs": 816,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-codemod-idempotent.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-demo",
+      "command": "node apps/multitenant-blog/bin/multitenant-blog.mjs demo --root /var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/demo-content",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-09-10T20:11:17.014Z",
+      "endedAt": "2026-09-10T20:11:17.268Z",
+      "durationMs": 254,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-demo.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-examples",
+      "command": "npm run demo",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-09-10T20:11:17.268Z",
+      "endedAt": "2026-09-10T20:11:27.249Z",
+      "durationMs": 9981,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-examples.log",
+      "ok": true
+    },
+    {
+      "name": "pack-core",
+      "command": "npm pack --pack-destination <root>/work/release/pack /var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/syna-v1.0.0-rc.6-source/packages/core",
+      "cwd": "work/release/pack",
+      "startedAt": "2026-09-10T20:11:27.250Z",
+      "endedAt": "2026-09-10T20:11:27.602Z",
+      "durationMs": 352,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/pack-core.log",
+      "ok": true
+    },
+    {
+      "name": "pack-tsconfig",
+      "command": "npm pack --pack-destination <root>/work/release/pack /var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/syna-v1.0.0-rc.6-source/packages/tsconfig",
+      "cwd": "work/release/pack",
+      "startedAt": "2026-09-10T20:11:27.602Z",
+      "endedAt": "2026-09-10T20:11:27.777Z",
+      "durationMs": 175,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/pack-tsconfig.log",
+      "ok": true
+    },
+    {
+      "name": "pack-metadata",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/syna-v1.0.0-rc.1-release/pack-audit.json",
+      "note": "syna-1.0.0-rc.1.tgz (103 files), synajs-tsconfig-1.0.0-rc.1.tgz (5 files), 0 problem(s)"
+    },
+    {
+      "name": "consumer-install",
+      "command": "npm install --no-fund --no-audit",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/consumer",
+      "startedAt": "2026-09-10T20:11:27.790Z",
+      "endedAt": "2026-09-10T20:11:28.593Z",
+      "durationMs": 803,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/consumer-install.log",
+      "ok": true
+    },
+    {
+      "name": "consumer-build",
+      "command": "npm run build",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/consumer",
+      "startedAt": "2026-09-10T20:11:28.593Z",
+      "endedAt": "2026-09-10T20:11:29.164Z",
+      "durationMs": 571,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/consumer-build.log",
+      "ok": true
+    },
+    {
+      "name": "consumer-run",
+      "command": "npm run -s start",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/consumer",
+      "startedAt": "2026-09-10T20:11:29.164Z",
+      "endedAt": "2026-09-10T20:11:29.334Z",
+      "durationMs": 170,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/consumer-run.log",
+      "ok": true
+    },
+    {
+      "name": "consumer-smoke-result",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/consumer-run.log",
+      "output": {
+        "result": 84,
+        "revision": "7.3.1",
+        "explainOk": true,
+        "missing": "smoke.consumer/input/answer/v1",
+        "abandoned": 0,
+        "revisions": "7.3.1",
+        "slots": "ready,ready"
+      }
+    },
+    {
+      "name": "readme-consumer-install",
+      "command": "npm install --no-fund --no-audit",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/readme-consumer",
+      "startedAt": "2026-09-10T20:11:29.335Z",
+      "endedAt": "2026-09-10T20:11:29.719Z",
+      "durationMs": 384,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/readme-consumer-install.log",
+      "ok": true
+    },
+    {
+      "name": "readme-consumer-build",
+      "command": "node node_modules/typescript/bin/tsc -p tsconfig.json --pretty false",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/readme-consumer",
+      "startedAt": "2026-09-10T20:11:29.719Z",
+      "endedAt": "2026-09-10T20:11:30.499Z",
+      "durationMs": 780,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/readme-consumer-build.log",
+      "ok": true
+    },
+    {
+      "name": "readme-consumer-main",
+      "command": "node dist/main.js",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/readme-consumer",
+      "startedAt": "2026-09-10T20:11:30.500Z",
+      "endedAt": "2026-09-10T20:11:30.571Z",
+      "durationMs": 71,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/readme-consumer-main.log",
+      "ok": true
+    },
+    {
+      "name": "readme-consumer-tenants",
+      "command": "node dist/tenants.js",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-x2Zw4C/readme-consumer",
+      "startedAt": "2026-09-10T20:11:30.571Z",
+      "endedAt": "2026-09-10T20:11:30.642Z",
+      "durationMs": 71,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/syna-v1.0.0-rc.1-release/logs/readme-consumer-tenants.log",
+      "ok": true
+    },
+    {
+      "name": "readme-consumer-result",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/syna-v1.0.0-rc.1-release/readme-consumer.json",
+      "note": "4 README files, 2 program(s) run, 5 package(s) installed, 0 problem(s)"
+    },
+    {
+      "name": "release-profile",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "scripts/release-profiles/1.0.0-rc.6.json",
+      "note": "62 step(s) ran, 62 in scripts/release-profiles/1.0.0-rc.6.json"
+    }
+  ],
+  "totals": {
+    "steps": 62,
+    "failed": 0,
+    "skippedTests": 0,
+    "tests": 1166,
+    "passed": 1166,
+    "distinctTests": 583,
+    "rebuildTests": 583
+  },
+  "blocked": [],
+  "previousRun": {
+    "from": "validation/v1.0.0-rc.6-release/manifest.json",
+    "generatedAt": "2026-09-10T18:31:32.036Z",
+    "commit": "7401ce94c1c012cb26c684ce34db91604e753fb1",
+    "sourceDigest": "d112ce49d3ad0f2c2514a7f2da80b6f6936294ce7e95659abec360af53bce216",
+    "status": "COMPLETE",
+    "sameStepList": true,
+    "sameTestCounts": false,
+    "differences": [
+      "gate-self-tests: 51/51 → 53/53",
+      "rebuild-gate-self-tests: 51/51 → 53/53"
+    ]
+  },
+  "release": {
+    "archives": [
+      {
+        "path": "work/release/syna-v1.0.0-rc.6-source.tar.gz",
+        "bytes": 964342,
+        "sha256": "42c2fdd8a0cf328f5b453fab548e8b0df00ea86e67bdd3991c41769103e480b1"
+      },
+      {
+        "path": "work/release/syna-v1.0.0-rc.6-source.zip",
+        "bytes": 1215041,
+        "sha256": "a1f9859c5915156166a2bd0c2e2b021b6b8acd13f8a1f9df180ebb0dd57b2827"
+      }
+    ],
+    "packed": [
+      {
+        "path": "work/release/pack/syna-1.0.0-rc.1.tgz",
+        "bytes": 138231,
+        "sha256": "ba6763294fc75fa60c3c0ef98b03eb93a4c97391c709aa6fc583a6eb46387792"
+      },
+      {
+        "path": "work/release/pack/synajs-tsconfig-1.0.0-rc.1.tgz",
+        "bytes": 1590,
+        "sha256": "3d88e537dd3c4e23475ca6cb009dc3e7ca60d4cfe79ac3f29c855a10dbdb578d"
+      }
+    ],
+    "sourceFingerprint": {
+      "algorithm": "sha256(path\\nsha256(content)\\n...)",
+      "files": 404,
+      "digest": "f8383620d4cf8491a8fdb2bf44de1eb2db1e8dd267bc0a981e2fd53c219512e5"
+    },
+    "rebuiltFrom": "work/release/syna-v1.0.0-rc.6-source.tar.gz"
+  }
+}

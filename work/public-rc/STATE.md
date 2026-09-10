@@ -81,8 +81,19 @@ self-tests of the two, in `gate-self-tests` (51 cases).
   (`bound-entry-…` p95 0.19 ms → 4.62 ms against its 1 ms budget, `site-enter-…` 0.23 ms → 3.80 ms), while the current
   side of the same round was 0.185 ms / 0.235 ms. A machine stall in one process, not a regression — the run was
   repeated on a quiet machine. No threshold, exemption, statistic or workload was changed.
-- `node scripts/verify-release.mjs --release` — COMPLETE (see `RELEASE_MANIFEST.json` and
-  `validation/v1.0.0-rc.6-release/`).
+- `node scripts/verify-release.mjs --release` — COMPLETE, recorded on `7401ce9` under
+  `validation/v1.0.0-rc.6-release/`. That run stays where it is: it is the repository's sixth 1.0 round, and the README
+  changed after it (`9af39ff`), so its fingerprint no longer holds on the tree.
+- **The release run of reference**: `node scripts/verify-release.mjs --release` on `5cf16ef` (clean checkout, the
+  commit that separates the lineages) — **COMPLETE**, 62 steps, 0 failed, 0 skipped, 1166 test executions (583 distinct
+  cases, 583 re-run in the copy unpacked from the source archive), 1166 passed; 404 source files, fingerprint
+  `f8383620…`; PostgreSQL 17.10 in a temporary cluster. Evidence `validation/public/syna-v1.0.0-rc.1-release/` and
+  `RELEASE_MANIFEST.json`; `docs/VALIDATION.md` generated from it. Inventory 374 items, identical to the 1.0.0-rc.5
+  record (0 added, 0 removed, 0 changed) and to the frozen 0.8.0 record up to the three items registered in rc.3, 0
+  `@deprecated`. Mutation record: 2 mutants, 0 survived, 6 input files. Same-machine benchmark against 1.0.0-rc.4:
+  139/139 rows within ±10 %, largest deviation 4.2 %. `pack-metadata` 0 problems on both tarballs; the README's own
+  project, built with `syna-1.0.0-rc.1.tgz` as its only dependency, 0 problems. No attempt was repeated and nothing was
+  re-run: the gate passed on the first run of this tree.
 
 ## For whoever publishes
 

@@ -1,0 +1,20 @@
+{
+  "dryRun": true,
+  "targets": [
+    "apps",
+    "benchmarks",
+    "packages/core/tests",
+    "packages/acme-notify-v1",
+    "packages/acme-notify-v2",
+    "packages/globex-notify",
+    "packages/logger",
+    "packages/notify-contract",
+    "packages/tenant-store",
+    "scripts"
+  ],
+  "files": [],
+  "rules": {},
+  "edits": 0,
+  "filesChanged": 0,
+  "manual": 0
+}
