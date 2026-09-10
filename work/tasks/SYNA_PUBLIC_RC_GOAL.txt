@@ -1,0 +1,41 @@
+Read and execute the complete task book at:
+
+`work/tasks/SYNA_PUBLIC_RC_EXECUTION_PROMPT.md`
+
+Goal: prepare the repository for the first public unscoped Syna release candidate.
+
+Final public package identities:
+
+* `syna@1.0.0-rc.1`
+* `@synajs/tsconfig@1.0.0-rc.1`
+
+The runtime was previously developed under the temporary `@syna/core` identity; preserve that history rather than rewriting it. Current user-facing imports must use `syna`, and current tsconfig references must use `@synajs/tsconfig`.
+
+This round is release-surface work only. Do not change Syna runtime semantics, planner behavior, lifecycle behavior, serialized identities, error codes, or the frozen public API.
+
+Rewrite the public README from scratch for a human TypeScript developer encountering Syna for the first time. GitHub and npm must use one canonical README. The README must introduce the problem, installation, a verified Quick Start, the Runtime / Entry / Env / Service / Input mental model, contextual resources, Contracts / Bindings, testing, diagnostics, boundaries, and concise documentation links. Keep release-engineering history, audit logs, benchmark details, and long migration material out of the main README.
+
+Before renaming packages, verify that `syna` and `@synajs/tsconfig` are publishable by the current npm account. Stop and report if either identity is unavailable; do not invent another package name.
+
+The packed `syna` package must be tested in a completely fresh consumer project. Extract or otherwise keep the README Quick Start synchronized with executable code, then typecheck, build, and run it using only the packed `syna` tarball. Ordinary runtime consumers must not require `@synajs/tsconfig`.
+
+Update current examples, package metadata, fixtures, documentation, consumer smoke tests, release tooling, manifests, and scans as required. Preserve legitimate historical references to `@syna/core` and `@syna/tsconfig`.
+
+The final `node scripts/verify-release.mjs --release` must be COMPLETE with:
+
+* zero skipped tests,
+* unchanged public API inventory,
+* existing mutation audit intact,
+* archive rebuild passing,
+* packed-package consumer passing,
+* README consumer passing.
+
+Do not weaken benchmarks, tests, mutation checks, PostgreSQL coverage, archive rebuilds, or release-gate thresholds to make the gate pass.
+
+Commit and push the completed work, but DO NOT:
+
+* publish to npm,
+* create a git tag,
+* create a GitHub Release.
+
+Finish only when the repository is genuinely ready for a human final README review followed by publishing `syna@1.0.0-rc.1`.

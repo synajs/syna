@@ -14,6 +14,7 @@ The line from the tarball baselines to 1.0, one round per section: what the roun
 | 1.0.0-rc.3 | the closing paths（关闭路径） — from an independent audit | `work/tasks/SYNA_RC3_EXECUTION_PROMPT.md`, `work/tasks/SYNA_RC3_GOAL.txt` | `docs/SEMANTIC_CHANGES_RC3.md` | `validation/v1.0.0-rc.3-release/`, `work/rc3/STATE.md` |
 | 1.0.0-rc.4 | the cleanup phase（清理阶段） — from a three-party cross-review | `work/tasks/SYNA_RC4_EXECUTION_PROMPT.md`, `work/tasks/SYNA_RC4_GOAL.txt` | `docs/SEMANTIC_CHANGES_RC4.md` | `validation/v1.0.0-rc.4-release/`, `work/rc4/STATE.md` |
 | 1.0.0-rc.5 | the tests that hold（测试有效性） — from a third independent review | `work/tasks/SYNA_RC5_EXECUTION_PROMPT.md`, `work/tasks/SYNA_RC5_GOAL.txt` | `docs/SEMANTIC_CHANGES_RC5.md` | `validation/v1.0.0-rc.5-release/`, `work/rc5/STATE.md` |
+| `syna` 1.0.0-rc.1 (workspace 1.0.0-rc.6) | the public packages（公开身份） | `work/tasks/SYNA_PUBLIC_RC_EXECUTION_PROMPT.md`, `work/tasks/SYNA_PUBLIC_RC_GOAL.txt` | `CHANGELOG.md` | `validation/v1.0.0-rc.6-release/`, `work/public-rc/STATE.md` |
 
 ## 0.2 – 0.4 — the tarball baselines
 
@@ -38,6 +39,41 @@ Task book `work/tasks/SYNA_V08_EXECUTION_PROMPT.md` (goal `work/tasks/SYNA_V08_G
 ## 1.0.0-rc.1 — the release candidate
 
 No task book: no change of the core — the public API inventory is identical to the 0.8.0 record item by item, the planner differential and the snapshots are the 0.8.0 ones. The candidate changes metadata (the repository `github.com/synajs/syna` in every `package.json`, the badges and links), tooling (`scripts/verify-release.mjs` reads the version from `package.json`; both sides of the benchmark comparison run under `--no-maglev` against the 0.8.0 source re-recorded the same way; one gate run's evidence is committed with the release) and documents (this page, the diagnostics clause of `docs/API_STABILITY.md`, `docs/DEFERRED.md` N15, the task books committed under `work/tasks/`). Record: `CHANGELOG.md`; evidence `validation/v1.0.0-rc.1-release/`, `work/v1.0/STATE.md`.
+
+## syna 1.0.0-rc.1 — the public packages（公开身份）
+
+Task book `work/tasks/SYNA_PUBLIC_RC_EXECUTION_PROMPT.md` (goal `work/tasks/SYNA_PUBLIC_RC_GOAL.txt`). The runtime was
+developed and validated through the earlier 1.0 release candidates under the temporary package identity `@syna/core`,
+which is not the name it is published under; `@syna` is not this project's npm scope. The public package is **`syna`**
+and the TypeScript presets that go with it are **`@synajs/tsconfig`**, and both start at **1.0.0-rc.1**: the first
+public release candidate, not the sixth. The workspace itself — private, never published — keeps its own validation
+line and is `1.0.0-rc.6` here, so that the recorded runs of the five earlier candidates stay where they are and keep
+their names (`validation/v1.0.0-rc.1-release/` … `v1.0.0-rc.5-release/`, and the profiles in
+`scripts/release-profiles/`). The earlier versions of the runtime were never on the registry under either name.
+
+No change of the core: the public API inventory is identical to the 1.0.0-rc.5 record item by item, the planner
+differential and the explain/inspect snapshots are unchanged, and `packages/core/src` is untouched. In particular **the
+npm rename is not a rename of any identity the runtime serializes**: the internal package the Runtime declares itself
+with, and the id of its internal derive Entry, are still `@syna/core` and `@syna/core/entry/derive/v1`
+(`docs/API_STABILITY.md`). A package specifier is what a consumer types in an import; a nominal id is what appears in
+plans, inspections and stored references, and it is frozen like every other.
+
+What the round changed is the surface a first-time reader meets. The README was rewritten from scratch for a
+TypeScript developer who has not heard of Syna: the problem, the install line, a Quick Start that opens a pool and
+closes it, the Runtime / Entry / Env / Service / Input model in five paragraphs, one worked example of a world per
+tenant, Contracts and Bindings, testing, diagnostics, the boundaries and the documentation map. It is one document:
+`packages/core/README.md` is a byte-identical copy, so npm and GitHub show the same page, and the release gate checks
+that copy again inside the packed tarball. Its programs are not prose — `scripts/lib/readme-programs.mjs` reads the
+files and the printed output out of the document, and they are compiled and run twice: in the workspace by
+`scripts/tests/readme-example.test.mjs`, and in a project the release gate builds from the README alone, whose only
+dependency is the packed `syna` tarball (`readme-consumer-*`). The gate also gained `no-legacy-package-names` (no
+current file installs, imports or extends a package that will not be on the registry; the records keep their wording,
+and the two lines that spell an earlier name on purpose are listed in every run) and `pack-metadata` (the two tarballs
+are the packages the release profile declares, carry what their `files` says and nothing else, ask a consumer for
+nothing of this workspace, and the runtime's README is the canonical one). `@synajs/tsconfig` is a package-author tool,
+never a requirement of a runtime consumer: the README's own `tsconfig.json` is a plain standalone one, and both
+consumer projects of the gate assert that nothing of this workspace was installed with the runtime. Record:
+`CHANGELOG.md`; evidence `validation/v1.0.0-rc.6-release/`, `work/public-rc/STATE.md`.
 
 ## 1.0.0-rc.5 — the tests that hold（测试有效性）
 
