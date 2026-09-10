@@ -1,6 +1,6 @@
 # Validation (VALIDATION)
 
-Every number below is copied by a script (`scripts/validation-doc.mjs`) from machine-readable results of the transparent orchestrator; nothing is hand-typed. Source of this page: the release run `node scripts/verify-release.mjs --release` recorded in `validation/v1.0.0-rc.6-release/manifest.json` — status **COMPLETE**, generated 2026-09-10T18:24:54.035Z, source fingerprint `f1bd4133c6315bfa3f54a1f50f2a1aaac970e22df0a7d956de502bb0856bf373` (403 files), git commit `68345e1` (clean checkout).
+Every number below is copied by a script (`scripts/validation-doc.mjs`) from machine-readable results of the transparent orchestrator; nothing is hand-typed. Source of this page: the release run `node scripts/verify-release.mjs --release` recorded in `validation/v1.0.0-rc.6-release/manifest.json` — status **COMPLETE**, generated 2026-09-10T18:31:32.036Z, source fingerprint `d112ce49d3ad0f2c2514a7f2da80b6f6936294ce7e95659abec360af53bce216` (403 files), git commit `7401ce9` (clean checkout).
 
 This document is generated from that run's manifest after the run and committed with the run's evidence (`RELEASE_MANIFEST.json`, `validation/v1.0.0-rc.6-release/`) in the release commit; from 1.0.0-rc.1 on the gate neither fingerprints nor archives it, so the source fingerprint and the archive hashes the manifest records hold on the commit that carries them, and one run is the record of reference. The gate does not compare runs with each other and fails none for differing from another: the same steps run, and each manifest records under `previousRun` whether its step list and per-step test counts equal those of the run it replaced; its timings are its own and may differ within noise.
 
@@ -15,70 +15,72 @@ This document is generated from that run's manifest after the run and committed 
 
 | step | exit | tests | duration | log |
 |---|---|---|---|---|
-| clean | 0 | — | 142 ms | `validation/v1.0.0-rc.6-release/logs/clean.log` |
-| build | 0 | — | 8038 ms | `validation/v1.0.0-rc.6-release/logs/build.log` |
-| type-tests | 0 | — | 3618 ms | `validation/v1.0.0-rc.6-release/logs/type-tests.log` |
-| core-tests | 0 | 340/340 pass, 0 fail, 0 not run | 3005 ms | `validation/v1.0.0-rc.6-release/logs/core-tests.log` |
-| blog-filesystem-tests | 0 | 69/69 pass, 0 fail, 0 not run | 962 ms | `validation/v1.0.0-rc.6-release/logs/blog-filesystem-tests.log` |
-| blog-render-tests | 0 | 8/8 pass, 0 fail, 0 not run | 289 ms | `validation/v1.0.0-rc.6-release/logs/blog-render-tests.log` |
-| blog-tenants-auth-preflight-tests | 0 | 12/12 pass, 0 fail, 0 not run | 408 ms | `validation/v1.0.0-rc.6-release/logs/blog-tenants-auth-preflight-tests.log` |
-| blog-audit-regression-tests | 0 | 22/22 pass, 0 fail, 0 not run | 5448 ms | `validation/v1.0.0-rc.6-release/logs/blog-audit-regression-tests.log` |
-| blog-review-regression-tests | 0 | 8/8 pass, 0 fail, 0 not run | 1636 ms | `validation/v1.0.0-rc.6-release/logs/blog-review-regression-tests.log` |
-| blog-close-path-tests | 0 | 12/12 pass, 0 fail, 0 not run | 1297 ms | `validation/v1.0.0-rc.6-release/logs/blog-close-path-tests.log` |
-| blog-site-manager-working-set-tests | 0 | 14/14 pass, 0 fail, 0 not run | 5408 ms | `validation/v1.0.0-rc.6-release/logs/blog-site-manager-working-set-tests.log` |
-| blog-postgres-and-matrix-tests | 0 | 45/45 pass, 0 fail, 0 not run | 2374 ms | `validation/v1.0.0-rc.6-release/logs/blog-postgres-and-matrix-tests.log` |
-| gate-self-tests | 0 | 51/51 pass, 0 fail, 0 not run | 4475 ms | `validation/v1.0.0-rc.6-release/logs/gate-self-tests.log` |
+| clean | 0 | — | 138 ms | `validation/v1.0.0-rc.6-release/logs/clean.log` |
+| build | 0 | — | 8042 ms | `validation/v1.0.0-rc.6-release/logs/build.log` |
+| type-tests | 0 | — | 3720 ms | `validation/v1.0.0-rc.6-release/logs/type-tests.log` |
+| core-tests | 0 | 340/340 pass, 0 fail, 0 not run | 3034 ms | `validation/v1.0.0-rc.6-release/logs/core-tests.log` |
+| blog-filesystem-tests | 0 | 69/69 pass, 0 fail, 0 not run | 1016 ms | `validation/v1.0.0-rc.6-release/logs/blog-filesystem-tests.log` |
+| blog-render-tests | 0 | 8/8 pass, 0 fail, 0 not run | 295 ms | `validation/v1.0.0-rc.6-release/logs/blog-render-tests.log` |
+| blog-tenants-auth-preflight-tests | 0 | 12/12 pass, 0 fail, 0 not run | 425 ms | `validation/v1.0.0-rc.6-release/logs/blog-tenants-auth-preflight-tests.log` |
+| blog-audit-regression-tests | 0 | 22/22 pass, 0 fail, 0 not run | 5468 ms | `validation/v1.0.0-rc.6-release/logs/blog-audit-regression-tests.log` |
+| blog-review-regression-tests | 0 | 8/8 pass, 0 fail, 0 not run | 1663 ms | `validation/v1.0.0-rc.6-release/logs/blog-review-regression-tests.log` |
+| blog-close-path-tests | 0 | 12/12 pass, 0 fail, 0 not run | 1311 ms | `validation/v1.0.0-rc.6-release/logs/blog-close-path-tests.log` |
+| blog-site-manager-working-set-tests | 0 | 14/14 pass, 0 fail, 0 not run | 5498 ms | `validation/v1.0.0-rc.6-release/logs/blog-site-manager-working-set-tests.log` |
+| blog-postgres-and-matrix-tests | 0 | 45/45 pass, 0 fail, 0 not run | 2487 ms | `validation/v1.0.0-rc.6-release/logs/blog-postgres-and-matrix-tests.log` |
+| gate-self-tests | 0 | 51/51 pass, 0 fail, 0 not run | 4534 ms | `validation/v1.0.0-rc.6-release/logs/gate-self-tests.log` |
 | mutation-audit-record | 0 | — | — | `work/rc5/mutations/RESULTS.json` |
-| api-inventory | 0 | — | 3728 ms | `validation/v1.0.0-rc.6-release/logs/api-inventory.log` |
+| api-inventory | 0 | — | 3715 ms | `validation/v1.0.0-rc.6-release/logs/api-inventory.log` |
 | api-inventory-no-deprecated | 0 | — | — | `validation/v1.0.0-rc.6-release/api-inventory.json` |
-| api-inventory-diff | 0 | — | 159 ms | `validation/v1.0.0-rc.6-release/logs/api-inventory-diff.log` |
+| api-inventory-diff | 0 | — | 161 ms | `validation/v1.0.0-rc.6-release/logs/api-inventory-diff.log` |
 | api-inventory-unchanged | 0 | — | — | `validation/v1.0.0-rc.6-release/api-inventory-diff.md` |
 | api-inventory-frozen | 0 | — | — | `validation/v1.0.0-rc.6-release/api-inventory.json` |
-| codemod-idempotent | 0 | — | 763 ms | `validation/v1.0.0-rc.6-release/logs/codemod-idempotent.log` |
+| codemod-idempotent | 0 | — | 787 ms | `validation/v1.0.0-rc.6-release/logs/codemod-idempotent.log` |
 | no-old-reference-tokens | 0 | — | — | `validation/v1.0.0-rc.6-release/old-reference-tokens.json` |
 | no-vendor-names | 0 | — | — | `validation/v1.0.0-rc.6-release/vendor-name-scan.json` |
 | no-legacy-package-names | 0 | — | — | `validation/v1.0.0-rc.6-release/package-name-scan.json` |
-| any-count | 0 | — | 226 ms | `validation/v1.0.0-rc.6-release/logs/any-count.log` |
-| demo-01-basics | 0 | — | 70 ms | `validation/v1.0.0-rc.6-release/logs/demo-01-basics.log` |
-| demo-02-per-tenant | 0 | — | 75 ms | `validation/v1.0.0-rc.6-release/logs/demo-02-per-tenant.log` |
-| demo-03-user-configurable | 0 | — | 81 ms | `validation/v1.0.0-rc.6-release/logs/demo-03-user-configurable.log` |
-| demo-04-two-versions | 0 | — | 82 ms | `validation/v1.0.0-rc.6-release/logs/demo-04-two-versions.log` |
-| demo-05-scheduled-jobs | 0 | — | 76 ms | `validation/v1.0.0-rc.6-release/logs/demo-05-scheduled-jobs.log` |
-| demo-06-testing | 0 | — | 78 ms | `validation/v1.0.0-rc.6-release/logs/demo-06-testing.log` |
-| demo-07-failure-modes | 0 | — | 562 ms | `validation/v1.0.0-rc.6-release/logs/demo-07-failure-modes.log` |
-| blog-demo-filesystem | 0 | — | 301 ms | `validation/v1.0.0-rc.6-release/logs/blog-demo-filesystem.log` |
-| benchmarks | 0 | — | 3380 ms | `validation/v1.0.0-rc.6-release/logs/benchmarks.log` |
-| benchmark-compare | 0 | — | 159536 ms | `validation/v1.0.0-rc.6-release/logs/benchmark-compare.log` |
-| blog-request-latency | 0 | — | 2022 ms | `validation/v1.0.0-rc.6-release/logs/blog-request-latency.log` |
+| any-count | 0 | — | 227 ms | `validation/v1.0.0-rc.6-release/logs/any-count.log` |
+| demo-01-basics | 0 | — | 72 ms | `validation/v1.0.0-rc.6-release/logs/demo-01-basics.log` |
+| demo-02-per-tenant | 0 | — | 78 ms | `validation/v1.0.0-rc.6-release/logs/demo-02-per-tenant.log` |
+| demo-03-user-configurable | 0 | — | 86 ms | `validation/v1.0.0-rc.6-release/logs/demo-03-user-configurable.log` |
+| demo-04-two-versions | 0 | — | 84 ms | `validation/v1.0.0-rc.6-release/logs/demo-04-two-versions.log` |
+| demo-05-scheduled-jobs | 0 | — | 78 ms | `validation/v1.0.0-rc.6-release/logs/demo-05-scheduled-jobs.log` |
+| demo-06-testing | 0 | — | 80 ms | `validation/v1.0.0-rc.6-release/logs/demo-06-testing.log` |
+| demo-07-failure-modes | 0 | — | 560 ms | `validation/v1.0.0-rc.6-release/logs/demo-07-failure-modes.log` |
+| blog-demo-filesystem | 0 | — | 290 ms | `validation/v1.0.0-rc.6-release/logs/blog-demo-filesystem.log` |
+| benchmarks | 0 | — | 3520 ms | `validation/v1.0.0-rc.6-release/logs/benchmarks.log` |
+| benchmark-compare | 0 | — | 156820 ms | `validation/v1.0.0-rc.6-release/logs/benchmark-compare.log` |
+| blog-request-latency | 0 | — | 2010 ms | `validation/v1.0.0-rc.6-release/logs/blog-request-latency.log` |
 | archive-scan | 0 | — | — | `validation/v1.0.0-rc.6-release/archive-scan.json` |
-| archive-tar | 0 | — | 216 ms | `validation/v1.0.0-rc.6-release/logs/archive-tar.log` |
-| archive-zip | 0 | — | 66 ms | `validation/v1.0.0-rc.6-release/logs/archive-zip.log` |
-| rebuild-unpack | 0 | — | 167 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-unpack.log` |
-| rebuild-install | 0 | — | 596 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-install.log` |
-| rebuild-build | 0 | — | 8538 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-build.log` |
-| rebuild-type-tests | 0 | — | 3745 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-type-tests.log` |
-| rebuild-core-tests | 0 | 340/340 pass, 0 fail, 0 not run | 3044 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-core-tests.log` |
-| rebuild-app-tests | 0 | 145/145 pass, 0 fail, 0 not run | 5629 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-app-tests.log` |
-| rebuild-postgres-matrix-tests | 0 | 45/45 pass, 0 fail, 0 not run | 2503 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-postgres-matrix-tests.log` |
-| rebuild-gate-self-tests | 0 | 51/51 pass, 0 fail, 0 not run | 4561 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-gate-self-tests.log` |
-| rebuild-codemod-idempotent | 0 | — | 809 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-codemod-idempotent.log` |
-| rebuild-demo | 0 | — | 271 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-demo.log` |
-| rebuild-examples | 0 | — | 10280 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-examples.log` |
-| pack-core | 0 | — | 356 ms | `validation/v1.0.0-rc.6-release/logs/pack-core.log` |
-| pack-tsconfig | 0 | — | 181 ms | `validation/v1.0.0-rc.6-release/logs/pack-tsconfig.log` |
+| archive-tar | 0 | — | 238 ms | `validation/v1.0.0-rc.6-release/logs/archive-tar.log` |
+| archive-zip | 0 | — | 68 ms | `validation/v1.0.0-rc.6-release/logs/archive-zip.log` |
+| rebuild-unpack | 0 | — | 210 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-unpack.log` |
+| rebuild-install | 0 | — | 690 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-install.log` |
+| rebuild-build | 0 | — | 8601 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-build.log` |
+| rebuild-type-tests | 0 | — | 3693 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-type-tests.log` |
+| rebuild-core-tests | 0 | 340/340 pass, 0 fail, 0 not run | 3024 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-core-tests.log` |
+| rebuild-app-tests | 0 | 145/145 pass, 0 fail, 0 not run | 5607 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-app-tests.log` |
+| rebuild-postgres-matrix-tests | 0 | 45/45 pass, 0 fail, 0 not run | 2434 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-postgres-matrix-tests.log` |
+| rebuild-gate-self-tests | 0 | 51/51 pass, 0 fail, 0 not run | 4477 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-gate-self-tests.log` |
+| rebuild-codemod-idempotent | 0 | — | 789 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-codemod-idempotent.log` |
+| rebuild-demo | 0 | — | 268 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-demo.log` |
+| rebuild-examples | 0 | — | 10117 ms | `validation/v1.0.0-rc.6-release/logs/rebuild-examples.log` |
+| pack-core | 0 | — | 396 ms | `validation/v1.0.0-rc.6-release/logs/pack-core.log` |
+| pack-tsconfig | 0 | — | 195 ms | `validation/v1.0.0-rc.6-release/logs/pack-tsconfig.log` |
 | pack-metadata | 0 | — | — | `validation/v1.0.0-rc.6-release/pack-audit.json` |
-| consumer-install | 0 | — | 710 ms | `validation/v1.0.0-rc.6-release/logs/consumer-install.log` |
-| consumer-build | 0 | — | 631 ms | `validation/v1.0.0-rc.6-release/logs/consumer-build.log` |
-| consumer-run | 0 | — | 176 ms | `validation/v1.0.0-rc.6-release/logs/consumer-run.log` |
+| consumer-install | 0 | — | 1061 ms | `validation/v1.0.0-rc.6-release/logs/consumer-install.log` |
+| consumer-build | 0 | — | 605 ms | `validation/v1.0.0-rc.6-release/logs/consumer-build.log` |
+| consumer-run | 0 | — | 180 ms | `validation/v1.0.0-rc.6-release/logs/consumer-run.log` |
 | consumer-smoke-result | 0 | — | — | `validation/v1.0.0-rc.6-release/logs/consumer-run.log` |
-| readme-consumer-install | 0 | — | 381 ms | `validation/v1.0.0-rc.6-release/logs/readme-consumer-install.log` |
-| readme-consumer-build | 0 | — | 776 ms | `validation/v1.0.0-rc.6-release/logs/readme-consumer-build.log` |
+| readme-consumer-install | 0 | — | 391 ms | `validation/v1.0.0-rc.6-release/logs/readme-consumer-install.log` |
+| readme-consumer-build | 0 | — | 797 ms | `validation/v1.0.0-rc.6-release/logs/readme-consumer-build.log` |
 | readme-consumer-main | 0 | — | 71 ms | `validation/v1.0.0-rc.6-release/logs/readme-consumer-main.log` |
-| readme-consumer-tenants | 0 | — | 70 ms | `validation/v1.0.0-rc.6-release/logs/readme-consumer-tenants.log` |
+| readme-consumer-tenants | 0 | — | 68 ms | `validation/v1.0.0-rc.6-release/logs/readme-consumer-tenants.log` |
 | readme-consumer-result | 0 | — | — | `validation/v1.0.0-rc.6-release/readme-consumer.json` |
 | release-profile | 0 | — | — | `scripts/release-profiles/1.0.0-rc.6.json` |
 
 Totals: 62 steps, 0 failed steps; 1162 test executions: 581 distinct cases, 581 of them executed a second time in the rebuilt copy (the `rebuild-*` steps); 1162 passed, 0 skipped/not run. Blocked steps: 0.
+
+Compared with the run this one replaced (generated 2026-09-10T18:24:54.035Z, commit `68345e1`, COMPLETE): step list identical, per-step test counts identical.
 
 The `rebuild-*` steps ran inside a fresh directory created with `mkdtemp` in the OS temp dir: the source tarball was unpacked there, `npm ci` installed from the lockfile, the workspace was built and type-tested, and the core, application and PostgreSQL/matrix suites plus the filesystem demo ran against that copy. `pack-*` produced the npm tarballs from the rebuilt copy; `consumer-*` installed the runtime tarball into an independent TypeScript project, compiled it and ran it.
 
@@ -94,17 +96,17 @@ Setups are empty and involve no network. Warm cases measure enter+dispose of a s
 
 | case | samples | p50 ms | p95 ms | p99 ms | inherited / new | plan-cache entries |
 |---|---:|---:|---:|---:|---|---:|
-| warm-enter-dispose-100-depth-2 | 500 | 0.116 | 0.209 | 0.280 | 100 / 20 | 4 |
-| warm-enter-dispose-100-depth-6 | 500 | 0.104 | 0.162 | 0.222 | 100 / 20 | 8 |
-| warm-enter-dispose-300-depth-2 | 500 | 0.256 | 0.386 | 0.438 | 260 / 60 | 4 |
-| warm-enter-dispose-300-depth-6 | 500 | 0.250 | 0.374 | 0.423 | 260 / 60 | 8 |
-| site-enter-tenant-input-reverse-closure-200 | 300 | 0.198 | 0.319 | 0.490 | 140 / — | 2 |
-| bound-entry-private-range-request-enter-dispose-100 | 500 | 0.118 | 0.174 | 0.222 | 101 / 21 | 4 |
-| override-and-all-request-enter-dispose-100 | 500 | 0.114 | 0.167 | 0.239 | — | — |
+| warm-enter-dispose-100-depth-2 | 500 | 0.116 | 0.196 | 0.267 | 100 / 20 | 4 |
+| warm-enter-dispose-100-depth-6 | 500 | 0.109 | 0.191 | 0.234 | 100 / 20 | 8 |
+| warm-enter-dispose-300-depth-2 | 500 | 0.260 | 0.389 | 0.488 | 260 / 60 | 4 |
+| warm-enter-dispose-300-depth-6 | 500 | 0.267 | 0.388 | 0.459 | 260 / 60 | 8 |
+| site-enter-tenant-input-reverse-closure-200 | 300 | 0.199 | 0.314 | 0.438 | 140 / — | 2 |
+| bound-entry-private-range-request-enter-dispose-100 | 500 | 0.124 | 0.190 | 0.318 | 101 / 21 | 4 |
+| override-and-all-request-enter-dispose-100 | 500 | 0.123 | 0.186 | 0.262 | — | — |
 
-Phase breakdown (300-service world, 60 rounds): cold plan + new slots p95 22.591 ms · warm plan p95 0.520 ms · materialization of a request chain p95 0.069 ms · dispose p95 0.130 ms.
+Phase breakdown (300-service world, 60 rounds): cold plan + new slots p95 22.904 ms · warm plan p95 0.538 ms · materialization of a request chain p95 0.067 ms · dispose p95 0.139 ms.
 
-Churn: 10000 request/AnchoredEntry operations in 1203 ms (120.3 µs/op); plan-cache entries max 4 (hits 9998, misses 4); live Envs after 2; heap after GC: 7.1 MiB → 7.3 MiB → 7.4 MiB → 7.4 MiB → 7.4 MiB.
+Churn: 10000 request/AnchoredEntry operations in 1271 ms (127.1 µs/op); plan-cache entries max 4 (hits 9998, misses 4); live Envs after 2; heap after GC: 7.1 MiB → 7.4 MiB → 7.4 MiB → 7.4 MiB → 7.5 MiB.
 
 LRU: 500 distinct Entry shapes → 16 cached templates (max 16, evictions 484).
 
@@ -112,10 +114,10 @@ LRU: 500 distinct Entry shapes → 16 cached templates (max 16, evictions 484).
 
 | budget | metric | max | value | result |
 |---|---|---:|---:|---|
-| warm-enter-dispose-300-depth-2 | p95Ms | 2 | 0.386 | ok |
-| warm-enter-dispose-300-depth-6 | p95Ms | 2 | 0.374 | ok |
-| warm-enter-dispose-100-depth-2 | p95Ms | 1 | 0.209 | ok |
-| bound-entry-private-range-request-enter-dispose-100 | p95Ms | 1 | 0.174 | ok |
+| warm-enter-dispose-300-depth-2 | p95Ms | 2 | 0.389 | ok |
+| warm-enter-dispose-300-depth-6 | p95Ms | 2 | 0.388 | ok |
+| warm-enter-dispose-100-depth-2 | p95Ms | 1 | 0.196 | ok |
+| bound-entry-private-range-request-enter-dispose-100 | p95Ms | 1 | 0.190 | ok |
 | churn-10000-requests | planCacheEntriesMax | 8 | 4.000 | ok |
 | churn-10000-requests-liveEnvs | liveEnvCountAfter | 2 | 2.000 | ok |
 | lru-churn-500-shapes | planCacheEntries | 16 | 16.000 | ok |
@@ -124,33 +126,33 @@ LRU: 500 distinct Entry shapes → 16 cached templates (max 16, evictions 484).
 
 `scripts/benchmark-same-session.mjs` ran `benchmarks/v0.5-planning.mjs` 21 times on this host, took the element-wise median and compared it with the 1.0.0-rc.4 source (commit `b691067`) exported from git into a scratch directory, installed from its lockfile, built and benchmarked 21 times in the same session (`scripts/benchmark-same-session.mjs`: one discarded warm-up run per side, then 21 rounds that benchmark both sides in alternating order, both benchmark processes under `--expose-gc --no-maglev`; medians in `validation/v1.0.0-rc.6-release/benchmark-compare/`): environment identical (platform darwin, arch arm64, cpu Apple M4 Pro, cpuCount 14, node (major) v26, node flags --expose-gc --no-maglev); 23/23 p50/p95/per-operation values within ±10 %; 116/116 plan-cache counters and shape counts equal; overall OK.
 
-Machine-state drift (informational): this session's 1.0.0-rc.4 against the file recorded on 2026-09-08T04:39:30.294Z (`benchmarks/results-v1.0.0-rc.4-baseline-same-machine.json`) has 16/23 timings within ±10 %; outside: cases.warm-enter-dispose-300-depth-2.timing.p95Ms +13.0 %, cases.warm-enter-dispose-300-depth-6.timing.p95Ms +11.7 %, cases.phase-breakdown-300.materializationMs.p50Ms +29.0 %, cases.phase-breakdown-300.materializationMs.p95Ms +12.9 %, cases.phase-breakdown-300.disposeMs.p50Ms +17.7 %, cases.phase-breakdown-300.disposeMs.p95Ms +10.2 %, cases.site-enter-tenant-input-reverse-closure-200.timing.p95Ms +16.2 % — the same code measured at two moments, which is why both sides are measured in one session.
+Machine-state drift (informational): this session's 1.0.0-rc.4 against the file recorded on 2026-09-08T04:39:30.294Z (`benchmarks/results-v1.0.0-rc.4-baseline-same-machine.json`) has 22/23 timings within ±10 %; outside: cases.phase-breakdown-300.materializationMs.p50Ms +16.7 % — the same code measured at two moments, which is why both sides are measured in one session.
 
 | value | baseline (1.0.0-rc.4) | this source (1.0.0-rc.6) | delta |
 |---|---:|---:|---:|
-| cases.warm-enter-dispose-100-depth-2.timing.p50Ms | 0.102 | 0.102 | -0.2 % |
-| cases.warm-enter-dispose-100-depth-2.timing.p95Ms | 0.196 | 0.193 | -1.7 % |
-| cases.warm-enter-dispose-100-depth-6.timing.p50Ms | 0.099 | 0.099 | +0.4 % |
-| cases.warm-enter-dispose-100-depth-6.timing.p95Ms | 0.188 | 0.192 | +2.2 % |
-| cases.warm-enter-dispose-300-depth-2.timing.p50Ms | 0.254 | 0.256 | +0.6 % |
-| cases.warm-enter-dispose-300-depth-2.timing.p95Ms | 0.371 | 0.376 | +1.4 % |
-| cases.warm-enter-dispose-300-depth-6.timing.p50Ms | 0.247 | 0.249 | +0.8 % |
-| cases.warm-enter-dispose-300-depth-6.timing.p95Ms | 0.353 | 0.357 | +1.0 % |
-| cases.phase-breakdown-300.coldPlanWithNewSlotsMs.p50Ms | 20.368 | 20.464 | +0.5 % |
-| cases.phase-breakdown-300.coldPlanWithNewSlotsMs.p95Ms | 22.630 | 22.617 | -0.1 % |
-| cases.phase-breakdown-300.warmPlanMs.p50Ms | 0.316 | 0.317 | +0.3 % |
-| cases.phase-breakdown-300.warmPlanMs.p95Ms | 0.469 | 0.460 | -1.9 % |
-| cases.phase-breakdown-300.materializationMs.p50Ms | 0.035 | 0.034 | -1.9 % |
-| cases.phase-breakdown-300.materializationMs.p95Ms | 0.071 | 0.074 | +4.1 % |
-| cases.phase-breakdown-300.disposeMs.p50Ms | 0.094 | 0.092 | -1.7 % |
-| cases.phase-breakdown-300.disposeMs.p95Ms | 0.145 | 0.148 | +1.7 % |
-| cases.site-enter-tenant-input-reverse-closure-200.timing.p50Ms | 0.180 | 0.180 | -0.0 % |
-| cases.site-enter-tenant-input-reverse-closure-200.timing.p95Ms | 0.265 | 0.253 | -4.4 % |
-| cases.bound-entry-private-range-request-enter-dispose-100.timing.p50Ms | 0.111 | 0.112 | +1.0 % |
-| cases.bound-entry-private-range-request-enter-dispose-100.timing.p95Ms | 0.188 | 0.192 | +2.4 % |
-| cases.override-and-all-request-enter-dispose-100.timing.p50Ms | 0.109 | 0.108 | -1.1 % |
-| cases.override-and-all-request-enter-dispose-100.timing.p95Ms | 0.185 | 0.184 | -0.4 % |
-| cases.churn-10000-requests.perOperationMs | 0.121 | 0.121 | -0.5 % |
+| cases.warm-enter-dispose-100-depth-2.timing.p50Ms | 0.100 | 0.101 | +1.2 % |
+| cases.warm-enter-dispose-100-depth-2.timing.p95Ms | 0.185 | 0.188 | +1.6 % |
+| cases.warm-enter-dispose-100-depth-6.timing.p50Ms | 0.097 | 0.098 | +0.9 % |
+| cases.warm-enter-dispose-100-depth-6.timing.p95Ms | 0.182 | 0.183 | +0.4 % |
+| cases.warm-enter-dispose-300-depth-2.timing.p50Ms | 0.252 | 0.252 | +0.0 % |
+| cases.warm-enter-dispose-300-depth-2.timing.p95Ms | 0.345 | 0.348 | +1.0 % |
+| cases.warm-enter-dispose-300-depth-6.timing.p50Ms | 0.244 | 0.244 | -0.2 % |
+| cases.warm-enter-dispose-300-depth-6.timing.p95Ms | 0.335 | 0.339 | +1.0 % |
+| cases.phase-breakdown-300.coldPlanWithNewSlotsMs.p50Ms | 19.809 | 19.802 | -0.0 % |
+| cases.phase-breakdown-300.coldPlanWithNewSlotsMs.p95Ms | 21.759 | 21.894 | +0.6 % |
+| cases.phase-breakdown-300.warmPlanMs.p50Ms | 0.308 | 0.306 | -0.9 % |
+| cases.phase-breakdown-300.warmPlanMs.p95Ms | 0.447 | 0.440 | -1.5 % |
+| cases.phase-breakdown-300.materializationMs.p50Ms | 0.032 | 0.032 | +2.0 % |
+| cases.phase-breakdown-300.materializationMs.p95Ms | 0.067 | 0.068 | +0.8 % |
+| cases.phase-breakdown-300.disposeMs.p50Ms | 0.086 | 0.087 | +0.8 % |
+| cases.phase-breakdown-300.disposeMs.p95Ms | 0.137 | 0.143 | +4.8 % |
+| cases.site-enter-tenant-input-reverse-closure-200.timing.p50Ms | 0.178 | 0.177 | -0.5 % |
+| cases.site-enter-tenant-input-reverse-closure-200.timing.p95Ms | 0.239 | 0.238 | -0.6 % |
+| cases.bound-entry-private-range-request-enter-dispose-100.timing.p50Ms | 0.112 | 0.109 | -1.9 % |
+| cases.bound-entry-private-range-request-enter-dispose-100.timing.p95Ms | 0.191 | 0.190 | -0.8 % |
+| cases.override-and-all-request-enter-dispose-100.timing.p50Ms | 0.108 | 0.108 | -0.2 % |
+| cases.override-and-all-request-enter-dispose-100.timing.p95Ms | 0.181 | 0.180 | -0.4 % |
+| cases.churn-10000-requests.perOperationMs | 0.118 | 0.118 | -0.4 % |
 
 Every one of the 116 plan-cache counters (hits, misses, entries, evictions) and shape counts is equal to the baseline.
 
@@ -171,7 +173,7 @@ On the v0.4 workload the v0.5 core is slower by +8 % to +31 % at p95 (all cases 
 
 ## Working set (H11 / P05, `validation/v1.0.0-rc.6-release/working-set.json`)
 
-120 tenants configured, capacity 6; max SiteEnv records per phase: hot 3, rotation 6, long tail 6, mixed 6; final records 0, evictions 480, creations 481, creation failures 0, leases 0, pending acquires 0. Heap after GC per phase: start 18.6 MiB (records 0, live envs 2, disposing 0); after-hot 20.0 MiB (records 3, live envs 5, disposing 0); after-rotation 20.4 MiB (records 6, live envs 8, disposing 0); after-tail 20.4 MiB (records 5, live envs 7, disposing 0); after-mixed 20.7 MiB (records 6, live envs 8, disposing 0); after-idle-sweep 20.0 MiB (records 0, live envs 2, disposing 0). Site Envs alive at any acquire (live envs minus the two roots, sampled on every lease): at most 6 of capacity 6. Plan cache at the end: {"hits":482,"misses":6,"entries":6,"evictions":0,"limit":512}.
+120 tenants configured, capacity 6; max SiteEnv records per phase: hot 3, rotation 6, long tail 6, mixed 6; final records 0, evictions 480, creations 481, creation failures 0, leases 0, pending acquires 0. Heap after GC per phase: start 19.0 MiB (records 0, live envs 2, disposing 0); after-hot 20.0 MiB (records 3, live envs 5, disposing 0); after-rotation 20.4 MiB (records 6, live envs 8, disposing 0); after-tail 20.3 MiB (records 5, live envs 7, disposing 0); after-mixed 20.7 MiB (records 6, live envs 8, disposing 0); after-idle-sweep 20.0 MiB (records 0, live envs 2, disposing 0). Site Envs alive at any acquire (live envs minus the two roots, sampled on every lease): at most 6 of capacity 6. Plan cache at the end: {"hits":482,"misses":6,"entries":6,"evictions":0,"limit":512}.
 
 ## multitenant-blog request latency (report only, `validation/v1.0.0-rc.6-release/blog-request-latency.json`)
 
@@ -179,14 +181,14 @@ Full HTTP round trips on 127.0.0.1 measured from a node:http client in the same 
 
 | backend | case | samples | p50 ms | p95 ms | p99 ms |
 |---|---|---:|---:|---:|---:|
-| filesystem | post-page-cached | 200 | 1.259 | 1.811 | 2.248 |
-| filesystem | index-cached | 200 | 0.480 | 0.617 | 0.694 |
-| filesystem | comment-preview-untrusted | 200 | 0.489 | 0.729 | 0.820 |
-| filesystem | post-page-cold-site | 50 | 1.520 | 2.195 | 2.488 |
-| postgres | post-page-cached | 200 | 0.630 | 1.191 | 1.523 |
-| postgres | index-cached | 200 | 0.371 | 0.449 | 0.509 |
-| postgres | comment-preview-untrusted | 200 | 0.400 | 0.556 | 0.634 |
-| postgres | post-page-cold-site | 50 | 0.768 | 1.026 | 1.133 |
+| filesystem | post-page-cached | 200 | 1.229 | 1.922 | 2.363 |
+| filesystem | index-cached | 200 | 0.468 | 0.650 | 0.901 |
+| filesystem | comment-preview-untrusted | 200 | 0.460 | 0.583 | 0.686 |
+| filesystem | post-page-cold-site | 50 | 1.309 | 1.579 | 1.994 |
+| postgres | post-page-cached | 200 | 0.591 | 0.904 | 1.043 |
+| postgres | index-cached | 200 | 0.349 | 0.476 | 0.585 |
+| postgres | comment-preview-untrusted | 200 | 0.411 | 0.646 | 0.772 |
+| postgres | post-page-cold-site | 50 | 0.860 | 1.107 | 1.180 |
 
 `post-page-cached`: GET /posts/shared-slug on a warm SiteEnv (page cache hit; still one content-version read per request). `index-cached`: GET / on a warm SiteEnv (page cache hit). `comment-preview-untrusted`: GET /comments/preview?text=… (untrusted pipeline, never cached). `post-page-cold-site`: GET /posts/shared-slug after invalidate(): SiteEnv creation (configuration read, Env, authenticator, context) plus a page-cache miss.
 
