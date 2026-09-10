@@ -1,65 +1,88 @@
-// The README's one-screen example (v0.6 on) is compiled and executed exactly as printed. The `package.json` and the
-// three `src/*.ts` blocks under "## Syna in one screen" are written to a scratch package that resolves `@syna/core`
-// through this workspace's node_modules, built with the workspace TypeScript under the workspace's strict options,
-// and run; stdout must equal the output block. README.zh-CN.md carries the same blocks under "## 一屏示例".
-// 1.0.0-rc.2: the program is the shape of apps/02-per-tenant and apps/03-user-configurable (docs/EXAMPLES.md: the
-// manual's snippets come from the examples) — two providers behind one Contract, a tenant Input, a Binding stored as
-// JSON and parsed back.
+// The README's programs (1.0.0-rc.1, the first public candidate) are compiled and executed exactly as printed. The
+// `package.json`, `tsconfig.json` and the two `src/*.ts` blocks are written to a scratch package that resolves `syna`
+// through this workspace's node_modules and is built with the workspace TypeScript under **the README's own
+// tsconfig.json** — a plain standalone one, no preset package: what a reader copies is what runs here. Each program's
+// stdout must equal the output block that follows it.
+//
+// The same document is the npm README (packages/core/README.md is a byte-identical copy, asserted below and again from
+// inside the packed tarball by the release gate) and README.zh-CN.md carries the same code and output blocks.
+//
+// The snippets that are not whole programs are checked for invented names instead: every name the README imports from
+// `syna` is an export of the built package, and every `define.`/`runtime.`/`env.` call it shows is a declared member.
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import test from 'node:test'
+import { declaredExports, importedNames, interfaceMembers, memberCalls, readmePrograms } from '../lib/readme-programs.mjs'
 
 const root = new URL('../../', import.meta.url).pathname.replace(/\/$/, '')
+const readme = readFileSync(join(root, 'README.md'), 'utf8')
+const programs = readmePrograms(readme)
+const PROGRAMS = [
+  { file: 'src/main.ts', built: 'dist/main.js' },
+  { file: 'src/tenants.ts', built: 'dist/tenants.js' },
+]
 
-function exampleOf(markdown, heading) {
-  const start = markdown.indexOf(`## ${heading}`)
-  assert.ok(start >= 0, `section "${heading}" not found`)
-  const rest = markdown.slice(start + heading.length + 3)
-  const next = rest.search(/^## /m)
-  const section = next >= 0 ? rest.slice(0, next) : rest
-  const matches = [...section.matchAll(/^`(package\.json|src\/[\w-]+\.ts)`\n\n```(?:json|ts)\n([\s\S]*?)```/gm)]
-  const files = matches.map(match => ({ file: match[1], code: match[2] }))
-  const last = matches.at(-1)
-  const output = last ? section.slice(last.index + last[0].length).match(/```\n([\s\S]*?)```/)?.[1] : undefined
-  return { files, output }
-}
-
-const english = exampleOf(readFileSync(join(root, 'README.md'), 'utf8'), 'Syna in one screen')
-
-test('README.md carries three comment-free files and their output; README.zh-CN.md carries the same', () => {
-  assert.deepEqual(english.files.map(item => item.file), ['package.json', 'src/notify.ts', 'src/outbox.ts', 'src/main.ts'])
-  assert.deepEqual(Object.keys(JSON.parse(english.files[0].code)), ['name', 'version', 'type', 'imports'])
-  for (const { file, code } of english.files.slice(1)) {
-    assert.ok(!/\/\/|\/\*/.test(code), `${file} must not carry explanatory comments`)
+test('the README carries the files of its programs, their outputs, and the Chinese README carries the same blocks', () => {
+  assert.deepEqual(programs.files.map(item => item.file), ['package.json', 'tsconfig.json', 'src/main.ts', 'src/tenants.ts'])
+  const manifest = JSON.parse(programs.files[0].code)
+  assert.deepEqual(manifest.imports, { '#syna/package': './package.json' }, 'the package.json of the Quick Start maps #syna/package')
+  const compilerOptions = JSON.parse(programs.files[1].code).compilerOptions
+  assert.equal(compilerOptions.module, 'NodeNext')
+  assert.equal(compilerOptions.resolveJsonModule, true)
+  for (const { file } of PROGRAMS) assert.ok(programs.outputs.get(file), `${file} is followed by the output it prints`)
+  // The Quick Start is the first program and introduces the five names of the model, nothing else.
+  const quickStart = programs.files[2].code
+  for (const call of ['define.input<', 'define.service(', 'define.entry(', 'createRuntime(', '.load()', 'onDispose(', 'runtime.run(']) {
+    assert.ok(quickStart.includes(call), `the Quick Start uses ${call}`)
   }
-  assert.ok(english.output, 'the output block follows the files')
-  const chinese = exampleOf(readFileSync(join(root, 'README.zh-CN.md'), 'utf8'), '一屏示例')
-  assert.deepEqual(chinese, english, 'README.zh-CN.md carries the same blocks and output')
-  // The shape of the two examples the program is cut from: a Contract with two providers, a tenant Input, a Binding.
-  const code = english.files.map(item => item.code).join('\n')
-  for (const call of ['define.contract<', 'define.input<', 'define.binding(', 'provides: [Notifier]', '.to(', '.parse(', 'runtime.explain(', 'runtime.run(']) {
-    assert.ok(code.includes(call), `the example uses ${call}`)
+  for (const later of ['define.contract', 'define.binding', 'override(', 'reuse:']) {
+    assert.ok(!quickStart.includes(later), `the Quick Start leaves ${later} to a later section`)
   }
-  assert.equal(english.output.split('\n').filter(Boolean).length, 4, 'four output lines: the stored choice, the plan, two deliveries')
+  const chinese = readmePrograms(readFileSync(join(root, 'README.zh-CN.md'), 'utf8'))
+  assert.deepEqual(chinese.files, programs.files, 'README.zh-CN.md carries the same files (code is not translated)')
+  assert.deepEqual([...chinese.outputs], [...programs.outputs], 'README.zh-CN.md carries the same outputs')
 })
 
-test('the README example compiles under the workspace options and prints the documented output', () => {
+test('the npm README is the canonical README, byte for byte', () => {
+  assert.equal(readFileSync(join(root, 'packages/core/README.md'), 'utf8'), readme,
+    'packages/core/README.md is a copy of the root README (npm and GitHub show one document); copy it again')
+})
+
+test('the README names only what the built package declares', () => {
+  const index = readFileSync(join(root, 'packages/core/dist/index.d.ts'), 'utf8')
+  const descriptors = readFileSync(join(root, 'packages/core/dist/descriptors.d.ts'), 'utf8')
+  const exported = declaredExports(index)
+  for (const name of importedNames(readme)) {
+    assert.ok(exported.has(name), `the README imports ${name} from 'syna', which the package does not export`)
+  }
+  const members = {
+    define: interfaceMembers(descriptors, 'PackageDefinitions'),
+    runtime: interfaceMembers(descriptors, 'Runtime'),
+    env: interfaceMembers(descriptors, 'Env'),
+  }
+  for (const call of memberCalls(readme, Object.keys(members))) {
+    const [receiver, member] = call.split('.')
+    assert.ok(members[receiver].has(member), `the README calls ${call}(), which is not a member of the built package`)
+  }
+})
+
+test('the README programs compile under the README tsconfig and print the documented output', () => {
   const directory = mkdtempSync(join(tmpdir(), 'syna-readme-'))
   try {
-    mkdirSync(join(directory, 'src'))
     symlinkSync(join(root, 'node_modules'), join(directory, 'node_modules'), 'dir')
-    writeFileSync(join(directory, 'tsconfig.json'), JSON.stringify({
-      extends: '@syna/tsconfig/node-app.json',
-      compilerOptions: { rootDir: 'src', outDir: 'dist', composite: false, incremental: false, sourceMap: false },
-      include: ['src/**/*.ts'],
-    }, null, 2))
-    for (const { file, code } of english.files) writeFileSync(join(directory, file), code)
-    execFileSync(process.execPath, [join(root, 'node_modules/typescript/bin/tsc'), '-p', 'tsconfig.json', '--pretty', 'false'], { cwd: directory, stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8' })
-    const stdout = execFileSync(process.execPath, ['dist/main.js'], { cwd: directory, stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8', timeout: 30_000 })
-    assert.equal(stdout, english.output)
+    for (const { file, code } of programs.files) {
+      mkdirSync(join(directory, dirname(file)), { recursive: true })
+      writeFileSync(join(directory, file), code)
+    }
+    execFileSync(process.execPath, [join(root, 'node_modules/typescript/bin/tsc'), '-p', 'tsconfig.json', '--pretty', 'false'],
+      { cwd: directory, stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8' })
+    for (const { file, built } of PROGRAMS) {
+      const stdout = execFileSync(process.execPath, [built], { cwd: directory, stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8', timeout: 30_000 })
+      assert.equal(stdout, programs.outputs.get(file), `${file} prints what the README says it prints`)
+    }
   }
   finally {
     rmSync(directory, { recursive: true, force: true })

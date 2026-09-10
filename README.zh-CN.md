@@ -1,155 +1,343 @@
-# Syna（中文简介）
+# Syna
 
 [![CI](https://github.com/synajs/syna/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/synajs/syna/actions/workflows/ci.yml)
 
-[English](README.md) | 简体中文 · 源码：[github.com/synajs/syna](https://github.com/synajs/syna) · 问题：[github.com/synajs/syna/issues](https://github.com/synajs/syna/issues) · `@syna/core` 与 `@syna/tsconfig` 版本 1.0.0-rc.2（公开面自 0.8.0 冻结，见 `docs/API_STABILITY.md`；从 tarball 基线到 1.0 的脉络见 `docs/HISTORY.md`）
+用显式生命周期组合有状态 TypeScript 服务的运行时。
 
-Syna 把一个 TypeScript 程序的各个部件——连接池、某个服务商的客户端、请求处理器——组合成能干净地打开与关闭的世界。每个部件只声明一次：它需要什么、怎样启动；由 Syna 决定哪个世界创建它、哪些世界共享它、何时关闭它。不同租户的部件互不相干而无需 scope 对象，连接池只存在一份，用户选择的或测试里替换的服务商是一条声明而不是一次改写。
+[English](https://github.com/synajs/syna/blob/main/README.md) | 简体中文
 
-一段话的模型：Runtime 接纳有限的带版本 Service 集合；Entry 打开 Env 世界；每个世界对每个 resolved 部件只有一个可见 slot，默认复用父世界的 slot，Service 实例按需或 eager 物化，`load()` 返回普通 Promise。模型见 `docs/SEMANTIC_MODEL.md`，术语见 `docs/GLOSSARY.md`，公开面见 `docs/API_REFERENCE.md`。
+大多数程序都持有一些必须先创建、用完要释放的东西：数据库连接池、带着某个租户凭据的 API 客户端、只属于一次请求的缓存。手写创建过程一直可行，直到同一个东西要在两处同时使用，或者其中一个必须按租户、按请求、按客户的配置而不同。此时这些接线开始回答它当初并不是为之而写的问题——谁创建它、谁可以共享它、什么时候关闭才安全——而答案散落在工厂函数、模块级单例和 `finally` 块里。
 
-## 七个示例
+Syna 把这些问题移进声明。一个 Service 声明它需要什么、如何启动、如何释放。一次调用为你手上的上下文打开一个世界：整个程序、一个租户、一次请求。在一个世界内，一个 Service 最多存在一份，并且只在有人索取时才存在；子世界复用父世界已有的部分，只为依赖于子世界改变了的事实的那些部分另建一份。世界结束时，它创建的东西按依赖顺序释放——无论代码是正常返回还是抛出异常。
 
-`apps/01-basics` … `apps/07-failure-modes`：同一个虚构领域（多租户通知投递服务），每个示例回答一个问题，按阅读顺序编号。每个程序自己断言结果，断言失败即非零退出，打印其 README 列出的稳定行，并各自是发布门禁的一个步骤。组织方式、夹具、命名规则（示例使用虚构名字；只有代码真的与某个产品交互时才使用它的真名）以及"手册的 snippet 来自示例"的声明见 `docs/EXAMPLES.md`。
-
-| 示例 | 回答的问题 |
-|---|---|
-| `apps/01-basics` | 怎样定义一个服务的部件、把它们连起来，并在一个能干净打开与关闭的世界里运行？ |
-| `apps/02-per-tenant` | 每个租户要有自己的服务商客户端和发件箱，而连接池与日志器全局共享——不引入具名 scope。 |
-| `apps/03-user-configurable` | 让租户选择自己的服务商、把选择存下来，下一次请求就用它。 |
-| `apps/04-two-versions` | 服务商发布了 SDK 2.x：在 1.x 时代做出选择的租户照常工作，新租户用 2.x。 |
-| `apps/05-scheduled-jobs` | 服务内部的调度器为每个租户打开一个类型化的摘要世界，跑完即关。 |
-| `apps/06-testing` | 在集成测试里替换真实服务商，而不动被测程序。 |
-| `apps/07-failure-modes` | setup 失败、卡住、或世界在它脚下关闭时会发生什么——该读哪些字段？ |
+## 安装
 
 ```sh
-npm run demo        # 先构建，再依次运行七个；每个以 `<name>: OK` 结束
-npm run demo:03     # 只运行一个
+npm install syna@rc
 ```
 
-## 一屏示例
+- Node.js ≥ 22。
+- 建议使用 TypeScript。依赖是带类型的描述符，写错或漏写会在编译期报错；这个包自带类型声明，运行时不需要任何其他东西。
 
-同一程序的四个文件；`npm run test:scripts` 会按此处的原样编译并运行它们（`scripts/tests/readme-example.test.mjs`）。它是 `apps/02-per-tenant` 与 `apps/03-user-configurable` 的一屏版：同一个 Contract 后面的两个服务商，作为世界事实的租户，存成 JSON 又读回来的选择。
+## 快速开始
+
+三个文件。程序在第一次查询需要连接池时打开它，并在世界结束时关闭它。
 
 `package.json`
 
 ```json
 {
-  "name": "notify",
+  "name": "my-app",
   "version": "1.0.0",
   "type": "module",
   "imports": { "#syna/package": "./package.json" }
 }
 ```
 
-`src/notify.ts`
+`tsconfig.json`
 
-```ts
-import packageJson from '#syna/package' with { type: 'json' }
-import { definePackage } from '@syna/core'
-
-export const define = definePackage(packageJson)
-
-export interface Notifier { send(to: string, text: string): string }
-export const Notifier = define.contract<Notifier>('notifier')
-export const CurrentTenant = define.input<{ id: string; apiKey: string }>('current-tenant')
-
-export const Acme = define.service('acme', {
-  provides: [Notifier],
-  requires: { tenant: CurrentTenant },
-  setup({ tenant }) {
-    const { apiKey } = tenant.read()
-    return { send: (to: string, text: string) => `acme(${apiKey}) → ${to}: ${text}` }
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "resolveJsonModule": true,
+    "strict": true,
+    "rootDir": "src",
+    "outDir": "dist"
   },
-})
-
-export const Globex = define.service('globex', {
-  provides: [Notifier],
-  setup() {
-    return { send: (to: string, text: string) => `globex → ${to}: ${text}` }
-  },
-})
-```
-
-`src/outbox.ts`
-
-```ts
-import type { Runtime } from '@syna/core'
-import { CurrentTenant, Notifier, define } from './notify.js'
-
-export const Preferred = define.binding('preferred', Notifier)
-
-export const Outbox = define.service('outbox', {
-  requires: { notifier: Preferred, tenant: CurrentTenant },
-  async setup({ notifier, tenant }) {
-    const provider = await notifier.load()
-    const { id } = tenant.read()
-    return { deliver: (text: string) => provider.send(`owner@${id}.test`, text) }
-  },
-})
-
-export const TenantEntry = define.entry('tenant', {
-  requires: { outbox: Outbox },
-  parameters: { tenant: CurrentTenant, notifier: Preferred },
-})
-
-export async function deliver(runtime: Runtime, id: string, stored: string) {
-  const notifier = Preferred.parse(JSON.parse(stored))
-  const tenant = { id, apiKey: `key-${id}` }
-  return runtime.run(TenantEntry, { tenant, notifier }, async ({ outbox }) => (await outbox.load()).deliver('welcome'))
+  "include": ["src/**/*.ts"]
 }
 ```
 
 `src/main.ts`
 
 ```ts
-import { createRuntime } from '@syna/core'
-import { Acme, Globex } from './notify.js'
-import { Outbox, Preferred, TenantEntry, deliver } from './outbox.js'
+import packageJson from '#syna/package' with { type: 'json' }
+import { createRuntime, definePackage } from 'syna'
 
-const runtime = createRuntime({ services: [Acme, Globex, Outbox] })
+const define = definePackage(packageJson)
 
-const settings = { 'acme-corp': JSON.stringify(Preferred.to(Acme)), 'globex-fans': JSON.stringify(Preferred.to(Globex)) }
-console.log(settings['globex-fans'])
+const DatabaseConfig = define.input<{ url: string; poolSize: number }>('database-config')
 
-const plan = await runtime.explain(TenantEntry, { tenant: { id: 'acme-corp', apiKey: 'key-acme-corp' }, notifier: Preferred.to(Acme) })
-if (plan.ok) console.log(plan.services.new, plan.forks.map(fork => fork.label).join(', '))
+interface Database {
+  query(sql: string): Promise<string>
+}
 
-for (const [id, stored] of Object.entries(settings)) console.log(await deliver(runtime, id, stored))
+const Database = define.service('database', {
+  requires: { config: DatabaseConfig },
+  async setup({ config }, { onDispose }): Promise<Database> {
+    const { url, poolSize } = config.read()
+    const pool = await openPool(url, poolSize)
+    onDispose(() => pool.close())
+    return { query: sql => pool.run(sql) }
+  },
+})
+
+const App = define.entry('app', {
+  requires: { database: Database },
+  parameters: { config: DatabaseConfig },
+})
+
+const runtime = createRuntime({ services: [Database] })
+
+await runtime.run(App, { config: { url: 'postgres://localhost/app', poolSize: 4 } }, async ({ database }) => {
+  const db = await database.load()
+  console.log(await db.query('select 1'))
+})
+
+await runtime.dispose()
+
+// Stands in for a real driver: what matters is where it is opened and who closes it.
+async function openPool(url: string, poolSize: number) {
+  console.log(`opened ${url} (${poolSize} connections)`)
+  return {
+    run: async (sql: string) => `${sql} -> 1 row`,
+    close: async () => console.log(`closed ${url}`),
+  }
+}
+```
+
+安装 TypeScript（`npm install -D typescript @types/node`），然后 `npx tsc && node dist/main.js` 打印：
+
+```
+opened postgres://localhost/app (4 connections)
+select 1 -> 1 row
+closed postgres://localhost/app
+```
+
+从后往前读：`runtime.run()` 打开了一个世界，把 Entry 声明的依赖交给回调，并在回调返回时关闭这个世界——连接池就是在那一刻关闭的，执行的是它自己的 `setup()` 注册的清理。创建连接池的是 `database.load()`；如果回调从未调用它，就不会有连接池被打开。`{ url, poolSize }` 这条记录是那个世界的事实：Service 同步读取它，而用另一条记录进入的世界会得到另一个连接池。
+
+上面没有任何一处注册进程退出钩子、在 `finally` 块里关闭连接池，或者把 `db` 参数一层层传下去。
+
+## Runtime、Entry、Env、Service、Input
+
+**Runtime。** 一个 Runtime 知道这个程序可以使用哪些 Service 定义。创建它本身不启动任何东西：它只接纳定义，其余一切都是进入世界之后的结果。
+
+**Entry。** Entry 描述一个世界向进入它的代码提供什么（`requires`），以及调用者必须提供什么才能打开一个（`parameters`）。它是世界的门，并且是类型化的：`env.deps` 的形状正是 Entry 声明的形状。
+
+**Env。** 一个 Env 就是一次执行世界——一个程序、一个租户、一次请求。子世界会复用父世界中仍然适用的 Service；当某个 Input 或某个实现选择发生变化时，依赖于该变化的部分在子世界中重新创建，其余部分继续共享。关闭一个 Env 会释放那个世界创建的东西。
+
+**Service。** 具有 identity、依赖和生命周期的受管部件。`setup()` 获取资源并返回实例；它用 `onDispose()` 注册的清理会在拥有该 slot 的世界结束时释放它。Service 从不关闭不是自己创建的依赖。
+
+**Input。** 世界的一条外部事实，由调用者提供、被同步读取——一条租户记录、一次请求、一份配置。Input 自身没有生命周期；它改变的是一个世界必须创建哪些 Service。
+
+**Contract 与 Binding** 稍后再谈：当实现是被选择的而不是被写死的时候。
+
+形式化模型见 [docs/SEMANTIC_MODEL.md][semantic-model]，术语见 [docs/GLOSSARY.md][glossary]，完整公开面见 [docs/API_REFERENCE.md][api-reference]。
+
+## 每个租户一个世界
+
+快速开始里只有一个世界。真正有用的形状是一棵世界树：共享的基础设施在上，每个租户一个世界在下。
+
+```
+app world                      pool #1
+├── tenant world "acme"        mail client of acme    ─┐ same pool,
+└── tenant world "globex"      mail client of globex  ─┘ separate clients
+```
+
+`src/tenants.ts`
+
+```ts
+import packageJson from '#syna/package' with { type: 'json' }
+import { createRuntime, definePackage } from 'syna'
+
+const define = definePackage(packageJson)
+
+const CurrentTenant = define.input<{ id: string; apiKey: string }>('current-tenant')
+
+interface Pool {
+  readonly id: number
+  run(sql: string): Promise<string>
+}
+
+let pools = 0
+
+const Pool = define.service('pool', {
+  async setup(_deps, { onDispose }): Promise<Pool> {
+    const id = ++pools
+    console.log(`pool #${id} opened`)
+    onDispose(() => console.log(`pool #${id} closed`))
+    return { id, run: async sql => `${sql}: ok` }
+  },
+})
+
+interface MailClient {
+  send(to: string): Promise<string>
+}
+
+const MailClient = define.service('mail-client', {
+  requires: { tenant: CurrentTenant, pool: Pool },
+  async setup({ tenant, pool }, { onDispose }): Promise<MailClient> {
+    const { id, apiKey } = tenant.read()
+    const db = await pool.load()
+    console.log(`mail client of ${id} opened on pool #${db.id}`)
+    onDispose(() => console.log(`mail client of ${id} closed`))
+    return {
+      send: async to => `${id}: mail to ${to} accepted with ${apiKey} (${await db.run('insert into outbox')})`,
+    }
+  },
+})
+
+const App = define.entry('app', { requires: { pool: Pool } })
+
+const TenantEntry = define.entry('tenant', {
+  requires: { mail: MailClient },
+  parameters: { tenant: CurrentTenant },
+  reuse: { share: [Pool] },
+})
+
+const runtime = createRuntime({ services: [Pool, MailClient] })
+const app = await runtime.enter(App)
+
+for (const tenant of [{ id: 'acme', apiKey: 'key-acme' }, { id: 'globex', apiKey: 'key-globex' }]) {
+  await app.run(TenantEntry, { tenant }, async ({ mail }) => {
+    console.log(await (await mail.load()).send('owner@example.test'))
+  })
+}
+
+await app.dispose()
 await runtime.dispose()
 ```
 
-`node dist/main.js` 输出：
+`node dist/tenants.js` 打印：
 
 ```
-{"kind":"implementation-ref","contractId":"notify/notifier/v1","familyId":"notify/globex","range":"^1.0.0"}
-2 notify/binding/preferred/v1->notify/acme@1.0.0, notify/input/current-tenant/v1, notify/acme@1.0.0, notify/outbox@1.0.0
-acme(key-acme-corp) → owner@acme-corp.test: welcome
-globex → owner@globex-fans.test: welcome
+pool #1 opened
+mail client of acme opened on pool #1
+acme: mail to owner@example.test accepted with key-acme (insert into outbox: ok)
+mail client of acme closed
+mail client of globex opened on pool #1
+globex: mail to owner@example.test accepted with key-globex (insert into outbox: ok)
+mail client of globex closed
+pool #1 closed
 ```
 
-四行各说一件事：存下来的选择是只有一种形状的 JSON（`Binding.to()` 写出，`parse()` 拒绝其他任何形状）；`explain()` 在创建任何东西之前说明一个世界会新建或分叉哪些部件、为什么（这里是两个 Service，加上该世界提供的租户事实与选择）；每个租户世界得到自己的 `Outbox` 与它选择的服务商，都出自同一个 Runtime。`serviceRef.load()` 是普通 Promise；复用只看父世界；Service 拥有的 `AnchoredEntry` 需要 Ready 的拥有者（否则 `OWNER_NOT_READY`）。
+`MailClient` 从头到尾没有提到"租户世界"。它 `requires` 了 `CurrentTenant`，这就够了：每个租户世界提供自己的租户，于是每个都拿到自己的客户端。`Pool` 不依赖任何上下文事实，因此两个租户世界用的都是 app 世界持有的那一个——而且在第一个租户世界关闭之后它仍然开着。`reuse: { share: [Pool] }` 把这一点写成要求而不是期望：在这个 Entry 下要求一个全新连接池的调用者会被拒绝，而不是悄悄得到第二个。
 
-## 参考应用
+同样的形状适用于会结束的工作：一次请求、一次构建、一个定时任务。工作开始时进入一个世界，让属于它的 Service 在那里创建，工作做完就关闭这个世界——当你只需要一个边界时，`env.derive()` 可以打开一个没有自己 Entry 的子世界。
 
-`apps/multitenant-blog`（`@syna-app/multitenant-blog`）是驱动内核的窄范围完整应用：真实 PostgreSQL 与真实文件系统两后端 × HTTP 动态渲染与静态构建两方式；三份 Markdown 配方共享一组 remark/rehype 工厂 slot；两租户、域名映射、可替换认证；按需、有界、租约保护的站点世界工作集。说明见 `docs/MULTITENANT_BLOG.md`，插件协议见 `docs/PLUGIN_AUTHORING.md`；先读示例，涉及规模、资源与运行边界的问题再读应用。
+## 选择一个实现
 
-```sh
-npm run demo:multitenant-blog     # 三格：HTTP alpha、HTTP beta、静态 alpha（文件系统后端）；任一格不是 200 即退出 1
-node scripts/pg-test-cluster.mjs with -- node apps/multitenant-blog/bin/multitenant-blog.mjs demo --backend postgres
-node apps/multitenant-blog/bin/multitenant-blog.mjs serve --root /tmp/blog-content --port 8080
-curl -H 'Host: alpha.test' http://127.0.0.1:8080/posts/shared-slug
+当一个 Service 是若干可能实现之一时，为它的形状声明一个 Contract，让各个 Service 提供它。Binding 承载这个选择，并且是调用者可以存起来的值：
+
+```ts
+export interface Mailer {
+  send(to: string, text: string): Promise<string>
+}
+
+export const Mailer = define.contract<Mailer>('mailer')
+export const Preferred = define.binding('preferred-mailer', Mailer)
+
+const SmtpMailer = define.service('smtp-mailer', { provides: [Mailer], setup: () => ({ send: async () => 'sent' }) })
+const ApiMailer = define.service('api-mailer', { provides: [Mailer], setup: () => ({ send: async () => 'sent' }) })
+
+const TenantEntry = define.entry('tenant', {
+  requires: { mail: Preferred },
+  parameters: { tenant: CurrentTenant, mail: Preferred },
+})
+
+// 租户设置表里可以存的东西：{ "kind": "implementation-ref", "contractId": …, "familyId": …, "range": … }
+const stored = JSON.stringify(Preferred.to(ApiMailer))
+
+await runtime.run(TenantEntry, { tenant, mail: Preferred.parse(JSON.parse(stored)) }, async ({ mail }) => {
+  await (await mail.load()).send('owner@example.test', 'hello')
+})
 ```
 
-## 构建、测试与门禁
+`Preferred.to(service)` 写出一个 JSON 安全的引用，`Preferred.parse(value)` 把它读回来，并拒绝任何不是指向该 Contract 的东西。选择是世界的参数，因此选择不同的两个租户就是两个世界，各有自己的客户端——依赖这个 mailer 的 Service 在各自世界里分别创建，而选择之上的一切继续共享。
 
-命令与文档索引见英文 `README.md`（`npm ci && npm run build`、`npm test`、`npm run test:app`、`npm run test:scripts`、`npm run test:postgres`）。验收入口（门禁从 `package.json` 读取版本，输出在 `validation/v<version>-<mode>/`）：
+同一个 Service family 的多个 revision 同理：引用请求的是一个 semver 范围，因此在 `1.x` 时代选定某个实现的租户继续使用 1.x 客户端，新租户得到 2.x——在同一个程序里。
 
-```sh
-node scripts/verify-release.mjs --dev
-node scripts/verify-release.mjs --release
+## 测试
+
+override 在构造 Runtime 时替换某个 Service 的实现，而不动被测代码。被替换的 Service 保留它的 identity、它的 Contract 归属，以及它在每个计划中的位置：
+
+```ts
+import { createRuntime, override } from 'syna'
+
+const RecordingMailer = define.service('recording-mailer', {
+  provides: [Mailer],
+  setup: () => ({ send: async (to: string) => `recorded ${to}` }),
+})
+
+const runtime = createRuntime({
+  services: [Pool, MailClient],
+  overrides: [override(SmtpMailer, RecordingMailer)],
+})
 ```
 
-后者只在全部必跑项目通过（含真实 PostgreSQL、与 0.8.0 记录逐项相同且自 1.0.0-rc.1 起零变化的 API 清单、七个示例各自的稳定行、两侧都以 `--no-maglev` 运行的与 1.0.0-rc.1 的同会话 benchmark 对比、厂商名扫描）、归档在空目录重建通过时输出 `COMPLETE` 并退出 0；一次门禁运行的证据（`RELEASE_MANIFEST.json`、`validation/v<version>-release/`、由其生成的 `docs/VALIDATION.md`）随发布 commit 一起提交。
+其余一切不变：同样的 Entry、同样的世界、同样的清理。
 
-1.0.0-rc.2 相对 1.0.0-rc.1 与 0.8.0 内核零代码变化——公开 API 清单 374 项逐项相同、0 个 `@deprecated`（发布门禁的 `api-inventory-frozen` 与 `api-inventory-unchanged` 步骤及 `scripts/tests/api-inventory.test.mjs` 断言）；本轮重建示例与夹具、参考应用更名，见 `CHANGELOG.md` 与 `docs/HISTORY.md`。v0.8 是 1.0 之前最后一次改名：逐项对照表、codemod（`scripts/codemod-v08.mjs`）、实现引用唯一的序列化形状与刻意未改的名字见 `docs/MIGRATION_V07_TO_V08.md`，冻结的公开面与命名准则见 `docs/API_STABILITY.md`（1.0 前不承诺兼容，公开面自 0.8.0 冻结，1.0 起只按 major 变化），未做的事与只能在下一个 major 改的名字见 `docs/DEFERRED.md`；v0.7 的到期删除、错误码映射与 S1/S2 语义修订见 `docs/MIGRATION_V06_TO_V07.md` 与 `docs/SEMANTIC_CHANGES_V07.md`；v0.6 的 API 收束见 `docs/MIGRATION_V05_TO_V06.md`，v0.5 的语义变更见 `docs/SEMANTIC_CHANGES_V05.md`。
+## 诊断
+
+有三个问题可以在不创建任何东西的前提下问出来：
+
+```ts
+const check = await runtime.check(TenantEntry, { tenant })          // 这个世界能不能规划出来？不能的话为什么
+const plan = await runtime.explain(TenantEntry, { tenant })         // 它会创建、复用还是 fork 什么，以及为什么
+if (plan.ok) console.log(plan.services, plan.forks.map(fork => `${fork.placement} ${fork.label}`))
+
+const env = await runtime.enter(App)
+console.log(env.inspect().nodes)                                    // 这个世界实际有什么，逐个 slot
+```
+
+`check()` 与 `explain()` 只做规划——不创建任何 Service，也不打开任何世界。`explain()` 会点名它将创建、复用或 fork 的每个节点以及每次 fork 的成因，这是"一个世界创建的东西比预期多"时首先该读的东西。失败是带 `code` 和结构化 `details` 的 `SynaError`；`isSynaError(error, 'MISSING_INPUT')` 可以把它收窄到一种。具体形状见 [docs/API_REFERENCE.md][api-reference]。
+
+## Syna 不做的事
+
+- 不为不受信任的代码提供沙箱。Service 的 `setup()` 就是普通 JavaScript，拥有进程的全部权限。
+- 不在程序运行期间安装或卸载包。Runtime 的接纳集合在创建时就固定了。
+- 不是分布式或进程全局的单例注册表。identity 与复用属于一个 Runtime，在一个进程之内。
+- 不把任意配置的相等性变成复用语义。让世界 fork 的是声明出来的 Input、Binding 或结构差异，而不是两个选项对象的深度相等。
+- 无法终止忽略 `AbortSignal` 的 JavaScript。关闭会等待一段有界的时间，然后报告有什么活过了它；有界的是等待，而不是资源的释放。
+- 不提供领域相关的事务保证。给清理排序不等于提交或回滚你的数据库工作。
+
+[docs/SEMANTIC_MODEL.md][semantic-model] 精确陈述这些保证，[docs/DEFERRED.md][deferred] 记录看到过但有意不做的事。
+
+## 文档
+
+从这里开始
+
+- [示例][examples] —— 七个递进的程序，每个回答一个问题，全部由发布门禁运行
+- [API 参考][api-reference] —— 完整公开面，以及每个错误码的细节
+- [语义模型][semantic-model] —— 世界、slot、复用、物化与关闭的精确陈述
+- [术语表][glossary] —— 中英对照的词汇
+
+编写包
+
+- [包作者指南][package-authoring] —— 一个包如何声明它的 Service、Contract、Input 与 Binding
+- [插件作者指南][plugin-authoring] —— 参考应用的插件协议
+
+兼容性
+
+- [API 稳定性][api-stability] —— 冻结的公开面与命名规则
+- [历史][history] —— 各次发布、它们的任务书与迁移说明
+
+内部
+
+- [架构][architecture] —— 实现中的模块边界
+- [验证][validation] —— 记录下来的发布运行
+- [审计][audit] —— 独立审计的发现
+- [在这个仓库里工作][contributing] —— 如何构建、测试与发布 Syna 本身
+
+## 状态
+
+`syna@1.0.0-rc.1` 是一个候选发布版：公开 API 自 0.8.0 起冻结，1.0 之前不再改变其中任何名字或语义。发布从重建的源码归档中验证，其中包括打包后的包在独立消费者项目里的测试；[docs/VALIDATION.md][validation] 记录了这次运行。
+
+MIT 许可。源码、问题与讨论：[github.com/synajs/syna](https://github.com/synajs/syna)。
+
+[api-reference]: https://github.com/synajs/syna/blob/main/docs/API_REFERENCE.md
+[api-stability]: https://github.com/synajs/syna/blob/main/docs/API_STABILITY.md
+[architecture]: https://github.com/synajs/syna/blob/main/docs/ARCHITECTURE.md
+[audit]: https://github.com/synajs/syna/blob/main/docs/AUDIT.md
+[contributing]: https://github.com/synajs/syna/blob/main/CONTRIBUTING.md
+[deferred]: https://github.com/synajs/syna/blob/main/docs/DEFERRED.md
+[examples]: https://github.com/synajs/syna/blob/main/docs/EXAMPLES.md
+[glossary]: https://github.com/synajs/syna/blob/main/docs/GLOSSARY.md
+[history]: https://github.com/synajs/syna/blob/main/docs/HISTORY.md
+[package-authoring]: https://github.com/synajs/syna/blob/main/docs/PACKAGE_AUTHORING.md
+[plugin-authoring]: https://github.com/synajs/syna/blob/main/docs/PLUGIN_AUTHORING.md
+[semantic-model]: https://github.com/synajs/syna/blob/main/docs/SEMANTIC_MODEL.md
+[validation]: https://github.com/synajs/syna/blob/main/docs/VALIDATION.md

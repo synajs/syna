@@ -2,207 +2,389 @@
 
 [![CI](https://github.com/synajs/syna/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/synajs/syna/actions/workflows/ci.yml)
 
-English | [简体中文](README.zh-CN.md) · Source: [github.com/synajs/syna](https://github.com/synajs/syna) · Issues: [github.com/synajs/syna/issues](https://github.com/synajs/syna/issues) · Version 1.0.0-rc.2 of `@syna/core` and `@syna/tsconfig` (the public surface is frozen from 0.8.0, `docs/API_STABILITY.md`; the line from the tarball baselines to 1.0 is `docs/HISTORY.md`)
+A runtime for composing stateful TypeScript services with explicit lifetimes.
 
-Syna composes the pieces of a TypeScript program — a connection pool, a provider client, a request handler — into worlds that open and close cleanly. You declare each piece once, with what it needs and how it starts; Syna decides which world creates it, which worlds share it and when it closes. One tenant's pieces stay apart from another's without a scope object, a pool exists once, and a provider chosen by a user or replaced in a test is a declaration, not a rewrite.
+English | [简体中文](https://github.com/synajs/syna/blob/main/README.zh-CN.md)
 
-The model in one paragraph: a Runtime admits a finite set of versioned Services; Entries open Env worlds; each world has one visible slot per resolved piece, reuses its parent's slots by default, and materializes Service instances lazily or eagerly with plain Promises. `docs/SEMANTIC_MODEL.md` is the model, `docs/GLOSSARY.md` the vocabulary, `docs/API_REFERENCE.md` the surface.
+Most programs own things that must be created before they are used and released afterwards: a database pool, an API
+client carrying one tenant's credential, a cache that belongs to a single request. Creating them by hand works until the
+same thing is needed in two places at once, or until one of them has to differ per tenant, per request or per customer's
+configuration. The wiring then starts to answer questions it was never written for — who creates this, who may share it,
+when is it safe to close — and the answers end up spread over factory functions, module-level singletons and `finally`
+blocks.
 
-## Requirements
+Syna moves those questions into the declarations. A Service says what it needs, how it starts and how it is released. A
+call opens a world for a context you have — the program, a tenant, one request. Inside a world a Service exists at most
+once, and only if something asks for it; a child world reuses what its parent already has and creates its own copy of
+whatever depends on a fact the child changed. When a world ends, everything it created is released in dependency order,
+whether the code left normally or through an exception.
 
-- Node.js ≥ 22 (developed and validated on Node 26; CI matrix 22/24)
-- npm (workspaces + `package-lock.json`; the only package manager used here)
-- PostgreSQL 17 client/server binaries (`initdb`, `pg_ctl`, `psql`) for the real-database tests of the reference application, or a test database URL in `SYNA_TEST_PG_URL`. Docker is not required.
-
-## Install, build, test
-
-```sh
-npm ci
-npm run build          # tsc -b for every package, example and app; never trust a checked-in dist (there is none)
-npm run typecheck      # strict project build + compile-time API tests
-npm test               # core behaviour/regression suites (node:test)
-```
-
-Application, tooling and PostgreSQL tests:
+## Install
 
 ```sh
-npm run test:app        # the reference application on the filesystem backend, site manager, preflight, review and audit regressions
-npm run test:scripts    # gate tooling, deprecation list, no-old-names and vendor-name scans, README example, any-count budget
-npm run test:postgres   # real PostgreSQL: a temporary cluster is created under work/pg and removed afterwards
+npm install syna@rc
 ```
 
-## The seven examples
+- Node.js ≥ 22.
+- TypeScript is recommended. Dependencies are typed descriptors, so a missing or mistyped one is a compile error; the
+  package ships its own declarations and needs nothing else at runtime.
 
-`apps/01-basics` … `apps/07-failure-modes`: one fictional domain — a multi-tenant notification delivery service — one question each, in reading order. Every program asserts its own results, exits non-zero when one fails, prints the stable lines its README lists, and is a step of the release gate. `docs/EXAMPLES.md` has the organisation, the fixtures, the naming rule and the declaration that the manual's snippets are cut from these programs.
+## Quick start
 
-| example | the question it answers |
-|---|---|
-| `apps/01-basics` | How do I define the pieces of a service, connect them, and run them in a world that opens and closes cleanly? |
-| `apps/02-per-tenant` | Each tenant needs its own provider client and outbox while the pool and the logger stay shared — without a named scope. |
-| `apps/03-user-configurable` | Let a tenant choose its provider, store the choice, and get that provider on the next request. |
-| `apps/04-two-versions` | The provider shipped SDK 2.x; tenants that chose it under 1.x keep working while new tenants get 2.x. |
-| `apps/05-scheduled-jobs` | A scheduler inside the service opens one digest world per tenant, typed and closed when done. |
-| `apps/06-testing` | Replace the real provider in an integration test without touching the program under test. |
-| `apps/07-failure-modes` | What happens when a setup fails, hangs, or the world closes under it — and what do I read? |
-
-```sh
-npm run demo        # builds, then runs all seven; each ends with `<name>: OK`
-npm run demo:03     # one of them
-```
-
-## Syna in one screen
-
-One program, four files; `npm run test:scripts` compiles and runs them exactly as printed here (`scripts/tests/readme-example.test.mjs`). It is the shape of `apps/02-per-tenant` and `apps/03-user-configurable` on one screen: two providers behind one Contract, a tenant that is a fact of the world its pieces live in, a choice stored as JSON and read back.
+Three files. The program opens a connection pool when the first query needs it, and closes it when the world ends.
 
 `package.json`
 
 ```json
 {
-  "name": "notify",
+  "name": "my-app",
   "version": "1.0.0",
   "type": "module",
   "imports": { "#syna/package": "./package.json" }
 }
 ```
 
-`src/notify.ts`
+`tsconfig.json`
 
-```ts
-import packageJson from '#syna/package' with { type: 'json' }
-import { definePackage } from '@syna/core'
-
-export const define = definePackage(packageJson)
-
-export interface Notifier { send(to: string, text: string): string }
-export const Notifier = define.contract<Notifier>('notifier')
-export const CurrentTenant = define.input<{ id: string; apiKey: string }>('current-tenant')
-
-export const Acme = define.service('acme', {
-  provides: [Notifier],
-  requires: { tenant: CurrentTenant },
-  setup({ tenant }) {
-    const { apiKey } = tenant.read()
-    return { send: (to: string, text: string) => `acme(${apiKey}) → ${to}: ${text}` }
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "resolveJsonModule": true,
+    "strict": true,
+    "rootDir": "src",
+    "outDir": "dist"
   },
-})
-
-export const Globex = define.service('globex', {
-  provides: [Notifier],
-  setup() {
-    return { send: (to: string, text: string) => `globex → ${to}: ${text}` }
-  },
-})
-```
-
-`src/outbox.ts`
-
-```ts
-import type { Runtime } from '@syna/core'
-import { CurrentTenant, Notifier, define } from './notify.js'
-
-export const Preferred = define.binding('preferred', Notifier)
-
-export const Outbox = define.service('outbox', {
-  requires: { notifier: Preferred, tenant: CurrentTenant },
-  async setup({ notifier, tenant }) {
-    const provider = await notifier.load()
-    const { id } = tenant.read()
-    return { deliver: (text: string) => provider.send(`owner@${id}.test`, text) }
-  },
-})
-
-export const TenantEntry = define.entry('tenant', {
-  requires: { outbox: Outbox },
-  parameters: { tenant: CurrentTenant, notifier: Preferred },
-})
-
-export async function deliver(runtime: Runtime, id: string, stored: string) {
-  const notifier = Preferred.parse(JSON.parse(stored))
-  const tenant = { id, apiKey: `key-${id}` }
-  return runtime.run(TenantEntry, { tenant, notifier }, async ({ outbox }) => (await outbox.load()).deliver('welcome'))
+  "include": ["src/**/*.ts"]
 }
 ```
 
 `src/main.ts`
 
 ```ts
-import { createRuntime } from '@syna/core'
-import { Acme, Globex } from './notify.js'
-import { Outbox, Preferred, TenantEntry, deliver } from './outbox.js'
+import packageJson from '#syna/package' with { type: 'json' }
+import { createRuntime, definePackage } from 'syna'
 
-const runtime = createRuntime({ services: [Acme, Globex, Outbox] })
+const define = definePackage(packageJson)
 
-const settings = { 'acme-corp': JSON.stringify(Preferred.to(Acme)), 'globex-fans': JSON.stringify(Preferred.to(Globex)) }
-console.log(settings['globex-fans'])
+const DatabaseConfig = define.input<{ url: string; poolSize: number }>('database-config')
 
-const plan = await runtime.explain(TenantEntry, { tenant: { id: 'acme-corp', apiKey: 'key-acme-corp' }, notifier: Preferred.to(Acme) })
-if (plan.ok) console.log(plan.services.new, plan.forks.map(fork => fork.label).join(', '))
+interface Database {
+  query(sql: string): Promise<string>
+}
 
-for (const [id, stored] of Object.entries(settings)) console.log(await deliver(runtime, id, stored))
+const Database = define.service('database', {
+  requires: { config: DatabaseConfig },
+  async setup({ config }, { onDispose }): Promise<Database> {
+    const { url, poolSize } = config.read()
+    const pool = await openPool(url, poolSize)
+    onDispose(() => pool.close())
+    return { query: sql => pool.run(sql) }
+  },
+})
+
+const App = define.entry('app', {
+  requires: { database: Database },
+  parameters: { config: DatabaseConfig },
+})
+
+const runtime = createRuntime({ services: [Database] })
+
+await runtime.run(App, { config: { url: 'postgres://localhost/app', poolSize: 4 } }, async ({ database }) => {
+  const db = await database.load()
+  console.log(await db.query('select 1'))
+})
+
+await runtime.dispose()
+
+// Stands in for a real driver: what matters is where it is opened and who closes it.
+async function openPool(url: string, poolSize: number) {
+  console.log(`opened ${url} (${poolSize} connections)`)
+  return {
+    run: async (sql: string) => `${sql} -> 1 row`,
+    close: async () => console.log(`closed ${url}`),
+  }
+}
+```
+
+Install TypeScript (`npm install -D typescript @types/node`), then `npx tsc && node dist/main.js` prints:
+
+```
+opened postgres://localhost/app (4 connections)
+select 1 -> 1 row
+closed postgres://localhost/app
+```
+
+Reading it from the bottom up: `runtime.run()` opened a world, handed the callback the dependencies the Entry declares,
+and closed the world when the callback returned — which is when the pool was closed, by the cleanup its own `setup()`
+registered. `database.load()` is what created the pool; had the callback never called it, no pool would have been
+opened. The `{ url, poolSize }` record is a fact of that world: the Service read it synchronously, and a world entered
+with a different record gets a different pool.
+
+Nothing above registers a shutdown hook, closes a pool from a `finally` block, or passes a `db` argument through the
+call stack.
+
+## Runtime, Entry, Env, Service, Input
+
+**Runtime.** A Runtime knows which Service definitions the program may use. Creating it starts nothing: it admits
+definitions, and everything else is a consequence of entering a world.
+
+**Entry.** An Entry describes what a world offers to the code that enters it (`requires`) and what the caller has to
+supply to open one (`parameters`). It is the door of a world, and it is typed: `env.deps` has exactly the shape the
+Entry declares.
+
+**Env.** An Env is one execution world — one program, one tenant, one request. A child world reuses the Services its
+parent already has as long as they still fit; when an Input or an implementation choice changes, the parts that depend
+on the change are created again in the child and the rest stays shared. Closing an Env releases what that world created.
+
+**Service.** A managed component with an identity, dependencies and a lifecycle. `setup()` acquires the resource and
+returns the instance; the cleanups it registers with `onDispose()` release it when the world that owns the slot ends. A
+Service never closes a dependency it did not create.
+
+**Input.** An external fact of a world, provided by the caller and read synchronously — a tenant record, a request, a
+configuration. An Input has no lifecycle of its own; what it changes is which Services a world has to create.
+
+**Contract and Binding** come later, when an implementation is chosen rather than fixed.
+
+The formal model is [docs/SEMANTIC_MODEL.md][semantic-model], the vocabulary [docs/GLOSSARY.md][glossary], and the
+complete surface [docs/API_REFERENCE.md][api-reference].
+
+## A world for each tenant
+
+The Quick Start had one world. The useful shape is a tree of them: shared infrastructure above, one world per tenant
+below.
+
+```
+app world                      pool #1
+├── tenant world "acme"        mail client of acme    ─┐ same pool,
+└── tenant world "globex"      mail client of globex  ─┘ separate clients
+```
+
+`src/tenants.ts`
+
+```ts
+import packageJson from '#syna/package' with { type: 'json' }
+import { createRuntime, definePackage } from 'syna'
+
+const define = definePackage(packageJson)
+
+const CurrentTenant = define.input<{ id: string; apiKey: string }>('current-tenant')
+
+interface Pool {
+  readonly id: number
+  run(sql: string): Promise<string>
+}
+
+let pools = 0
+
+const Pool = define.service('pool', {
+  async setup(_deps, { onDispose }): Promise<Pool> {
+    const id = ++pools
+    console.log(`pool #${id} opened`)
+    onDispose(() => console.log(`pool #${id} closed`))
+    return { id, run: async sql => `${sql}: ok` }
+  },
+})
+
+interface MailClient {
+  send(to: string): Promise<string>
+}
+
+const MailClient = define.service('mail-client', {
+  requires: { tenant: CurrentTenant, pool: Pool },
+  async setup({ tenant, pool }, { onDispose }): Promise<MailClient> {
+    const { id, apiKey } = tenant.read()
+    const db = await pool.load()
+    console.log(`mail client of ${id} opened on pool #${db.id}`)
+    onDispose(() => console.log(`mail client of ${id} closed`))
+    return {
+      send: async to => `${id}: mail to ${to} accepted with ${apiKey} (${await db.run('insert into outbox')})`,
+    }
+  },
+})
+
+const App = define.entry('app', { requires: { pool: Pool } })
+
+const TenantEntry = define.entry('tenant', {
+  requires: { mail: MailClient },
+  parameters: { tenant: CurrentTenant },
+  reuse: { share: [Pool] },
+})
+
+const runtime = createRuntime({ services: [Pool, MailClient] })
+const app = await runtime.enter(App)
+
+for (const tenant of [{ id: 'acme', apiKey: 'key-acme' }, { id: 'globex', apiKey: 'key-globex' }]) {
+  await app.run(TenantEntry, { tenant }, async ({ mail }) => {
+    console.log(await (await mail.load()).send('owner@example.test'))
+  })
+}
+
+await app.dispose()
 await runtime.dispose()
 ```
 
-`node dist/main.js` prints:
+`node dist/tenants.js` prints:
 
 ```
-{"kind":"implementation-ref","contractId":"notify/notifier/v1","familyId":"notify/globex","range":"^1.0.0"}
-2 notify/binding/preferred/v1->notify/acme@1.0.0, notify/input/current-tenant/v1, notify/acme@1.0.0, notify/outbox@1.0.0
-acme(key-acme-corp) → owner@acme-corp.test: welcome
-globex → owner@globex-fans.test: welcome
+pool #1 opened
+mail client of acme opened on pool #1
+acme: mail to owner@example.test accepted with key-acme (insert into outbox: ok)
+mail client of acme closed
+mail client of globex opened on pool #1
+globex: mail to owner@example.test accepted with key-globex (insert into outbox: ok)
+mail client of globex closed
+pool #1 closed
 ```
 
-What the four lines say: a stored choice is JSON with exactly one shape (`Binding.to()` writes it, `parse()` refuses anything else); `explain()` tells before anything is created which pieces a world would create or fork and why (two Services here, plus the tenant fact and the choice the world provides); each tenant world gets its own `Outbox` and the provider it chose, from one Runtime. `serviceRef.load()` is an ordinary Promise; reuse is parent-only; a Service-owned `AnchoredEntry` needs a Ready owner (`OWNER_NOT_READY` otherwise).
+`MailClient` never mentions a tenant world. It requires `CurrentTenant`, and that is enough: each tenant world provides
+its own tenant, so each gets a client of its own. `Pool` requires nothing contextual, so both tenant worlds use the one
+the app world holds — and it stays open after the first tenant world has closed. `reuse: { share: [Pool] }` states that
+as a requirement rather than a hope: a caller that asked for a fresh pool under this Entry would be refused, not quietly
+given a second one.
 
-## Reference application
+The same shape covers work that ends: a request, a build, a scheduled job. Enter a world when the work starts, let the
+Services that belong to it be created there, and close it when the work is done — `env.derive()` opens a child world
+without an Entry of its own when all you need is a boundary.
 
-`apps/multitenant-blog` (`@syna-app/multitenant-blog`) is the narrow but complete multi-tenant blog engine that drove the kernel: real PostgreSQL and real filesystem backends × dynamic HTTP and static builds, three Markdown recipes sharing one set of remark/rehype factory slots, two tenants with domain mapping and replaceable authentication, and a bounded, leased working set of site worlds. `docs/MULTITENANT_BLOG.md` documents it and `docs/PLUGIN_AUTHORING.md` its plugin protocol; read the examples first, the application when a question is about scale, resources or an operating boundary.
+## Choosing an implementation
 
-```sh
-# three cells — HTTP alpha, HTTP beta, static alpha — on the filesystem backend; exit 1 unless every cell answers 200 with the tenant's page
-npm run demo:multitenant-blog
-# the same on the PostgreSQL backend, on a temporary cluster
-node scripts/pg-test-cluster.mjs with -- node apps/multitenant-blog/bin/multitenant-blog.mjs demo --backend postgres
-# development server (seeds fixtures when empty, runs the startup preflight, starts the worker)
-node apps/multitenant-blog/bin/multitenant-blog.mjs serve --root /tmp/blog-content --port 8080
-curl -H 'Host: alpha.test' http://127.0.0.1:8080/posts/shared-slug
-curl -H 'Host: beta.test'  http://127.0.0.1:8080/posts/shared-slug
-# static build of one tenant; explain one request world and its fork budget
-node apps/multitenant-blog/bin/multitenant-blog.mjs build --root /tmp/blog-content --tenant alpha --out /tmp/blog-alpha
-node apps/multitenant-blog/bin/multitenant-blog.mjs explain --root /tmp/blog-content --tenant alpha
+When a Service is one of several possible implementations, declare a Contract for the shape and let the Services provide
+it. A Binding carries the choice, as a value a caller can store:
+
+```ts
+export interface Mailer {
+  send(to: string, text: string): Promise<string>
+}
+
+export const Mailer = define.contract<Mailer>('mailer')
+export const Preferred = define.binding('preferred-mailer', Mailer)
+
+const SmtpMailer = define.service('smtp-mailer', { provides: [Mailer], setup: () => ({ send: async () => 'sent' }) })
+const ApiMailer = define.service('api-mailer', { provides: [Mailer], setup: () => ({ send: async () => 'sent' }) })
+
+const TenantEntry = define.entry('tenant', {
+  requires: { mail: Preferred },
+  parameters: { tenant: CurrentTenant, mail: Preferred },
+})
+
+// what a tenant's settings row can hold: { "kind": "implementation-ref", "contractId": …, "familyId": …, "range": … }
+const stored = JSON.stringify(Preferred.to(ApiMailer))
+
+await runtime.run(TenantEntry, { tenant, mail: Preferred.parse(JSON.parse(stored)) }, async ({ mail }) => {
+  await (await mail.load()).send('owner@example.test', 'hello')
+})
 ```
 
-Stop the server with Ctrl-C (the worker stops, site environments drain, shared resources close last). Clean up with `rm -rf /tmp/blog-content /tmp/blog-alpha` and `node scripts/pg-test-cluster.mjs stop` if a cluster was left running (`SYNA_PG_KEEP=1`).
+`Preferred.to(service)` writes a JSON-safe reference and `Preferred.parse(value)` reads one back, refusing anything that
+is not a reference to that Contract. The choice is a parameter of the world, so two tenants with different choices are
+two worlds, each with its own client — and the Services that depend on the mailer are created separately in each, while
+everything above the choice stays shared.
 
-## Release gate
+Revisions of one Service family work the same way: a reference asks for a semver range, so a tenant that chose a
+provider under `1.x` keeps a 1.x client while new tenants get the 2.x one, in the same program.
 
-Acceptance orchestrator (transparent runner; every sub-command is spawned and recorded with exit code, timing, TAP counts and log path):
+## Testing
 
-```sh
-node scripts/verify-release.mjs --dev       # G0: build, type tests, core, the application on real PostgreSQL/FS and its matrix, tooling, API inventory (0 deprecated items; identical to the 0.8.0 record — the frozen surface — and unchanged since 1.0.0-rc.1), codemod idempotency, old-token and vendor-name scans, any budget, the seven examples, the three-cell demo, benchmarks + same-session comparison with 1.0.0-rc.1 (both sides under --no-maglev)
-node scripts/verify-release.mjs --release   # G0 + G1: source archive, rebuild from the archive in an empty directory (suites, examples and demo again), pack + consumer smoke, RELEASE_MANIFEST.json + validation/v<version>-release/SHA256SUMS.txt (the version is read from package.json)
+An override replaces a Service's implementation at Runtime construction, without touching the code under test. The
+overridden Service keeps its identity, its Contracts and its place in every plan:
+
+```ts
+import { createRuntime, override } from 'syna'
+
+const RecordingMailer = define.service('recording-mailer', {
+  provides: [Mailer],
+  setup: () => ({ send: async (to: string) => `recorded ${to}` }),
+})
+
+const runtime = createRuntime({
+  services: [Pool, MailClient],
+  overrides: [override(SmtpMailer, RecordingMailer)],
+})
 ```
 
-`--release` prints `COMPLETE`, `PARTIAL` or `BLOCKED` and exits 0 only on `COMPLETE`. A missing PostgreSQL never becomes a skip; it is `BLOCKED`.
+Nothing else changes: the same Entries, the same worlds, the same cleanups.
+
+## Diagnostics
+
+Three questions can be asked without creating anything:
+
+```ts
+const check = await runtime.check(TenantEntry, { tenant })          // would this world plan? if not, why
+const plan = await runtime.explain(TenantEntry, { tenant })         // what it would create, reuse or fork, and why
+if (plan.ok) console.log(plan.services, plan.forks.map(fork => `${fork.placement} ${fork.label}`))
+
+const env = await runtime.enter(App)
+console.log(env.inspect().nodes)                                    // what this world actually has, slot by slot
+```
+
+`check()` and `explain()` only plan — no Service is created and no world is opened. `explain()` names every node it
+would create, reuse or fork and the cause of each fork, which is the first thing to read when a world creates more than
+you expected. Failures are `SynaError`s with a `code` and structured `details`; `isSynaError(error, 'MISSING_INPUT')`
+narrows one. The shapes are in [docs/API_REFERENCE.md][api-reference].
+
+## What Syna does not do
+
+- It does not sandbox untrusted code. A Service's `setup()` is ordinary JavaScript with the privileges of the process.
+- It does not install or uninstall packages while the program runs. A Runtime's admission set is fixed when it is
+  created.
+- It is not a distributed or process-global singleton registry. Identity and reuse are per Runtime, inside one process.
+- It does not turn arbitrary configuration equality into reuse. What forks a world is a declared Input, a Binding, or a
+  structural difference — not the deep equality of two option objects.
+- It cannot terminate JavaScript that ignores its `AbortSignal`. A close waits for a bounded time and then reports what
+  outlived it; what is bounded is the waiting, not the release of the resource.
+- It offers no domain-specific transaction guarantees. Ordering cleanups is not the same as committing or rolling back
+  your database work.
+
+[docs/SEMANTIC_MODEL.md][semantic-model] states the guarantees precisely, and [docs/DEFERRED.md][deferred] what was
+looked at and deliberately left alone.
 
 ## Documentation
 
-- `docs/EXAMPLES.md` — the seven examples: organisation, the fixtures, the naming rule (fictional names; a real product's name only where the code really interacts with it), the manual's snippets come from the examples
-- `docs/SEMANTIC_MODEL.md` — the core model (v0.8 wording; §11 and §13 revised in 0.7.0, the names of 0.8.0, everything else unchanged since v0.5)
-- `docs/SEMANTIC_CHANGES_V07.md` — what v0.7 keeps, clarifies, revises and withdraws, with test references
-- `docs/API_REFERENCE.md` — `@syna/core` public API, with the per-code error details
-- `docs/API_STABILITY.md` — the frozen public surface: no compatibility promise before 1.0, frozen from 0.8.0 (the last rename), changed only by a major from 1.0; the naming guidelines
-- `docs/PACKAGE_AUTHORING.md` — how a package declares its Services, Contracts, Inputs and Bindings, and keeps its exports stable across versions
-- `docs/MIGRATION_V07_TO_V08.md` — the last rename before 1.0, item by item (types, fields, values and events, structure), the codemod `scripts/codemod-v08.mjs`, the one serialized shape of an implementation reference and the names deliberately left alone
-- `docs/GLOSSARY.md` — the vocabulary (Env, Entry, pinned, anchored, reused, inherited, materialize, load timeout) in English and Chinese
-- `docs/MIGRATION_V06_TO_V07.md` — the 23 removed aliases with their replacements, the permanent serialized key, the error-code mapping tables and the S1/S2 behaviour differences with the user-code patterns to check
-- `docs/DEFERRED.md` — what was noticed and deliberately left alone
-- `docs/MIGRATION_V05_TO_V06.md`, `docs/SEMANTIC_CHANGES_V05.md`, `docs/MIGRATION_V04_TO_V05.md` — the earlier migrations and the v0.5 semantic changes
-- `docs/ARCHITECTURE.md` — module boundaries as implemented
-- `docs/MULTITENANT_BLOG.md`, `docs/PLUGIN_AUTHORING.md` — the reference application and its plugin protocol
-- `docs/AUDIT.md`, `docs/VALIDATION.md` — independent audit findings and the recorded validation run (`docs/VALIDATION.md` is generated from the release run after the run and committed with it; repository-only, not in the source archive)
-- `docs/HISTORY.md` — the line from the 0.2–0.4 tarball baselines to 1.0: each round with its task book and its semantic-change or migration document, the earlier names of the application and the demos
-- `work/tasks/` — the task books and goals of the 0.6, 0.7, 0.8 and 1.0.0-rc.2 rounds (the 0.5 ones are the root `SYNA_V05_*` files, listed in the root `SHA256SUMS.txt`); `work/v05/`, `work/v06/`, `work/v07/`, `work/v08/`, `work/v1.0/`, `work/rc2/` — execution ledgers (STATE, DECISIONS, ACCEPTANCE, ISSUES; the v0.6, v0.7 and v0.8 API inventories, the rename plans, the v0.7 proposal, the v0.8 rename table and codemod reports, the rc.2 demo plan and coverage check) and the review rounds' probes before archiving. Repository-only: the source archive produced by `scripts/verify-release.mjs --release` contains `packages/`, `apps/`, `benchmarks/`, `docs/` (without `docs/VALIDATION.md`), `scripts/` and the root files, never `work/`; documents in the archive that cite `work/v05/…` refer to this repository, and the archived audit probes live under `docs/audit/`.
+Start here
+
+- [Examples][examples] — seven progressive programs, one question each, all of them run by the release gate
+- [API reference][api-reference] — the complete public surface, with the details of every error code
+- [Semantic model][semantic-model] — worlds, slots, reuse, materialization and closing, stated precisely
+- [Glossary][glossary] — the vocabulary, English and Chinese
+
+Building packages
+
+- [Package authoring][package-authoring] — how a package declares its Services, Contracts, Inputs and Bindings
+- [Plugin authoring][plugin-authoring] — the plugin protocol of the reference application
+
+Compatibility
+
+- [API stability][api-stability] — the frozen public surface and the naming rules
+- [History][history] — the releases, their task books and their migration notes
+
+Internals
+
+- [Architecture][architecture] — module boundaries as implemented
+- [Validation][validation] — the recorded release run
+- [Audit][audit] — independent audit findings
+- [Working in this repository][contributing] — building, testing and releasing Syna itself
 
 ## Status
 
-1.0.0-rc.2 is prepared in this repository and not published to npm; the tooling never publishes, tags or pushes. Release artifacts (source archives and package tarballs under `work/release/`, `RELEASE_MANIFEST.json`, `validation/v<version>-release/SHA256SUMS.txt`) are produced locally by `node scripts/verify-release.mjs --release`, and a release's evidence — the manifest, its validation directory and `docs/VALIDATION.md` generated from it — is committed together with the release. The root `SHA256SUMS.txt` belongs to the v0.5 task documents that ship with the workspace and is not touched by the tooling.
+`syna@1.0.0-rc.1` is a release candidate: the public API has been frozen since 0.8.0 and no name or semantic of it
+changes before 1.0. Releases are validated from a rebuilt source archive, including packed-package consumer tests;
+[docs/VALIDATION.md][validation] records the run.
+
+MIT licensed. Source, issues and discussion: [github.com/synajs/syna](https://github.com/synajs/syna).
+
+[api-reference]: https://github.com/synajs/syna/blob/main/docs/API_REFERENCE.md
+[api-stability]: https://github.com/synajs/syna/blob/main/docs/API_STABILITY.md
+[architecture]: https://github.com/synajs/syna/blob/main/docs/ARCHITECTURE.md
+[audit]: https://github.com/synajs/syna/blob/main/docs/AUDIT.md
+[contributing]: https://github.com/synajs/syna/blob/main/CONTRIBUTING.md
+[deferred]: https://github.com/synajs/syna/blob/main/docs/DEFERRED.md
+[examples]: https://github.com/synajs/syna/blob/main/docs/EXAMPLES.md
+[glossary]: https://github.com/synajs/syna/blob/main/docs/GLOSSARY.md
+[history]: https://github.com/synajs/syna/blob/main/docs/HISTORY.md
+[package-authoring]: https://github.com/synajs/syna/blob/main/docs/PACKAGE_AUTHORING.md
+[plugin-authoring]: https://github.com/synajs/syna/blob/main/docs/PLUGIN_AUTHORING.md
+[semantic-model]: https://github.com/synajs/syna/blob/main/docs/SEMANTIC_MODEL.md
+[validation]: https://github.com/synajs/syna/blob/main/docs/VALIDATION.md
