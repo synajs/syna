@@ -1,6 +1,6 @@
 {
-  "name": "@syna/tsconfig",
-  "version": "1.0.0-rc.5",
+  "name": "@synajs/tsconfig",
+  "version": "1.0.0-rc.1",
   "description": "TypeScript presets for Syna package authors",
   "repository": {
     "type": "git",
@@ -24,5 +24,8 @@
   "license": "MIT",
   "engines": {
     "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

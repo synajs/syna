@@ -5,7 +5,7 @@
 // when the program is done.
 import assert from 'node:assert/strict'
 import packageJson from '#syna/package' with { type: 'json' }
-import { createRuntime, definePackage } from '@syna/core'
+import { createRuntime, definePackage } from 'syna'
 import { Logger } from '@syna-demo/logger'
 
 const define = definePackage(packageJson)

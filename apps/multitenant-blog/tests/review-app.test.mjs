@@ -10,7 +10,7 @@ import { execFile } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
 import test from 'node:test'
-import { override } from '@syna/core'
+import { override } from 'syna'
 import { AuthOptions, AuthenticatorContract, SessionAuth, SiteAuth, defaultRecipes, define } from '../dist/index.js'
 import { createFilesystemApp } from './helpers/app-harness.mjs'
 

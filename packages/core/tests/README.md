@@ -1,4 +1,4 @@
-# `@syna/core` tests
+# `syna` tests
 
 The suites are grouped by the behaviour they hold, not by the review round that produced
 them. A test's audit number stays in its title (`F-PL-01 …`, `N2 …`, `R17 …`, `A03 …`),

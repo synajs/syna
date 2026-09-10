@@ -2,7 +2,7 @@
 // syna-v08-rename: this file spells every pre-0.8 name on purpose — it is the migration.
 // Mechanical migration of TypeScript / JavaScript sources from the 0.7 names to the 0.8 names (SYNA v0.8 §2;
 // docs/MIGRATION_V07_TO_V08.md has the item table). Syntax-driven (the TypeScript compiler API), with type
-// information wherever the program resolves it (the built `@syna/core`, a consumer's own `dist`) and a name
+// information wherever the program resolves it (the built `syna`, a consumer's own `dist`) and a name
 // heuristic where it does not (an `any`-typed receiver in a test).
 //
 //   node scripts/codemod-v08.mjs [--dry-run] [--verbose] [--json <report.json>] [<path>...]
@@ -109,7 +109,7 @@ function collectFiles(targets) {
 }
 
 // ---------------------------------------------------------------------------------------------------------------
-// Program: the consumers plus whatever they import (the built `@syna/core` gives the descriptor types).
+// Program: the consumers plus whatever they import (the built `syna` gives the descriptor types).
 function createProgram(files) {
   return ts.createProgram(files, {
     allowJs: true,

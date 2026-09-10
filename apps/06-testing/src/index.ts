@@ -8,7 +8,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import packageJson from '#syna/package' with { type: 'json' }
-import { createRuntime, definePackage, override, type Runtime } from '@syna/core'
+import { createRuntime, definePackage, override, type Runtime } from 'syna'
 import { AcmeNotify } from '@syna-demo/acme-notify-v2'
 import { Logger } from '@syna-demo/logger'
 import { Notifier, type Delivery, type Notification } from '@syna-demo/notify-contract'

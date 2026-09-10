@@ -1,5 +1,5 @@
 // syna-v08-rename: this test spells pre-0.8 names on purpose — they are the fixture the codemod must rewrite.
-// The rename codemod (scripts/codemod-v08.mjs) on a fixture consumer inside this workspace (so `@syna/core` resolves to
+// The rename codemod (scripts/codemod-v08.mjs) on a fixture consumer inside this workspace (so `syna` resolves to
 // the built 0.8 declarations, as it does for a consumer that upgraded before running it): every rule of the table
 // rewrites its occurrence, a second run makes no edit (idempotent), and a site the codemod cannot rewrite is reported
 // with exit code 2 and left alone.
@@ -13,7 +13,7 @@ const root = new URL('../../', import.meta.url).pathname.replace(/\/$/, '')
 const codemod = path.join(root, 'scripts/codemod-v08.mjs')
 const run = args => spawnSync(process.execPath, [codemod, ...args], { cwd: root, encoding: 'utf8' })
 
-const BEFORE = `import { createRuntime, definePackage, isSynaError, type EnvHandle, type EntryDescriptor, type ImplementationDescriptor, type NodeDisposition, type InputType } from '@syna/core'
+const BEFORE = `import { createRuntime, definePackage, isSynaError, type EnvHandle, type EntryDescriptor, type ImplementationDescriptor, type NodeDisposition, type InputType } from 'syna'
 
 const define = definePackage({ name: '@fixture/consumer', version: '1.0.0', syna: { id: 'fixture' } })
 const Flag = define.input<boolean>('flag')
@@ -66,7 +66,7 @@ console.log(stored.version, stored.kind === 'persistent-implementation-ref', chi
 await runtime.dispose()
 `
 
-const AFTER = `import { createRuntime, definePackage, isSynaError, type Env, type Entry, type ImplementationRecord, type NodePlacement, type InputValue } from '@syna/core'
+const AFTER = `import { createRuntime, definePackage, isSynaError, type Env, type Entry, type ImplementationRecord, type NodePlacement, type InputValue } from 'syna'
 
 const define = definePackage({ name: '@fixture/consumer', version: '1.0.0', syna: { id: 'fixture' } })
 const Flag = define.input<boolean>('flag')

@@ -5,7 +5,7 @@
 import assert from 'node:assert/strict'
 import { setTimeout as sleep } from 'node:timers/promises'
 import packageJson from '#syna/package' with { type: 'json' }
-import { createRuntime, definePackage, forward, isSynaError, type RuntimeEvent, type ServiceRevision } from '@syna/core'
+import { createRuntime, definePackage, forward, isSynaError, type RuntimeEvent, type ServiceRevision } from 'syna'
 
 const define = definePackage(packageJson)
 const errorOf = async (work: Promise<unknown>): Promise<unknown> => work.then(() => undefined, (error: unknown) => error)

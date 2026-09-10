@@ -1,10 +1,10 @@
-# @syna/tsconfig
+# @synajs/tsconfig
 
 TypeScript presets for Syna packages.
 
 ```json
 {
-  "extends": "@syna/tsconfig/node-library.json",
+  "extends": "@synajs/tsconfig/node-library.json",
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist"

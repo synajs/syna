@@ -1,5 +1,5 @@
 import { unified, type Processor } from 'unified'
-import type { ImplementationSet } from '@syna/core'
+import type { ImplementationSet } from 'syna'
 import type { RecipeDocument, RecipeStage } from '../domain/model.js'
 import { define } from '../syna.js'
 import { RecipeError, parseRecipeDocument, validateStageOptions } from './recipe.js'

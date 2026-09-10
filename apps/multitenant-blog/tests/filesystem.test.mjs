@@ -3,7 +3,7 @@ import { mkdtemp, mkdir, readdir, readFile, rm, stat, symlink, writeFile } from 
 import os from 'node:os'
 import path from 'node:path'
 import { after, before, describe, it } from 'node:test'
-import { createRuntime } from '@syna/core'
+import { createRuntime } from 'syna'
 import {
   BlogLayout,
   ContentLayoutChoice,

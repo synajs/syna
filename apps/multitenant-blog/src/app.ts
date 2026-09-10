@@ -1,4 +1,4 @@
-import { createRuntime, type CreateRuntimeOptions, type Env, type Runtime, type ServiceRevision, type UnsettledAttemptInspection } from '@syna/core'
+import { createRuntime, type CreateRuntimeOptions, type Env, type Runtime, type ServiceRevision, type UnsettledAttemptInspection } from 'syna'
 import { AUTHENTICATORS } from './auth/implementations.js'
 import { DatabasePool } from './data/postgres/pool.js'
 import { PostgresContentStore } from './data/postgres/store.js'

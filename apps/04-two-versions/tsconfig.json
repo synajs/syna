@@ -1,5 +1,5 @@
 {
-  "extends": "@syna/tsconfig/node-app.json",
+  "extends": "@synajs/tsconfig/node-app.json",
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",

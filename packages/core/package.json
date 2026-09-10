@@ -1,7 +1,16 @@
 {
-  "name": "@syna/core",
-  "version": "1.0.0-rc.5",
-  "description": "Scope-aware capability composition runtime for TypeScript",
+  "name": "syna",
+  "version": "1.0.0-rc.1",
+  "description": "A runtime for composing stateful TypeScript services with explicit lifetimes",
+  "keywords": [
+    "dependency-injection",
+    "lifecycle",
+    "composition",
+    "runtime",
+    "typescript",
+    "multi-tenant",
+    "resource-management"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/synajs/syna.git",
@@ -35,7 +44,7 @@
   "license": "MIT",
   "sideEffects": false,
   "devDependencies": {
-    "@syna/tsconfig": "1.0.0-rc.5",
+    "@synajs/tsconfig": "1.0.0-rc.1",
     "@types/node": "^22.19.7",
     "@types/semver": "^7.8.0"
   },
