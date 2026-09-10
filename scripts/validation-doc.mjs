@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // Generates docs/VALIDATION.md from the machine-readable results of one orchestrator run.
 //
-//   node scripts/validation-doc.mjs [validation/v<version>-release] [docs/VALIDATION.md]
+//   node scripts/validation-doc.mjs [<run directory>] [docs/VALIDATION.md]
 //
-// The run directory defaults to the release run of the version in package.json. The document is generated after the run
+// The run directory defaults to the release run of the version in package.json, at the path that version's release
+// profile names (`constants.validation.release`; `validation/v<version>-release` for the releases that named none). The document is generated after the run
 // and committed with the run's evidence; the gate neither fingerprints nor archives it (1.0.0-rc.1 on).
 //
 // Every number in the document comes from manifest.json, benchmark-v0.5.json, working-set.json,
@@ -14,7 +15,12 @@ import path from 'node:path'
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..')
 const version = JSON.parse(readFileSync(path.resolve(root, 'package.json'), 'utf8')).version
-const runDir = process.argv[2] ?? `validation/v${version}-release`
+// The release run of the workspace version in package.json, at the directory that version's release profile names.
+// Since the first public candidate that is not `validation/v<version>-release`: the workspace version is the private
+// validation line and the public evidence has a lineage of its own (`validation/README.md`).
+const profileFile = path.resolve(root, 'scripts', 'release-profiles', `${version}.json`)
+const releaseRunDir = (existsSync(profileFile) ? JSON.parse(readFileSync(profileFile, 'utf8')).constants?.validation?.release : null) ?? `validation/v${version}-release`
+const runDir = process.argv[2] ?? releaseRunDir
 const outFile = process.argv[3] ?? 'docs/VALIDATION.md'
 const json = file => JSON.parse(readFileSync(path.resolve(root, file), 'utf8'))
 

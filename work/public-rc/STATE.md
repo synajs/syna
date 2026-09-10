@@ -29,13 +29,21 @@ from.
 
 ## The decisions
 
-1. **The workspace keeps its own version line; the packages restart.** The gate names the validation directory, the
-   source archive and the release profile after the version in the root `package.json`. Setting that to `1.0.0-rc.1`
-   would have overwritten `validation/v1.0.0-rc.1-release/` — a record five later profiles and this round's inventory
-   chain still refer to. So the private workspace went to `1.0.0-rc.6` (its sixth gate round of the 1.0 line) and the
-   two published packages start at `1.0.0-rc.1`. The release profile carries the mapping
-   (`scripts/release-profiles/1.0.0-rc.6.json`, `constants.packages`), and the gate asserts the packed tarballs are
-   exactly those packages.
+1. **The workspace keeps its own version line; the packages restart.** The gate names the source archive and the
+   release profile after the version in the root `package.json`, and used to name the validation directory after it
+   too. Setting that to `1.0.0-rc.1` would have overwritten `validation/v1.0.0-rc.1-release/` — a record five later
+   profiles and this round's inventory chain still refer to. So the private workspace went to `1.0.0-rc.6` (its sixth
+   gate round of the 1.0 line) and the two published packages start at `1.0.0-rc.1`. The release profile carries the
+   mapping (`scripts/release-profiles/1.0.0-rc.6.json`, `constants.packages`), and the gate asserts the packed
+   tarballs are exactly those packages.
+1a. **The public evidence has a lineage of its own.** Naming this release's evidence `validation/v1.0.0-rc.6-release/`
+   told a reader that the evidence for `syna@1.0.0-rc.1` was filed under a number that is not the package's — and left
+   the next public candidate no place to go. The profile now names the directory as well
+   (`constants.validation`): `validation/public/syna-v1.0.0-rc.1-release/`, and `validation/public/syna-v1.0.0-rc.2-release/`
+   after it. The top-level `v<version>-*/` directories are the repository's own rounds and are untouched — nothing was
+   deleted, renamed, moved, renumbered or rewritten. `scripts/validation-doc.mjs`, the CI artifact and the two name
+   scans (a recorded run is a record in either lineage) follow the profile; `validation/README.md` states the
+   distinction. The gate's own `previousRelease` key keeps the run-to-run comparison across the move.
 2. **The npm rename renames no identity the runtime serializes.** `packages/core/src/runtime.ts` still declares the
    internal package as `@syna/core` and its internal derive Entry as `@syna/core/entry/derive/v1`. Those are nominal
    ids — they appear in plans, inspections and stored references — and they are frozen like every other

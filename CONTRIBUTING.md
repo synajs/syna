@@ -110,7 +110,10 @@ the remedy.
 - `docs/` — the manual (API reference, semantic model, glossary, authoring guides) and the records (history,
   migrations, audits, validation).
 - `validation/v<version>-<mode>/` — one gate run each: its manifest, logs, API inventory and scans. Records, never
-  edited afterwards.
+  edited afterwards. These are the repository's own validation rounds, numbered by the workspace version.
+- `validation/public/syna-v<package version>-release/` — the same, for a release published to npm, numbered by the
+  package version. The two numbers are separate counters and the release profile carries the mapping
+  (`validation/README.md`).
 - `work/` — the ledgers of each round (task books under `work/tasks/`, the state and decisions of the round). Never in
   a source archive.
 - `RELEASE_MANIFEST.json` — the release run of reference, with the archive and package digests.

@@ -55,7 +55,8 @@ test('the current line names the public packages', () => {
 test('the historical set is what it says: existing records, never the current line', () => {
   for (const file of ['docs/HISTORY.md', 'docs/MIGRATION_V07_TO_V08.md', 'CHANGELOG.md', 'RELEASE_MANIFEST.json',
     'scripts/release-profiles/1.0.0-rc.5.json', 'benchmarks/results-v1.0.0-rc.4-baseline-same-machine.json',
-    'validation/v1.0.0-rc.5-release/manifest.json', 'docs/audit/audit-3-backends-delivery/p1-pg-transaction-silent-rollback.mjs']) {
+    'validation/v1.0.0-rc.5-release/manifest.json', 'validation/public/syna-v1.0.0-rc.1-release/manifest.json',
+    'docs/audit/audit-3-backends-delivery/p1-pg-transaction-silent-rollback.mjs']) {
     assert.ok(isHistorical(file), `${file} is a record of the earlier identity`)
   }
   for (const file of ['README.md', 'README.zh-CN.md', 'packages/core/README.md', 'docs/API_REFERENCE.md',

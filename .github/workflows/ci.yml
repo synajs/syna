@@ -35,7 +35,7 @@ jobs:
 
   # The release gate (G0 + G1: archive, rebuild from the archive, pack, consumer smoke, manifest) with its outputs kept
   # as a workflow artifact. The gate reads the version from package.json (scripts/verify-release.mjs, 1.0.0-rc.1 on), so
-  # the artifact name and the validation directory carry it. The v0.5 gate's first cloud run: 2026-09-05, run 33995206873
+  # the artifact name carries it and the release profile of that version names the validation directory. The v0.5 gate's first cloud run: 2026-09-05, run 33995206873
   # on 09e2931 in github.com/synajs/syna-v05, the workspace's home before github.com/synajs/syna (success; COMPLETE 710/710
   # on PostgreSQL 16 / Node 22), see work/v05/STATE.md. Since 0.6 the gates record the same-machine benchmark comparison
   # as "not comparable" on a runner that differs from the baseline machine (the comparison is evidence only on that
@@ -51,8 +51,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # The artifact name carries the workspace version; its path is the directory the release profile of that version
+      # names, which since the first public candidate is the public lineage `validation/public/syna-v<package version>-release/`.
       - id: version
-        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+        run: |
+          version=$(node -p "require('./package.json').version")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "validation=$(node -p "require('./scripts/release-profiles/$version.json').constants.validation?.release ?? 'validation/v$version-release'")" >> "$GITHUB_OUTPUT"
       - run: node scripts/verify-release.mjs --release
         env:
           SYNA_PG_BIN: /usr/lib/postgresql/16/bin
@@ -65,5 +70,5 @@ jobs:
             work/release/*.tar.gz
             work/release/*.zip
             work/release/pack/*.tgz
-            validation/v${{ steps.version.outputs.version }}-release/
+            ${{ steps.version.outputs.validation }}/
             RELEASE_MANIFEST.json

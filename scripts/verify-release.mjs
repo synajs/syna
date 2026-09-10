@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // Syna release acceptance orchestrator (1.0.0-rc.1 on): the 0.8 gate with the version read from package.json — the
-// validation directory, the archive name and the manifest carry it — and with the records of the previous release as
-// the baselines. 1.0.0-rc.2: the public API inventory must be identical to the 0.8.0 record (the surface is frozen from
-// 0.8.0, docs/API_STABILITY.md) and its diff against the 1.0.0-rc.1 record empty; the same-session benchmark comparison
+// archive name and the manifest carry it, and the release profile of that version names the directory the run writes
+// its evidence to — and with the records of the previous release as the baselines. 1.0.0-rc.2: the public API
+// inventory must be identical to the 0.8.0 record (the surface is frozen from 0.8.0, docs/API_STABILITY.md) and its
+// diff against the 1.0.0-rc.1 record empty; the same-session benchmark comparison
 // runs against the 1.0.0-rc.1 source with `--no-maglev` on both sides (its recorded baseline is the 1.0.0-rc.1 side of
 // the 1.0.0-rc.1 release run on this machine); the `any` budget stays at the 0.7.0 record, re-keyed under the rename of
 // the reference application. The demos are the seven examples (apps/01-* … apps/07-*, each a step that must print the
@@ -20,6 +21,12 @@
 // byte for byte)
 // and `readme-consumer-*` (a project whose package.json, tsconfig.json and programs are the blocks of that README,
 // with the packed runtime tarball as its only dependency, printing what the README says it prints).
+//
+// Because the published version is no longer the workspace version, the evidence of a public release is no longer
+// named after it either: `constants.validation` of the profile names the directory, and the public runs are a lineage
+// of their own under `validation/public/syna-v<package version>-release/`. The top-level `validation/v<version>-*/`
+// directories are the repository's own validation rounds and stay exactly as they were recorded
+// (`validation/README.md`).
 //
 //   node scripts/verify-release.mjs --dev       G0: build + type tests + core/regression + real PostgreSQL/FS + app matrix + tooling
 //                                                + API inventory (0 deprecated items; identical to the 0.8.0 record; unchanged since 1.0.0-rc.1)
@@ -50,24 +57,17 @@ const release = args.has('--release')
 const dev = args.has('--dev') || !release
 const insideArchive = args.has('--inside-archive') // set by the release step when re-running inside the unpacked archive
 const packageJson = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'))
-/** The version under test, read from package.json: it names the validation directory, the archive and the manifest. */
+/** The workspace version, read from package.json: it names the release profile, the source archive and the manifest. */
 const version = packageJson.version
-const validationName = release ? `v${version}-release` : `v${version}-dev`
-const validationDir = path.join(root, 'validation', validationName)
-const logsDir = path.join(validationDir, 'logs')
-mkdirSync(logsDir, { recursive: true })
-// The manifest this run replaces (if any) is read for comparison only; it never fails a run (I-116).
-const manifestPath = path.join(validationDir, 'manifest.json')
-const previousManifest = existsSync(manifestPath) ? JSON.parse(readFileSync(manifestPath, 'utf8')) : null
-let postgresInfo = null
 
 /**
  * What this release is measured against, and the steps it must run: `scripts/release-profiles/<version>.json`.
  * The gate carries the machinery; the profile carries everything that changes from one release to the next — the
  * benchmark baseline and its commit, the inventory records this source must be identical to and the increment
- * registered against each, the `any` budget, the mutation-audit record, and the ordered list of step names. Every
- * earlier release has a profile of its own in that directory, extracted from its own manifest: a record of what it
- * ran, so an old release can be reproduced from its commit without the script that produced it.
+ * registered against each, the `any` budget, the mutation-audit record, the packages this workspace publishes, where
+ * the run writes its evidence, and the ordered list of step names. Every earlier release has a profile of its own in
+ * that directory, extracted from its own manifest: a record of what it ran, so an old release can be reproduced from
+ * its commit without the script that produced it.
  */
 const profilePath = path.join(root, 'scripts', 'release-profiles', `${version}.json`)
 if (!existsSync(profilePath)) {
@@ -77,6 +77,30 @@ const profile = JSON.parse(readFileSync(profilePath, 'utf8'))
 if (profile.version !== version) {
   throw new Error(`Release profile ${path.relative(root, profilePath)} is for ${profile.version}, not ${version}.`)
 }
+/**
+ * Where this run writes its evidence. Through 1.0.0-rc.5 the workspace version *was* the release's version, so the
+ * gate composed `validation/v<version>-<mode>/` from it. Since the first public candidate the two are separate
+ * numbers — `syna@1.0.0-rc.1` published out of workspace 1.0.0-rc.6 — and a public release's evidence must not be
+ * named after a private version that is not its own: the profile names the directory, and the public runs have a
+ * lineage of their own under `validation/public/` (`validation/README.md`). A profile that names none keeps the
+ * composed path, which is what the earlier releases ran with.
+ */
+const VALIDATION = profile.constants.validation ?? {}
+const validationRel = (release ? VALIDATION.release : VALIDATION.dev) ?? `validation/v${version}-${release ? 'release' : 'dev'}`
+const validationDir = path.join(root, validationRel)
+const logsDir = path.join(validationDir, 'logs')
+mkdirSync(logsDir, { recursive: true })
+// The manifest this run replaces (if any) is read for comparison only; it never fails a run (I-116). The first run of
+// a new validation line has no run of its own to replace: `validation.previousRelease` names the release run it
+// continues from, so moving the line does not silently drop the comparison.
+const manifestPath = path.join(validationDir, 'manifest.json')
+const previousReleaseManifest = VALIDATION.previousRelease ? path.join(root, VALIDATION.previousRelease, 'manifest.json') : null
+const previousPath = existsSync(manifestPath) ? manifestPath
+  : release && previousReleaseManifest && existsSync(previousReleaseManifest) ? previousReleaseManifest
+  : null
+const previousManifest = previousPath ? JSON.parse(readFileSync(previousPath, 'utf8')) : null
+let postgresInfo = null
+
 const {
   benchmark: BENCHMARK,
   anyBaseline: ANY_BASELINE,
@@ -218,6 +242,7 @@ function compareWithPrevious(previous) {
     if (step.tests.tests !== old.tests.tests || step.tests.pass !== old.tests.pass) countChanges.push(`${name}: ${old.tests.pass}/${old.tests.tests} → ${step.tests.pass}/${step.tests.tests}`)
   }
   return {
+    from: previousPath ? path.relative(root, previousPath) : null,
     generatedAt: previous.generatedAt ?? null,
     commit: previous.environment?.gitProvenance?.commit ?? null,
     sourceDigest: previous.source?.digest ?? null,
@@ -255,8 +280,8 @@ function gitInfo() {
  * fingerprint the run records (the file the fingerprint would cover does not exist yet), but
  * leaving it out of the tarball too — as 1.0.0-rc.1 did — meant whoever unpacked the archive was
  * missing the one document that says what was verified. The archived copy is therefore the
- * previous run's, one release behind, and `validation/<version>-release/manifest.json` in the same
- * archive is this run's own record.
+ * previous run's, one release behind; this run's own record is the manifest in the evidence
+ * directory the profile names, which is a sidecar of the archive and not inside it.
  */
 function listSourceFiles({ forArchive = false } = {}) {
   const include = ['packages', 'apps', 'benchmarks', 'docs', 'scripts', 'validation/README.md']
@@ -640,7 +665,7 @@ async function releaseGate(sourceFingerprint) {
     if (/postgres:\/\/[^\s'"`$]+:[^\s'"`$]+@/.test(content)) offenders.push(`${file}: credential-bearing connection string`)
   }
   writeFileSync(path.join(validationDir, 'archive-scan.json'), JSON.stringify({ files: files.length, offenders }, null, 2))
-  const scanLog = `validation/${validationName}/archive-scan.json`
+  const scanLog = `${validationRel}/archive-scan.json`
   if (offenders.length > 0) {
     steps.push({ name: 'archive-scan', ok: false, exitCode: 1, mustRun: true, command: 'internal', log: scanLog, offenders })
     log(`FAIL archive-scan: ${offenders.join('; ')}`)
@@ -805,6 +830,9 @@ const status = blocked.length > 0 ? 'BLOCKED' : failed.length === 0 && skipped =
 const manifest = {
   name: `Syna v${version} + multitenant-blog`,
   version,
+  /** The published identities this workspace version releases, and where this run's evidence lives (the profile). */
+  packages: PACKAGES,
+  validation: validationRel,
   gate: 'scripts/verify-release.mjs',
   status,
   mode: release ? 'release' : 'dev',

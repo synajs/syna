@@ -27,7 +27,9 @@ export const SKIPPED_DIRECTORIES = new Set(['node_modules', 'dist', 'dist-local'
 
 /** Files whose subject is the earlier identity: records are not rewritten. */
 export const HISTORICAL_FILES = [
-  /^validation\/v[^/]+\//,
+  // The recorded gate runs, in both lineages: the repository's own rounds and the public releases under
+  // `validation/public/` (validation/README.md, which describes them, is current).
+  /^validation\/(v[^/]+|public\/[^/]+)\//,
   /^docs\/audit\//,
   /^docs\/(AUDIT|ADVERSARIAL_AUDIT|HISTORY|VALIDATION)\.md$/,
   /^docs\/(MIGRATION_V\d+_TO_V\d+|SEMANTIC_CHANGES_(V\d+|RC\d+))\.md$/,

@@ -14,7 +14,7 @@ The line from the tarball baselines to 1.0, one round per section: what the roun
 | 1.0.0-rc.3 | the closing paths（关闭路径） — from an independent audit | `work/tasks/SYNA_RC3_EXECUTION_PROMPT.md`, `work/tasks/SYNA_RC3_GOAL.txt` | `docs/SEMANTIC_CHANGES_RC3.md` | `validation/v1.0.0-rc.3-release/`, `work/rc3/STATE.md` |
 | 1.0.0-rc.4 | the cleanup phase（清理阶段） — from a three-party cross-review | `work/tasks/SYNA_RC4_EXECUTION_PROMPT.md`, `work/tasks/SYNA_RC4_GOAL.txt` | `docs/SEMANTIC_CHANGES_RC4.md` | `validation/v1.0.0-rc.4-release/`, `work/rc4/STATE.md` |
 | 1.0.0-rc.5 | the tests that hold（测试有效性） — from a third independent review | `work/tasks/SYNA_RC5_EXECUTION_PROMPT.md`, `work/tasks/SYNA_RC5_GOAL.txt` | `docs/SEMANTIC_CHANGES_RC5.md` | `validation/v1.0.0-rc.5-release/`, `work/rc5/STATE.md` |
-| `syna` 1.0.0-rc.1 (workspace 1.0.0-rc.6) | the public packages（公开身份） | `work/tasks/SYNA_PUBLIC_RC_EXECUTION_PROMPT.md`, `work/tasks/SYNA_PUBLIC_RC_GOAL.txt` | `CHANGELOG.md` | `validation/v1.0.0-rc.6-release/`, `work/public-rc/STATE.md` |
+| `syna` 1.0.0-rc.1 (workspace 1.0.0-rc.6) | the public packages（公开身份） | `work/tasks/SYNA_PUBLIC_RC_EXECUTION_PROMPT.md`, `work/tasks/SYNA_PUBLIC_RC_GOAL.txt` | `CHANGELOG.md` | `validation/public/syna-v1.0.0-rc.1-release/`, `work/public-rc/STATE.md` |
 
 ## 0.2 – 0.4 — the tarball baselines
 
@@ -51,6 +51,13 @@ line and is `1.0.0-rc.6` here, so that the recorded runs of the five earlier can
 their names (`validation/v1.0.0-rc.1-release/` … `v1.0.0-rc.5-release/`, and the profiles in
 `scripts/release-profiles/`). The earlier versions of the runtime were never on the registry under either name.
 
+Because the two numbers are separate counters, the evidence is separated too: the top-level `validation/v<version>-*/`
+directories are this repository's own validation rounds, and a release published to npm records its gate run under
+`validation/public/syna-v<package version>-release/` — this one under `validation/public/syna-v1.0.0-rc.1-release/`.
+The release profile of the workspace version carries the mapping (`constants.packages`, `constants.validation`), and
+the gate reads the directory from it instead of composing it from a version that is no longer the release's own
+(`validation/README.md`).
+
 No change of the core: the public API inventory is identical to the 1.0.0-rc.5 record item by item, the planner
 differential and the explain/inspect snapshots are unchanged, and `packages/core/src` is untouched. In particular **the
 npm rename is not a rename of any identity the runtime serializes**: the internal package the Runtime declares itself
@@ -73,7 +80,7 @@ are the packages the release profile declares, carry what their `files` says and
 nothing of this workspace, and the runtime's README is the canonical one). `@synajs/tsconfig` is a package-author tool,
 never a requirement of a runtime consumer: the README's own `tsconfig.json` is a plain standalone one, and both
 consumer projects of the gate assert that nothing of this workspace was installed with the runtime. Record:
-`CHANGELOG.md`; evidence `validation/v1.0.0-rc.6-release/`, `work/public-rc/STATE.md`.
+`CHANGELOG.md`; evidence `validation/public/syna-v1.0.0-rc.1-release/`, `work/public-rc/STATE.md`.
 
 ## 1.0.0-rc.5 — the tests that hold（测试有效性）
 

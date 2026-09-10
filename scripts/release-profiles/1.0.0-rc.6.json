@@ -1,7 +1,7 @@
 {
   "version": "1.0.0-rc.6",
   "gate": "scripts/verify-release.mjs",
-  "note": "The constants this release's gate runs with, and the steps it must run. The gate reads the constants from here instead of carrying them in its source, and asserts at the end of a run that the steps it recorded are exactly the ones listed below — a step that silently stops running is a defect, not a quieter gate. Earlier releases have a profile of their own in this directory: a record of what that release actually ran, extracted from its own manifest. This round is the first public release candidate: the workspace keeps its own validation line (1.0.0-rc.6, the sixth gate run of the 1.0 line) and the packages it publishes restart at 1.0.0-rc.1 under their public identities — `packages` below is what `npm pack` must produce and what the tarballs must contain.",
+  "note": "The constants this release's gate runs with, and the steps it must run. The gate reads the constants from here instead of carrying them in its source, and asserts at the end of a run that the steps it recorded are exactly the ones listed below — a step that silently stops running is a defect, not a quieter gate. Earlier releases have a profile of their own in this directory: a record of what that release actually ran, extracted from its own manifest. This round is the first public release candidate: the workspace keeps its own validation line (1.0.0-rc.6, the sixth gate run of the 1.0 line) and the packages it publishes restart at 1.0.0-rc.1 under their public identities — `packages` below is what `npm pack` must produce and what the tarballs must contain, and `validation` is where the run writes its evidence, because a public release's evidence cannot be named after a private workspace version that is not its own (`validation/README.md`).",
   "constants": {
     "benchmark": {
       "baseline": "benchmarks/results-v1.0.0-rc.4-baseline-same-machine.json",
@@ -37,6 +37,11 @@
         "name": "@synajs/tsconfig",
         "version": "1.0.0-rc.1"
       }
+    },
+    "validation": {
+      "release": "validation/public/syna-v1.0.0-rc.1-release",
+      "dev": "validation/v1.0.0-rc.6-dev",
+      "previousRelease": "validation/v1.0.0-rc.6-release"
     }
   },
   "steps": {
