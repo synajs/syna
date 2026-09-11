@@ -114,8 +114,8 @@ the remedy.
 - `validation/public/syna-v<package version>-release/` — the same, for a release published to npm, numbered by the
   package version. The two numbers are separate counters and the release profile carries the mapping
   (`validation/README.md`).
-- `work/` — the ledgers of each round (task books under `work/tasks/`, the state and decisions of the round). Never in
-  a source archive.
+- `work/` — the ledgers of each round (task books under `work/tasks/`, the 0.5 task package under
+  `work/v05/task-package/`, the state and decisions of the round). Never in a source archive.
 - `RELEASE_MANIFEST.json` — the release run of reference, with the archive and package digests.
 
 Historical documents keep the names of their own time: the runtime was developed under the temporary package identity `@syna/core` and its presets under `@syna/tsconfig`. <!-- syna-public-rename: this line names the earlier packages on purpose -->

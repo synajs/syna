@@ -860,8 +860,8 @@ const manifest = {
 writeFileSync(path.join(validationDir, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`)
 if (release && releaseResult) {
   writeFileSync(path.join(root, 'RELEASE_MANIFEST.json'), `${JSON.stringify(manifest, null, 2)}\n`)
-  // The root SHA256SUMS.txt belongs to the task documents shipped with the
-  // workspace and is left alone; release hashes live next to the release manifest.
+  // Release hashes live next to the release manifest. The hash list of the 0.5 task
+  // package is that package's own (work/v05/task-package/SHA256SUMS.txt) and is never rewritten.
   const sums = [...releaseResult.archives, ...releaseResult.packed].map(item => `${item.sha256}  ${item.path}`).join('\n')
   writeFileSync(path.join(validationDir, 'SHA256SUMS.txt'), `${sums}\n`)
 }

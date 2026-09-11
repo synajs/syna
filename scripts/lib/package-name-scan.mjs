@@ -38,8 +38,7 @@ export const HISTORICAL_FILES = [
   // The profiles and the recorded benchmark baselines of the releases made under the earlier identity.
   /^scripts\/release-profiles\/(0\.\d+\.\d+|1\.0\.0-rc\.[1-5])\.json$/,
   /^benchmarks\/results-v(0\.[0-9.]+|1\.0\.0-rc\.[1-5])(-[a-z0-9-]+)?\.json$/,
-  // The task-document package that ships with the workspace.
-  /^(SHA256SUMS\.txt|START_HERE_ZH\.md|CLAUDE_CODE_RESEARCH\.md|SYNA_V05_EXECUTION_PROMPT\.md|SYNA_V05_GOAL\.txt)$/,
+  // The 0.5 task package moved to work/v05/task-package/ and is covered by the skipped work/ directory.
   // This scan and its test spell the names they look for.
   /^scripts\/lib\/package-name-scan\.mjs$/,
   /^scripts\/tests\/no-legacy-package-names\.test\.mjs$/,

@@ -99,8 +99,22 @@ self-tests of the two, in `gate-self-tests` (51 cases).
 
 - `npm publish --tag rc` in both package directories (above), from an account that is a member of the `@synajs`
   organisation on npm.
-- **The tag name `v1.0.0-rc.1` is taken.** It is on `origin` already, pointing at `4a5a978` — the release of the
-  earlier candidate under the `@syna/core` identity. A tag for this release needs another name; the workspace version
-  (`v1.0.0-rc.6`) or the package identity (`syna-v1.0.0-rc.1`) both say which release it is.
+- **The tag name `v1.0.0-rc.1` is free again.** It pointed at `4a5a978` — the release of the earlier candidate under
+  the temporary identity, not the package now being prepared. That history is preserved under
+  `archive/pre-public-v1.0.0-rc.1`, which is the *same annotated tag object* (`8a7ff02`, the original tagger, date and
+  message) and peels to the same commit; the archive tag was confirmed on `origin` before the old name was deleted
+  there and locally. The commit itself and every validation record of it are untouched.
+- The public `v1.0.0-rc.1` tag is **not** created here. It is to be created later against the exact provenance commit
+  of the final gate run, so that the tag and the recorded fingerprint name the same tree.
 
-Not done, by instruction: no `npm publish`, no git tag, no GitHub Release.
+## The root, before publishing
+
+The workspace root carried the 0.5 Claude Code task package — the execution prompt, its goal file, the Chinese
+starting guide, the research note and the `SHA256SUMS.txt` that pins the four. It was never part of the source archive
+or the fingerprint (`listSourceFiles`), but it was the first thing a visitor to the repository saw, and it describes a
+round that ended five candidates ago. It moved as one unit to `work/v05/task-package/`, where the rest of that round's
+ledger already lives; its own hash list moved with it and still verifies from there. The audit reports, the validation
+records and the older ledgers that say those files were at the root are left exactly as they are: they describe where
+the files were at the time, which is what a record is for.
+
+Not done, by instruction: no `npm publish`, no public release tag, no GitHub Release.

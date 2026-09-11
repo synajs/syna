@@ -28,8 +28,7 @@ export const HISTORICAL_FILES = [
   /^scripts\/release-profiles\/(0\.\d+\.\d+|1\.0\.0-rc\.[1-4])\.json$/,
   /^scripts\/any-baseline-v0\.\d\.\d\.json$/,
   /^benchmarks\/results-v0\.[0-9.]+(-[a-z0-9-]+)?\.json$/,
-  // The task-document package that ships with the workspace (listed in the root SHA256SUMS.txt) and the task books.
-  /^(SHA256SUMS\.txt|START_HERE_ZH\.md|CLAUDE_CODE_RESEARCH\.md|SYNA_V05_EXECUTION_PROMPT\.md|SYNA_V05_GOAL\.txt)$/,
+  // The 0.5 task package moved to work/v05/task-package/ and is covered by the skipped work/ directory.
   // This scan and its test spell the names they look for.
   /^scripts\/lib\/vendor-name-scan\.mjs$/,
   /^scripts\/tests\/no-vendor-names\.test\.mjs$/,
