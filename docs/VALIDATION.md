@@ -1,6 +1,6 @@
 # Validation (VALIDATION)
 
-Every number below is copied by a script (`scripts/validation-doc.mjs`) from machine-readable results of the transparent orchestrator; nothing is hand-typed. Source of this page: the release run `node scripts/verify-release.mjs --release` recorded in `validation/public/syna-v1.0.0-rc.1-release/manifest.json` — status **COMPLETE**, generated 2026-09-10T20:11:30.894Z, source fingerprint `f8383620d4cf8491a8fdb2bf44de1eb2db1e8dd267bc0a981e2fd53c219512e5` (404 files), git commit `5cf16ef` (clean checkout).
+Every number below is copied by a script (`scripts/validation-doc.mjs`) from machine-readable results of the transparent orchestrator; nothing is hand-typed. Source of this page: the release run `node scripts/verify-release.mjs --release` recorded in `validation/public/syna-v1.0.0-rc.1-release/manifest.json` — status **COMPLETE**, generated 2026-09-11T00:12:06.426Z, source fingerprint `2935e75154b9d2fb0a6e67aab93b8b21611c5ebb3e377d87a60ff056e6b660a8` (404 files), git commit `4e7bcb5` (clean checkout).
 
 This document is generated from that run's manifest after the run and committed with the run's evidence (`RELEASE_MANIFEST.json`, `validation/public/syna-v1.0.0-rc.1-release/`) in the release commit; from 1.0.0-rc.1 on the gate neither fingerprints nor archives it, so the source fingerprint and the archive hashes the manifest records hold on the commit that carries them, and one run is the record of reference. The gate does not compare runs with each other and fails none for differing from another: the same steps run, and each manifest records under `previousRun` whether its step list and per-step test counts equal those of the run it replaced; its timings are its own and may differ within noise.
 
@@ -15,72 +15,72 @@ This document is generated from that run's manifest after the run and committed 
 
 | step | exit | tests | duration | log |
 |---|---|---|---|---|
-| clean | 0 | — | 138 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/clean.log` |
-| build | 0 | — | 8033 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/build.log` |
-| type-tests | 0 | — | 3602 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/type-tests.log` |
-| core-tests | 0 | 340/340 pass, 0 fail, 0 not run | 3005 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/core-tests.log` |
-| blog-filesystem-tests | 0 | 69/69 pass, 0 fail, 0 not run | 1006 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-filesystem-tests.log` |
-| blog-render-tests | 0 | 8/8 pass, 0 fail, 0 not run | 297 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-render-tests.log` |
-| blog-tenants-auth-preflight-tests | 0 | 12/12 pass, 0 fail, 0 not run | 419 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-tenants-auth-preflight-tests.log` |
-| blog-audit-regression-tests | 0 | 22/22 pass, 0 fail, 0 not run | 5398 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-audit-regression-tests.log` |
-| blog-review-regression-tests | 0 | 8/8 pass, 0 fail, 0 not run | 1623 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-review-regression-tests.log` |
-| blog-close-path-tests | 0 | 12/12 pass, 0 fail, 0 not run | 1287 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-close-path-tests.log` |
-| blog-site-manager-working-set-tests | 0 | 14/14 pass, 0 fail, 0 not run | 5345 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-site-manager-working-set-tests.log` |
-| blog-postgres-and-matrix-tests | 0 | 45/45 pass, 0 fail, 0 not run | 2524 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-postgres-and-matrix-tests.log` |
-| gate-self-tests | 0 | 53/53 pass, 0 fail, 0 not run | 4800 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/gate-self-tests.log` |
+| clean | 0 | — | 166 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/clean.log` |
+| build | 0 | — | 7840 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/build.log` |
+| type-tests | 0 | — | 3535 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/type-tests.log` |
+| core-tests | 0 | 340/340 pass, 0 fail, 0 not run | 3042 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/core-tests.log` |
+| blog-filesystem-tests | 0 | 69/69 pass, 0 fail, 0 not run | 1005 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-filesystem-tests.log` |
+| blog-render-tests | 0 | 8/8 pass, 0 fail, 0 not run | 290 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-render-tests.log` |
+| blog-tenants-auth-preflight-tests | 0 | 12/12 pass, 0 fail, 0 not run | 410 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-tenants-auth-preflight-tests.log` |
+| blog-audit-regression-tests | 0 | 22/22 pass, 0 fail, 0 not run | 5486 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-audit-regression-tests.log` |
+| blog-review-regression-tests | 0 | 8/8 pass, 0 fail, 0 not run | 1634 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-review-regression-tests.log` |
+| blog-close-path-tests | 0 | 12/12 pass, 0 fail, 0 not run | 1311 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-close-path-tests.log` |
+| blog-site-manager-working-set-tests | 0 | 14/14 pass, 0 fail, 0 not run | 5349 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-site-manager-working-set-tests.log` |
+| blog-postgres-and-matrix-tests | 0 | 45/45 pass, 0 fail, 0 not run | 2656 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-postgres-and-matrix-tests.log` |
+| gate-self-tests | 0 | 53/53 pass, 0 fail, 0 not run | 4806 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/gate-self-tests.log` |
 | mutation-audit-record | 0 | — | — | `work/rc5/mutations/RESULTS.json` |
-| api-inventory | 0 | — | 3664 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/api-inventory.log` |
+| api-inventory | 0 | — | 3668 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/api-inventory.log` |
 | api-inventory-no-deprecated | 0 | — | — | `validation/public/syna-v1.0.0-rc.1-release/api-inventory.json` |
-| api-inventory-diff | 0 | — | 160 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/api-inventory-diff.log` |
+| api-inventory-diff | 0 | — | 162 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/api-inventory-diff.log` |
 | api-inventory-unchanged | 0 | — | — | `validation/public/syna-v1.0.0-rc.1-release/api-inventory-diff.md` |
 | api-inventory-frozen | 0 | — | — | `validation/public/syna-v1.0.0-rc.1-release/api-inventory.json` |
-| codemod-idempotent | 0 | — | 772 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/codemod-idempotent.log` |
+| codemod-idempotent | 0 | — | 818 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/codemod-idempotent.log` |
 | no-old-reference-tokens | 0 | — | — | `validation/public/syna-v1.0.0-rc.1-release/old-reference-tokens.json` |
 | no-vendor-names | 0 | — | — | `validation/public/syna-v1.0.0-rc.1-release/vendor-name-scan.json` |
 | no-legacy-package-names | 0 | — | — | `validation/public/syna-v1.0.0-rc.1-release/package-name-scan.json` |
-| any-count | 0 | — | 227 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/any-count.log` |
-| demo-01-basics | 0 | — | 69 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/demo-01-basics.log` |
-| demo-02-per-tenant | 0 | — | 83 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/demo-02-per-tenant.log` |
-| demo-03-user-configurable | 0 | — | 84 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/demo-03-user-configurable.log` |
+| any-count | 0 | — | 236 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/any-count.log` |
+| demo-01-basics | 0 | — | 71 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/demo-01-basics.log` |
+| demo-02-per-tenant | 0 | — | 77 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/demo-02-per-tenant.log` |
+| demo-03-user-configurable | 0 | — | 80 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/demo-03-user-configurable.log` |
 | demo-04-two-versions | 0 | — | 85 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/demo-04-two-versions.log` |
-| demo-05-scheduled-jobs | 0 | — | 80 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/demo-05-scheduled-jobs.log` |
-| demo-06-testing | 0 | — | 87 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/demo-06-testing.log` |
-| demo-07-failure-modes | 0 | — | 575 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/demo-07-failure-modes.log` |
-| blog-demo-filesystem | 0 | — | 287 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-demo-filesystem.log` |
-| benchmarks | 0 | — | 3487 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/benchmarks.log` |
-| benchmark-compare | 0 | — | 158038 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/benchmark-compare.log` |
-| blog-request-latency | 0 | — | 2004 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-request-latency.log` |
+| demo-05-scheduled-jobs | 0 | — | 77 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/demo-05-scheduled-jobs.log` |
+| demo-06-testing | 0 | — | 84 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/demo-06-testing.log` |
+| demo-07-failure-modes | 0 | — | 561 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/demo-07-failure-modes.log` |
+| blog-demo-filesystem | 0 | — | 288 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-demo-filesystem.log` |
+| benchmarks | 0 | — | 3508 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/benchmarks.log` |
+| benchmark-compare | 0 | — | 154588 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/benchmark-compare.log` |
+| blog-request-latency | 0 | — | 2003 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/blog-request-latency.log` |
 | archive-scan | 0 | — | — | `validation/public/syna-v1.0.0-rc.1-release/archive-scan.json` |
-| archive-tar | 0 | — | 227 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/archive-tar.log` |
-| archive-zip | 0 | — | 69 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/archive-zip.log` |
-| rebuild-unpack | 0 | — | 166 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-unpack.log` |
-| rebuild-install | 0 | — | 617 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-install.log` |
-| rebuild-build | 0 | — | 8495 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-build.log` |
-| rebuild-type-tests | 0 | — | 3719 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-type-tests.log` |
-| rebuild-core-tests | 0 | 340/340 pass, 0 fail, 0 not run | 3024 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-core-tests.log` |
-| rebuild-app-tests | 0 | 145/145 pass, 0 fail, 0 not run | 5667 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-app-tests.log` |
-| rebuild-postgres-matrix-tests | 0 | 45/45 pass, 0 fail, 0 not run | 2451 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-postgres-matrix-tests.log` |
-| rebuild-gate-self-tests | 0 | 53/53 pass, 0 fail, 0 not run | 4527 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-gate-self-tests.log` |
-| rebuild-codemod-idempotent | 0 | — | 816 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-codemod-idempotent.log` |
-| rebuild-demo | 0 | — | 254 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-demo.log` |
-| rebuild-examples | 0 | — | 9981 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-examples.log` |
-| pack-core | 0 | — | 352 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/pack-core.log` |
-| pack-tsconfig | 0 | — | 175 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/pack-tsconfig.log` |
+| archive-tar | 0 | — | 221 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/archive-tar.log` |
+| archive-zip | 0 | — | 70 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/archive-zip.log` |
+| rebuild-unpack | 0 | — | 165 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-unpack.log` |
+| rebuild-install | 0 | — | 614 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-install.log` |
+| rebuild-build | 0 | — | 8404 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-build.log` |
+| rebuild-type-tests | 0 | — | 3895 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-type-tests.log` |
+| rebuild-core-tests | 0 | 340/340 pass, 0 fail, 0 not run | 3112 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-core-tests.log` |
+| rebuild-app-tests | 0 | 145/145 pass, 0 fail, 0 not run | 5643 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-app-tests.log` |
+| rebuild-postgres-matrix-tests | 0 | 45/45 pass, 0 fail, 0 not run | 2465 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-postgres-matrix-tests.log` |
+| rebuild-gate-self-tests | 0 | 53/53 pass, 0 fail, 0 not run | 4582 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-gate-self-tests.log` |
+| rebuild-codemod-idempotent | 0 | — | 787 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-codemod-idempotent.log` |
+| rebuild-demo | 0 | — | 251 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-demo.log` |
+| rebuild-examples | 0 | — | 9982 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/rebuild-examples.log` |
+| pack-core | 0 | — | 356 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/pack-core.log` |
+| pack-tsconfig | 0 | — | 169 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/pack-tsconfig.log` |
 | pack-metadata | 0 | — | — | `validation/public/syna-v1.0.0-rc.1-release/pack-audit.json` |
-| consumer-install | 0 | — | 803 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/consumer-install.log` |
-| consumer-build | 0 | — | 571 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/consumer-build.log` |
+| consumer-install | 0 | — | 656 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/consumer-install.log` |
+| consumer-build | 0 | — | 686 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/consumer-build.log` |
 | consumer-run | 0 | — | 170 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/consumer-run.log` |
 | consumer-smoke-result | 0 | — | — | `validation/public/syna-v1.0.0-rc.1-release/logs/consumer-run.log` |
-| readme-consumer-install | 0 | — | 384 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/readme-consumer-install.log` |
-| readme-consumer-build | 0 | — | 780 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/readme-consumer-build.log` |
-| readme-consumer-main | 0 | — | 71 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/readme-consumer-main.log` |
-| readme-consumer-tenants | 0 | — | 71 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/readme-consumer-tenants.log` |
+| readme-consumer-install | 0 | — | 368 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/readme-consumer-install.log` |
+| readme-consumer-build | 0 | — | 754 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/readme-consumer-build.log` |
+| readme-consumer-main | 0 | — | 68 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/readme-consumer-main.log` |
+| readme-consumer-tenants | 0 | — | 67 ms | `validation/public/syna-v1.0.0-rc.1-release/logs/readme-consumer-tenants.log` |
 | readme-consumer-result | 0 | — | — | `validation/public/syna-v1.0.0-rc.1-release/readme-consumer.json` |
 | release-profile | 0 | — | — | `scripts/release-profiles/1.0.0-rc.6.json` |
 
 Totals: 62 steps, 0 failed steps; 1166 test executions: 583 distinct cases, 583 of them executed a second time in the rebuilt copy (the `rebuild-*` steps); 1166 passed, 0 skipped/not run. Blocked steps: 0.
 
-Compared with the run this one replaced (generated 2026-09-10T18:31:32.036Z, commit `7401ce9`, COMPLETE): step list identical, per-step test counts different — gate-self-tests: 51/51 → 53/53; rebuild-gate-self-tests: 51/51 → 53/53.
+Compared with the run this one replaced (generated 2026-09-10T20:11:30.894Z, commit `5cf16ef`, COMPLETE): step list identical, per-step test counts identical.
 
 The `rebuild-*` steps ran inside a fresh directory created with `mkdtemp` in the OS temp dir: the source tarball was unpacked there, `npm ci` installed from the lockfile, the workspace was built and type-tested, and the core, application and PostgreSQL/matrix suites plus the filesystem demo ran against that copy. `pack-*` produced the npm tarballs from the rebuilt copy; `consumer-*` installed the runtime tarball into an independent TypeScript project, compiled it and ran it.
 
@@ -96,17 +96,17 @@ Setups are empty and involve no network. Warm cases measure enter+dispose of a s
 
 | case | samples | p50 ms | p95 ms | p99 ms | inherited / new | plan-cache entries |
 |---|---:|---:|---:|---:|---|---:|
-| warm-enter-dispose-100-depth-2 | 500 | 0.113 | 0.195 | 0.257 | 100 / 20 | 4 |
-| warm-enter-dispose-100-depth-6 | 500 | 0.106 | 0.168 | 0.220 | 100 / 20 | 8 |
-| warm-enter-dispose-300-depth-2 | 500 | 0.256 | 0.387 | 0.474 | 260 / 60 | 4 |
-| warm-enter-dispose-300-depth-6 | 500 | 0.256 | 0.374 | 0.423 | 260 / 60 | 8 |
-| site-enter-tenant-input-reverse-closure-200 | 300 | 0.202 | 0.305 | 0.441 | 140 / — | 2 |
-| bound-entry-private-range-request-enter-dispose-100 | 500 | 0.123 | 0.184 | 0.293 | 101 / 21 | 4 |
-| override-and-all-request-enter-dispose-100 | 500 | 0.119 | 0.166 | 0.211 | — | — |
+| warm-enter-dispose-100-depth-2 | 500 | 0.122 | 0.215 | 0.284 | 100 / 20 | 4 |
+| warm-enter-dispose-100-depth-6 | 500 | 0.103 | 0.193 | 0.248 | 100 / 20 | 8 |
+| warm-enter-dispose-300-depth-2 | 500 | 0.258 | 0.412 | 0.546 | 260 / 60 | 4 |
+| warm-enter-dispose-300-depth-6 | 500 | 0.254 | 0.376 | 0.434 | 260 / 60 | 8 |
+| site-enter-tenant-input-reverse-closure-200 | 300 | 0.199 | 0.303 | 0.475 | 140 / — | 2 |
+| bound-entry-private-range-request-enter-dispose-100 | 500 | 0.123 | 0.185 | 0.250 | 101 / 21 | 4 |
+| override-and-all-request-enter-dispose-100 | 500 | 0.124 | 0.174 | 0.252 | — | — |
 
-Phase breakdown (300-service world, 60 rounds): cold plan + new slots p95 22.094 ms · warm plan p95 0.561 ms · materialization of a request chain p95 0.079 ms · dispose p95 0.149 ms.
+Phase breakdown (300-service world, 60 rounds): cold plan + new slots p95 23.832 ms · warm plan p95 0.563 ms · materialization of a request chain p95 0.069 ms · dispose p95 0.146 ms.
 
-Churn: 10000 request/AnchoredEntry operations in 1284 ms (128.4 µs/op); plan-cache entries max 4 (hits 9998, misses 4); live Envs after 2; heap after GC: 7.1 MiB → 7.4 MiB → 7.4 MiB → 7.4 MiB → 7.5 MiB.
+Churn: 10000 request/AnchoredEntry operations in 1273 ms (127.3 µs/op); plan-cache entries max 4 (hits 9998, misses 4); live Envs after 2; heap after GC: 7.1 MiB → 7.4 MiB → 7.4 MiB → 7.4 MiB → 7.5 MiB.
 
 LRU: 500 distinct Entry shapes → 16 cached templates (max 16, evictions 484).
 
@@ -114,10 +114,10 @@ LRU: 500 distinct Entry shapes → 16 cached templates (max 16, evictions 484).
 
 | budget | metric | max | value | result |
 |---|---|---:|---:|---|
-| warm-enter-dispose-300-depth-2 | p95Ms | 2 | 0.387 | ok |
-| warm-enter-dispose-300-depth-6 | p95Ms | 2 | 0.374 | ok |
-| warm-enter-dispose-100-depth-2 | p95Ms | 1 | 0.195 | ok |
-| bound-entry-private-range-request-enter-dispose-100 | p95Ms | 1 | 0.184 | ok |
+| warm-enter-dispose-300-depth-2 | p95Ms | 2 | 0.412 | ok |
+| warm-enter-dispose-300-depth-6 | p95Ms | 2 | 0.376 | ok |
+| warm-enter-dispose-100-depth-2 | p95Ms | 1 | 0.215 | ok |
+| bound-entry-private-range-request-enter-dispose-100 | p95Ms | 1 | 0.185 | ok |
 | churn-10000-requests | planCacheEntriesMax | 8 | 4.000 | ok |
 | churn-10000-requests-liveEnvs | liveEnvCountAfter | 2 | 2.000 | ok |
 | lru-churn-500-shapes | planCacheEntries | 16 | 16.000 | ok |
@@ -126,33 +126,33 @@ LRU: 500 distinct Entry shapes → 16 cached templates (max 16, evictions 484).
 
 `scripts/benchmark-same-session.mjs` ran `benchmarks/v0.5-planning.mjs` 21 times on this host, took the element-wise median and compared it with the 1.0.0-rc.4 source (commit `b691067`) exported from git into a scratch directory, installed from its lockfile, built and benchmarked 21 times in the same session (`scripts/benchmark-same-session.mjs`: one discarded warm-up run per side, then 21 rounds that benchmark both sides in alternating order, both benchmark processes under `--expose-gc --no-maglev`; medians in `validation/public/syna-v1.0.0-rc.1-release/benchmark-compare/`): environment identical (platform darwin, arch arm64, cpu Apple M4 Pro, cpuCount 14, node (major) v26, node flags --expose-gc --no-maglev); 23/23 p50/p95/per-operation values within ±10 %; 116/116 plan-cache counters and shape counts equal; overall OK.
 
-Machine-state drift (informational): this session's 1.0.0-rc.4 against the file recorded on 2026-09-08T04:39:30.294Z (`benchmarks/results-v1.0.0-rc.4-baseline-same-machine.json`) has 20/23 timings within ±10 %; outside: cases.phase-breakdown-300.materializationMs.p50Ms +21.0 %, cases.phase-breakdown-300.materializationMs.p95Ms +12.8 %, cases.phase-breakdown-300.disposeMs.p50Ms +12.9 % — the same code measured at two moments, which is why both sides are measured in one session.
+Machine-state drift (informational): this session's 1.0.0-rc.4 against the file recorded on 2026-09-08T04:39:30.294Z (`benchmarks/results-v1.0.0-rc.4-baseline-same-machine.json`) has 23/23 timings within ±10 % — the same code measured at two moments, which is why both sides are measured in one session.
 
 | value | baseline (1.0.0-rc.4) | this source (1.0.0-rc.6) | delta |
 |---|---:|---:|---:|
-| cases.warm-enter-dispose-100-depth-2.timing.p50Ms | 0.101 | 0.103 | +1.9 % |
-| cases.warm-enter-dispose-100-depth-2.timing.p95Ms | 0.187 | 0.194 | +4.2 % |
-| cases.warm-enter-dispose-100-depth-6.timing.p50Ms | 0.099 | 0.098 | -0.5 % |
-| cases.warm-enter-dispose-100-depth-6.timing.p95Ms | 0.184 | 0.183 | -0.5 % |
-| cases.warm-enter-dispose-300-depth-2.timing.p50Ms | 0.252 | 0.254 | +0.9 % |
-| cases.warm-enter-dispose-300-depth-2.timing.p95Ms | 0.339 | 0.348 | +2.6 % |
-| cases.warm-enter-dispose-300-depth-6.timing.p50Ms | 0.246 | 0.245 | -0.4 % |
-| cases.warm-enter-dispose-300-depth-6.timing.p95Ms | 0.335 | 0.333 | -0.6 % |
-| cases.phase-breakdown-300.coldPlanWithNewSlotsMs.p50Ms | 20.012 | 20.139 | +0.6 % |
-| cases.phase-breakdown-300.coldPlanWithNewSlotsMs.p95Ms | 21.913 | 22.275 | +1.7 % |
-| cases.phase-breakdown-300.warmPlanMs.p50Ms | 0.310 | 0.313 | +1.0 % |
-| cases.phase-breakdown-300.warmPlanMs.p95Ms | 0.449 | 0.458 | +2.2 % |
-| cases.phase-breakdown-300.materializationMs.p50Ms | 0.033 | 0.034 | +2.7 % |
-| cases.phase-breakdown-300.materializationMs.p95Ms | 0.071 | 0.072 | +1.5 % |
-| cases.phase-breakdown-300.disposeMs.p50Ms | 0.090 | 0.091 | +1.2 % |
-| cases.phase-breakdown-300.disposeMs.p95Ms | 0.141 | 0.140 | -0.6 % |
-| cases.site-enter-tenant-input-reverse-closure-200.timing.p50Ms | 0.178 | 0.179 | +0.1 % |
-| cases.site-enter-tenant-input-reverse-closure-200.timing.p95Ms | 0.235 | 0.244 | +3.7 % |
-| cases.bound-entry-private-range-request-enter-dispose-100.timing.p50Ms | 0.111 | 0.110 | -0.4 % |
-| cases.bound-entry-private-range-request-enter-dispose-100.timing.p95Ms | 0.188 | 0.189 | +0.6 % |
-| cases.override-and-all-request-enter-dispose-100.timing.p50Ms | 0.109 | 0.110 | +0.5 % |
-| cases.override-and-all-request-enter-dispose-100.timing.p95Ms | 0.182 | 0.184 | +0.9 % |
-| cases.churn-10000-requests.perOperationMs | 0.119 | 0.120 | +1.3 % |
+| cases.warm-enter-dispose-100-depth-2.timing.p50Ms | 0.098 | 0.099 | +0.8 % |
+| cases.warm-enter-dispose-100-depth-2.timing.p95Ms | 0.183 | 0.183 | +0.1 % |
+| cases.warm-enter-dispose-100-depth-6.timing.p50Ms | 0.096 | 0.096 | -0.2 % |
+| cases.warm-enter-dispose-100-depth-6.timing.p95Ms | 0.181 | 0.181 | -0.1 % |
+| cases.warm-enter-dispose-300-depth-2.timing.p50Ms | 0.247 | 0.248 | +0.4 % |
+| cases.warm-enter-dispose-300-depth-2.timing.p95Ms | 0.331 | 0.331 | +0.1 % |
+| cases.warm-enter-dispose-300-depth-6.timing.p50Ms | 0.242 | 0.240 | -0.6 % |
+| cases.warm-enter-dispose-300-depth-6.timing.p95Ms | 0.316 | 0.311 | -1.8 % |
+| cases.phase-breakdown-300.coldPlanWithNewSlotsMs.p50Ms | 19.401 | 19.352 | -0.3 % |
+| cases.phase-breakdown-300.coldPlanWithNewSlotsMs.p95Ms | 21.628 | 21.308 | -1.5 % |
+| cases.phase-breakdown-300.warmPlanMs.p50Ms | 0.297 | 0.303 | +1.9 % |
+| cases.phase-breakdown-300.warmPlanMs.p95Ms | 0.434 | 0.435 | +0.2 % |
+| cases.phase-breakdown-300.materializationMs.p50Ms | 0.028 | 0.027 | -4.2 % |
+| cases.phase-breakdown-300.materializationMs.p95Ms | 0.063 | 0.063 | +0.2 % |
+| cases.phase-breakdown-300.disposeMs.p50Ms | 0.080 | 0.080 | +0.0 % |
+| cases.phase-breakdown-300.disposeMs.p95Ms | 0.137 | 0.131 | -4.8 % |
+| cases.site-enter-tenant-input-reverse-closure-200.timing.p50Ms | 0.177 | 0.175 | -1.3 % |
+| cases.site-enter-tenant-input-reverse-closure-200.timing.p95Ms | 0.234 | 0.231 | -1.5 % |
+| cases.bound-entry-private-range-request-enter-dispose-100.timing.p50Ms | 0.109 | 0.110 | +1.2 % |
+| cases.bound-entry-private-range-request-enter-dispose-100.timing.p95Ms | 0.186 | 0.188 | +1.1 % |
+| cases.override-and-all-request-enter-dispose-100.timing.p50Ms | 0.106 | 0.109 | +2.7 % |
+| cases.override-and-all-request-enter-dispose-100.timing.p95Ms | 0.178 | 0.178 | +0.3 % |
+| cases.churn-10000-requests.perOperationMs | 0.115 | 0.117 | +1.4 % |
 
 Every one of the 116 plan-cache counters (hits, misses, entries, evictions) and shape counts is equal to the baseline.
 
@@ -173,7 +173,7 @@ On the v0.4 workload the v0.5 core is slower by +8 % to +31 % at p95 (all cases 
 
 ## Working set (H11 / P05, `validation/public/syna-v1.0.0-rc.1-release/working-set.json`)
 
-120 tenants configured, capacity 6; max SiteEnv records per phase: hot 3, rotation 6, long tail 6, mixed 6; final records 0, evictions 480, creations 481, creation failures 0, leases 0, pending acquires 0. Heap after GC per phase: start 18.9 MiB (records 0, live envs 2, disposing 0); after-hot 20.0 MiB (records 3, live envs 5, disposing 0); after-rotation 20.3 MiB (records 6, live envs 8, disposing 0); after-tail 20.3 MiB (records 5, live envs 7, disposing 0); after-mixed 20.4 MiB (records 6, live envs 8, disposing 0); after-idle-sweep 20.0 MiB (records 0, live envs 2, disposing 0). Site Envs alive at any acquire (live envs minus the two roots, sampled on every lease): at most 6 of capacity 6. Plan cache at the end: {"hits":482,"misses":6,"entries":6,"evictions":0,"limit":512}.
+120 tenants configured, capacity 6; max SiteEnv records per phase: hot 3, rotation 6, long tail 6, mixed 6; final records 0, evictions 480, creations 481, creation failures 0, leases 0, pending acquires 0. Heap after GC per phase: start 19.3 MiB (records 0, live envs 2, disposing 0); after-hot 20.0 MiB (records 3, live envs 5, disposing 0); after-rotation 20.3 MiB (records 6, live envs 8, disposing 0); after-tail 20.3 MiB (records 5, live envs 7, disposing 0); after-mixed 20.4 MiB (records 6, live envs 8, disposing 0); after-idle-sweep 20.0 MiB (records 0, live envs 2, disposing 0). Site Envs alive at any acquire (live envs minus the two roots, sampled on every lease): at most 6 of capacity 6. Plan cache at the end: {"hits":482,"misses":6,"entries":6,"evictions":0,"limit":512}.
 
 ## multitenant-blog request latency (report only, `validation/public/syna-v1.0.0-rc.1-release/blog-request-latency.json`)
 
@@ -181,14 +181,14 @@ Full HTTP round trips on 127.0.0.1 measured from a node:http client in the same 
 
 | backend | case | samples | p50 ms | p95 ms | p99 ms |
 |---|---|---:|---:|---:|---:|
-| filesystem | post-page-cached | 200 | 1.220 | 1.774 | 1.970 |
-| filesystem | index-cached | 200 | 0.450 | 0.532 | 0.615 |
-| filesystem | comment-preview-untrusted | 200 | 0.467 | 0.636 | 0.869 |
-| filesystem | post-page-cold-site | 50 | 1.485 | 1.988 | 2.082 |
-| postgres | post-page-cached | 200 | 0.534 | 0.877 | 1.033 |
-| postgres | index-cached | 200 | 0.367 | 0.485 | 0.674 |
-| postgres | comment-preview-untrusted | 200 | 0.377 | 0.505 | 0.764 |
-| postgres | post-page-cold-site | 50 | 0.744 | 1.050 | 1.288 |
+| filesystem | post-page-cached | 200 | 1.193 | 1.765 | 3.448 |
+| filesystem | index-cached | 200 | 0.437 | 0.544 | 0.587 |
+| filesystem | comment-preview-untrusted | 200 | 0.479 | 0.598 | 0.690 |
+| filesystem | post-page-cold-site | 50 | 1.548 | 2.440 | 3.797 |
+| postgres | post-page-cached | 200 | 0.523 | 0.798 | 1.003 |
+| postgres | index-cached | 200 | 0.328 | 0.387 | 0.527 |
+| postgres | comment-preview-untrusted | 200 | 0.356 | 0.443 | 0.477 |
+| postgres | post-page-cold-site | 50 | 0.685 | 0.847 | 0.862 |
 
 `post-page-cached`: GET /posts/shared-slug on a warm SiteEnv (page cache hit; still one content-version read per request). `index-cached`: GET / on a warm SiteEnv (page cache hit). `comment-preview-untrusted`: GET /comments/preview?text=… (untrusted pipeline, never cached). `post-page-cold-site`: GET /posts/shared-slug after invalidate(): SiteEnv creation (configuration read, Env, authenticator, context) plus a page-cache miss.
 

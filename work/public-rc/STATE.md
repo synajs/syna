@@ -93,7 +93,19 @@ self-tests of the two, in `gate-self-tests` (51 cases).
   `@deprecated`. Mutation record: 2 mutants, 0 survived, 6 input files. Same-machine benchmark against 1.0.0-rc.4:
   139/139 rows within ±10 %, largest deviation 4.2 %. `pack-metadata` 0 problems on both tarballs; the README's own
   project, built with `syna-1.0.0-rc.1.tgz` as its only dependency, 0 problems. No attempt was repeated and nothing was
-  re-run: the gate passed on the first run of this tree.
+  re-run: the gate passed on the first run of this tree. Superseded by the run below, which carries the cleaned root.
+- **The release run of reference** (final): the same command on `4e7bcb5` (clean checkout, the root cleanup and the
+  tag archival) — **COMPLETE**, 62 steps, 0 failed, 0 skipped, 1166 test executions (583 distinct cases, 583 re-run in
+  the unpacked copy), 1166 passed; 404 source files, fingerprint `2935e751…`; PostgreSQL 17.10 in a temporary cluster.
+  Same step list and the same per-step test counts as the run it replaces. Inventory 374 items, identical to the
+  1.0.0-rc.5 record and to the frozen 0.8.0 record up to the three items registered in rc.3, 0 `@deprecated`; mutation
+  record 2 mutants, 0 survived, 6 input files; benchmark 139/139 within ±10 %, largest deviation 4.8 %;
+  PostgreSQL/matrix 45/45 in the workspace and 45/45 again in the copy unpacked from the archive; `pack-metadata` 0
+  problems; README consumer 0 problems. Passed on the first run of this tree.
+  - Both source archives are new (`e5894e74…`, `9a7fb4fa…`): they carry the edited scripts and documents. The two
+    package tarballs were re-packed by this run and came out byte-identical to the previous run's
+    (`ba676329…`, `3d88e537…`) — the cleanup touched nothing inside `packages/core` or `packages/tsconfig`, and
+    `npm pack` is deterministic over identical content. Same bytes, freshly produced; not a reused hash.
 
 ## For whoever publishes
 
