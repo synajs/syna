@@ -12,7 +12,7 @@ Syna 用服务声明描述这些关系。Service 声明依赖，在 `setup()` �
 
 ## 安装
 
-首个公开 RC 正在准备中。发布到 npm 的 `rc` 标签后，安装命令是：
+通过 npm 的 `rc` 标签安装 1.0 发布候选版本：
 
 ```sh
 npm install synajs@rc
@@ -376,7 +376,7 @@ try {
 
 ## 状态与许可
 
-仓库正在准备首个公开版本 `synajs@1.0.0-rc.1`。公开 API 已冻结；旧开发候选的名称和版本沿革保留在[历史记录][history]中。发布验证包含源码归档重建及独立安装包消费者，详细结果见[验证记录][validation]。
+`synajs@1.0.0-rc.1` 是 Syna 的首个公开发布候选版本。公开 API 已冻结；旧开发候选的名称和版本沿革保留在[历史记录][history]中。发布验证包含源码归档重建及独立安装包消费者，详细结果见[验证记录][validation]。
 
 采用 MIT 许可证。源码与问题反馈：[synajs/syna](https://github.com/synajs/syna)。
 

@@ -12,7 +12,7 @@ Syna makes those relationships part of the service declarations. A Service decla
 
 ## Install
 
-The first public RC is being prepared. Once it is published under the npm `rc` tag:
+Install the 1.0 release candidate from the npm `rc` tag:
 
 ```sh
 npm install synajs@rc
@@ -376,7 +376,7 @@ The [semantic model][semantic-model] and [deferred features][deferred] cover the
 
 ## Status and license
 
-This repository is preparing the first public release, `synajs@1.0.0-rc.1`. The public API is frozen; earlier development names and candidate versions are recorded in the [history][history]. Release validation includes rebuilding a source archive and testing an independently installed package. See the [validation record][validation] for the results.
+`synajs@1.0.0-rc.1` is the first public release candidate of Syna. The public API is frozen; earlier development names and candidate versions are recorded in the [history][history]. Release validation includes rebuilding a source archive and testing an independently installed package. See the [validation record][validation] for the results.
 
 MIT licensed. Source and issues: [synajs/syna](https://github.com/synajs/syna).
 
