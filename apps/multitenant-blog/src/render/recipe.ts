@@ -1,7 +1,7 @@
 import { Ajv, type ValidateFunction } from 'ajv'
 import type { RecipeDocument, RecipeStage, StoredImplementationRef } from '../domain/model.js'
 import { RECIPE_FORMAT_VERSION, recipeDocumentSchema } from '../domain/recipe-schema.js'
-import type { ServiceRevision } from 'syna'
+import type { ServiceRevision } from 'synajs'
 import { StageFactoryRef, type MarkdownStageFactory } from './stages.js'
 import {
   RehypeExternalLinksFactory,

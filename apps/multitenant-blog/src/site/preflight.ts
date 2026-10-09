@@ -1,5 +1,5 @@
-import type { EntryExplanation, EntryExplanationSuccess, Env } from 'syna'
-import type { ExplainedNode } from 'syna'
+import type { EntryExplanation, EntryExplanationSuccess, Env } from 'synajs'
+import type { ExplainedNode } from 'synajs'
 
 export interface ForkBudget {
   /** Maximum Services that are new or forked in the explained Entry. */

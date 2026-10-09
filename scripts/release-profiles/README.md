@@ -23,7 +23,7 @@ history; what they *ran* is in this directory, taken from the manifests they wro
   and not a package version (`docs/HISTORY.md`) — which is why **`validation`** is here too: the
   directory each mode of the gate writes its evidence to, and the release run a new line
   continues from. A public release's evidence is named after the package
-  (`validation/public/syna-v1.0.0-rc.1-release/`), not after the workspace version that produced
+  (`validation/public/synajs-v1.0.0-rc.1-release/`), not after the workspace version that produced
   it (`validation/README.md`). A profile that names none keeps `validation/v<version>-<mode>/`,
   which is what the gate composed through 1.0.0-rc.5.
 - **`steps.dev`** — what `--dev` runs, in order. **`steps.release`** — what `--release` adds

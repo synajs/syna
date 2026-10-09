@@ -1,4 +1,4 @@
-# `syna` v0.8 API reference
+# `synajs` v0.8 API reference
 
 Syna exposes immutable nominal descriptors and Entry-driven Env construction. Graph solving is global to the Runtime; TypeScript checks local shapes and descriptor compatibility. Every example below type-checks against `packages/core/src` (see `packages/core/type-tests/api.ts`). 0.8.0 is the last rename before 1.0: the names in this document are frozen (`docs/API_STABILITY.md`); `docs/GLOSSARY.md` fixes the vocabulary.
 
@@ -6,7 +6,7 @@ Syna exposes immutable nominal descriptors and Entry-driven Env construction. Gr
 
 ```ts
 import packageJson from '#syna/package' with { type: 'json' }
-import { definePackage } from 'syna'
+import { definePackage } from 'synajs'
 
 export const define = definePackage(packageJson)
 ```

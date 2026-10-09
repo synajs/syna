@@ -2,7 +2,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { readFile, realpath, stat } from 'node:fs/promises'
 import path from 'node:path'
 import type { AddressInfo } from 'node:net'
-import type { Env } from 'syna'
+import type { Env } from 'synajs'
 import type { RequestHeaders } from '../auth/principal.js'
 import { UnsafePathError, assertNoSymlink } from '../data/filesystem/files.js'
 import type { DomainTable } from './domains.js'

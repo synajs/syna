@@ -15,7 +15,7 @@ Syna 用服务声明描述这些关系。Service 声明依赖，在 `setup()` �
 首个公开 RC 正在准备中。发布到 npm 的 `rc` 标签后，安装命令是：
 
 ```sh
-npm install syna@rc
+npm install synajs@rc
 ```
 
 需要 Node.js ≥ 22，使用 ESM。建议配合 TypeScript：Syna 自带类型声明，不需要额外安装其他 Syna 包或使用专用 tsconfig。包管理器会自动安装它的运行时依赖。
@@ -56,7 +56,7 @@ npm install syna@rc
 
 ```ts
 import packageJson from '#syna/package' with { type: 'json' }
-import { createRuntime, definePackage } from 'syna'
+import { createRuntime, definePackage } from 'synajs'
 
 const define = definePackage(packageJson)
 const DatabaseConfig = define.input<{ url: string; poolSize: number }>('database-config')
@@ -105,7 +105,7 @@ async function openPool(url: string, poolSize: number) {
 创建上述文件后，在项目目录安装依赖：
 
 ```sh
-npm install syna@rc
+npm install synajs@rc
 npm install -D typescript @types/node
 ```
 
@@ -153,7 +153,7 @@ app Env                        Pool
 
 ```ts
 import packageJson from '#syna/package' with { type: 'json' }
-import { createRuntime, definePackage } from 'syna'
+import { createRuntime, definePackage } from 'synajs'
 
 const define = definePackage(packageJson)
 const CurrentTenant = define.input<{ id: string; apiKey: string }>('current-tenant')
@@ -240,7 +240,7 @@ Contract 定义能力接口，Service 声明自己提供这个接口。Binding �
 
 ```ts
 import packageJson from '#syna/package' with { type: 'json' }
-import { createRuntime, definePackage } from 'syna'
+import { createRuntime, definePackage } from 'synajs'
 
 const define = definePackage(packageJson)
 interface Mailer {
@@ -299,7 +299,7 @@ try {
 接着上一段，在测试用 Runtime 中替换 `SmtpMailer`。`services` 仍包含原服务，替身不需要被另外公开：
 
 ```ts
-import { override } from 'syna'
+import { override } from 'synajs'
 
 const recorded: string[] = []
 const RecordingMailer = define.service('recording-mailer', {
@@ -376,7 +376,7 @@ try {
 
 ## 状态与许可
 
-仓库正在准备首个公开版本 `syna@1.0.0-rc.1`。公开 API 已冻结；旧开发候选的名称和版本沿革保留在[历史记录][history]中。发布验证包含源码归档重建及独立安装包消费者，详细结果见[验证记录][validation]。
+仓库正在准备首个公开版本 `synajs@1.0.0-rc.1`。公开 API 已冻结；旧开发候选的名称和版本沿革保留在[历史记录][history]中。发布验证包含源码归档重建及独立安装包消费者，详细结果见[验证记录][validation]。
 
 采用 MIT 许可证。源码与问题反馈：[synajs/syna](https://github.com/synajs/syna)。
 

@@ -8,7 +8,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import packageJson from '#syna/package' with { type: 'json' }
-import { createRuntime, definePackage, type EntryExplanation, type ForkCause } from 'syna'
+import { createRuntime, definePackage, type EntryExplanation, type ForkCause } from 'synajs'
 import { AcmeNotify } from '@syna-demo/acme-notify-v2'
 import { Logger } from '@syna-demo/logger'
 import { CurrentTenant, TenantStore, TenantStoreConfig, type Tenant } from '@syna-demo/tenant-store'

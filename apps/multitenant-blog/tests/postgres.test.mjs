@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { randomBytes } from 'node:crypto'
 import { after, before, describe, it } from 'node:test'
 import pg from 'pg'
-import { createRuntime } from 'syna'
+import { createRuntime } from 'synajs'
 import {
   DatabaseConfig,
   DatabasePool,

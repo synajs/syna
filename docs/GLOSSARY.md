@@ -1,6 +1,6 @@
 # Glossary (v0.8)
 
-The vocabulary of `syna` from 0.8.0 on, one term per concept, with the Chinese rendering used in the Chinese documents. 0.8.0 is the last rename before 1.0 (`docs/API_STABILITY.md`): these are the words the public names are built from, and a later addition uses them the same way (naming guideline 6). Where a term has a public name next to it, the name is given in code font.
+The vocabulary of `synajs` from 0.8.0 on, one term per concept, with the Chinese rendering used in the Chinese documents. 0.8.0 is the last rename before 1.0 (`docs/API_STABILITY.md`): these are the words the public names are built from, and a later addition uses them the same way (naming guideline 6). Where a term has a public name next to it, the name is given in code font.
 
 | Term | 中文 | Meaning | Public names |
 |---|---|---|---|

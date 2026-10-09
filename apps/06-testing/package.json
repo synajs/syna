@@ -19,7 +19,7 @@
     "@syna-demo/logger": "1.1.0",
     "@syna-demo/notify-contract": "1.0.0",
     "@syna-demo/tenant-store": "1.2.0",
-    "syna": "1.0.0-rc.1"
+    "synajs": "1.0.0-rc.1"
   },
   "devDependencies": {
     "@synajs/tsconfig": "1.0.0-rc.1"

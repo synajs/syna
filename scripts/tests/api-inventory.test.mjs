@@ -104,7 +104,7 @@ test('A01/A11/0.8 no deleted or renamed-away name survives and every kept or new
   assert.deepEqual(survivors, [], 'deleted names still in the public API')
   const missing = [...KEPT, ...NEW_07, ...NEW_08].filter(name => !paths.has(name))
   assert.deepEqual(missing, [], 'kept or new names missing from the public API')
-  // The inventory carries the version of the package whose API it is — `syna` — which from the first public candidate
+  // The inventory carries the version of the package whose API it is — `synajs` — which from the first public candidate
   // is not the workspace's own validation version (packages/core/package.json vs the root package.json).
   assert.equal(after.version, JSON.parse(readFileSync(path.join(root, 'packages/core/package.json'), 'utf8')).version)
 })

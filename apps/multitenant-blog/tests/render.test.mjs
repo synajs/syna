@@ -1,7 +1,7 @@
 // H05 / H06 / H07 — three recipes share one set of factory slots; recipes persist and resolve.
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { createRuntime, definePackage } from 'syna'
+import { createRuntime, definePackage } from 'synajs'
 import rehypeSanitize, { defaultSchema } from 'rehype-sanitize'
 import {
   DEFAULT_ACCENT,

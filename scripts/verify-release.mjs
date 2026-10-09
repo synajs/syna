@@ -13,8 +13,11 @@
 // benchmarks and their budgets.
 //
 // 1.0.0-rc.6 is the workspace's validation line for the first *public* release candidate: what it publishes restarts at
-// `syna@1.0.0-rc.1` and `@synajs/tsconfig@1.0.0-rc.1` (the runtime was developed and validated under the temporary
-// `@syna/core` identity through the earlier candidates, docs/HISTORY.md; syna-public-rename). Three steps came with
+// `synajs@1.0.0-rc.1` and `@synajs/tsconfig@1.0.0-rc.1` (the runtime was developed and validated under the temporary
+// `@syna/core` identity through the earlier candidates, docs/HISTORY.md; syna-public-rename). The candidate was first
+// prepared as the unscoped `syna`, which npm rejected under its package-name similarity policy before anything was
+// published; the runtime package is `synajs`, the content and the surface are the same, and the `syna` preparation
+// stays on record (`validation/public/syna-v1.0.0-rc.1-release/`, docs/HISTORY.md). Three steps came with
 // them: `no-legacy-package-names` (no current file installs, imports or extends a package that will not be on the
 // registry), `pack-metadata` (the two tarballs are the packages the profile declares, carry what their `files` says
 // and no more, ask a consumer for nothing of this workspace, and the runtime's README is the canonical root README
@@ -24,7 +27,7 @@
 //
 // Because the published version is no longer the workspace version, the evidence of a public release is no longer
 // named after it either: `constants.validation` of the profile names the directory, and the public runs are a lineage
-// of their own under `validation/public/syna-v<package version>-release/`. The top-level `validation/v<version>-*/`
+// of their own under `validation/public/synajs-v<package version>-release/`. The top-level `validation/v<version>-*/`
 // directories are the repository's own validation rounds and stay exactly as they were recorded
 // (`validation/README.md`).
 //
@@ -80,7 +83,7 @@ if (profile.version !== version) {
 /**
  * Where this run writes its evidence. Through 1.0.0-rc.5 the workspace version *was* the release's version, so the
  * gate composed `validation/v<version>-<mode>/` from it. Since the first public candidate the two are separate
- * numbers — `syna@1.0.0-rc.1` published out of workspace 1.0.0-rc.6 — and a public release's evidence must not be
+ * numbers — `synajs@1.0.0-rc.1` published out of workspace 1.0.0-rc.6 — and a public release's evidence must not be
  * named after a private version that is not its own: the profile names the directory, and the public runs have a
  * lineage of their own under `validation/public/` (`validation/README.md`). A profile that names none keeps the
  * composed path, which is what the earlier releases ran with.
@@ -539,7 +542,7 @@ function glob(dir, suffix, base = root) {
  * each tarball must be the package the profile declares. The runtime tarball must carry exactly what its `files` says —
  * `package.json`, `README.md`, `LICENSE` and `dist/` — with the README byte for byte the canonical root README (npm and
  * GitHub show one document), and it must not ask a consumer for the temporary package identity or for the tsconfig
- * preset package, which belongs to package authors.
+ * preset package, which belongs to package authors — nor for the unscoped `syna` the candidate was first prepared as.
  */
 function packMetadata(runtimePack, tsconfigPack) {
   const problems = []
@@ -576,7 +579,7 @@ function packMetadata(runtimePack, tsconfigPack) {
     const packedManifest = JSON.parse(contents(runtimePack, 'package.json'))
     for (const field of ['dependencies', 'peerDependencies', 'optionalDependencies']) {
       for (const name of Object.keys(packedManifest[field] ?? {})) {
-        if (name.startsWith('@syna/') || name === '@synajs/tsconfig' || name.startsWith('@syna-demo/') || name.startsWith('@syna-app/')) {
+        if (name.startsWith('@syna/') || name === 'syna' || name === '@synajs/tsconfig' || name.startsWith('@syna-demo/') || name.startsWith('@syna-app/')) {
           problems.push(`${runtimePack.file}: ${field} asks for ${name}`)
         }
       }
@@ -600,9 +603,10 @@ function packMetadata(runtimePack, tsconfigPack) {
  * The README consumer (1.0.0-rc.1): a project that exists only because the canonical README says so. Its
  * `package.json`, its `tsconfig.json` and its programs are the blocks of the README, read out of the document itself
  * (`scripts/lib/readme-programs.mjs`); its one dependency is the runtime tarball this run packed — what
- * `npm install syna@rc` would fetch — and TypeScript is a build tool of the consumer, not a dependency of the runtime.
+ * `npm install synajs@rc` would fetch — and TypeScript is a build tool of the consumer, not a dependency of the runtime.
  * Each program must print exactly what the README says it prints, and nothing of this workspace may appear in the
- * installed tree: not the temporary package identity, and not the tsconfig preset package.
+ * installed tree: not the temporary package identity, not the unscoped `syna` the candidate was first prepared as,
+ * and not the tsconfig preset package.
  */
 async function readmeConsumer(directory, runtimePack) {
   const { files, outputs } = readmePrograms(readFileSync(path.join(root, 'README.md'), 'utf8'))
@@ -613,7 +617,7 @@ async function readmeConsumer(directory, runtimePack) {
   }
   const workspaceManifest = readFileSync(path.join(root, 'package.json'), 'utf8')
   const manifest = JSON.parse(readFileSync(path.join(directory, 'package.json'), 'utf8'))
-  manifest.dependencies = { syna: `file:${path.join(root, runtimePack.item.path)}` }
+  manifest.dependencies = { [PACKAGES.runtime.name]: `file:${path.join(root, runtimePack.item.path)}` }
   manifest.devDependencies = {
     typescript: workspaceManifest.match(/"typescript": "([^"]+)"/)[1],
     '@types/node': workspaceManifest.match(/"@types\/node": "([^"]+)"/)[1],
@@ -629,9 +633,9 @@ async function readmeConsumer(directory, runtimePack) {
   const installed = Object.keys(lock.packages ?? {}).filter(key => key.startsWith('node_modules/')).map(key => key.slice('node_modules/'.length))
   const problems = []
   for (const name of installed) {
-    if (name.startsWith('@syna/') || name === '@synajs/tsconfig') problems.push(`the README consumer installed ${name}`)
+    if (name.startsWith('@syna/') || name === 'syna' || name === '@synajs/tsconfig') problems.push(`the README consumer installed ${name}`)
   }
-  if (!installed.includes('syna')) problems.push('the README consumer did not install syna')
+  if (!installed.includes(PACKAGES.runtime.name)) problems.push(`the README consumer did not install ${PACKAGES.runtime.name}`)
   if (files.some(item => item.file === 'tsconfig.json') === false) problems.push('the README prints no tsconfig.json of its own')
   const resultFile = path.join(validationDir, 'readme-consumer.json')
   writeFileSync(resultFile, JSON.stringify({
@@ -704,7 +708,7 @@ async function releaseGate(sourceFingerprint) {
   await run('pack-core', 'npm', ['pack', '--pack-destination', packDir, path.join(unpacked, PACKAGES.runtime.directory)], { cwd: packDir })
   await run('pack-tsconfig', 'npm', ['pack', '--pack-destination', packDir, path.join(unpacked, PACKAGES.tsconfig.directory)], { cwd: packDir })
   const packed = readdirSync(packDir).filter(file => file.endsWith('.tgz')).map(file => ({ path: path.relative(root, path.join(packDir, file)), bytes: statSync(path.join(packDir, file)).size, sha256: sha256File(path.join(packDir, file)) }))
-  // The tarball of a package is the one npm names from the manifest: `syna-1.0.0-rc.1.tgz`,
+  // The tarball of a package is the one npm names from the manifest: `synajs-1.0.0-rc.1.tgz`,
   // `synajs-tsconfig-1.0.0-rc.1.tgz`. Matching by substring would let one stand in for the other.
   const packedTarball = key => {
     const declared = PACKAGES[key]
@@ -723,7 +727,7 @@ async function releaseGate(sourceFingerprint) {
     imports: { '#syna/package': './package.json' },
     syna: { id: 'smoke.consumer' },
     scripts: { build: 'tsc -p tsconfig.json', start: 'node dist/index.js' },
-    dependencies: { syna: `file:${path.join(root, coreTgz.path)}` },
+    dependencies: { [PACKAGES.runtime.name]: `file:${path.join(root, coreTgz.path)}` },
     devDependencies: { typescript: readFileSync(path.join(root, 'package.json'), 'utf8').match(/"typescript": "([^"]+)"/)[1], '@types/node': readFileSync(path.join(root, 'package.json'), 'utf8').match(/"@types\/node": "([^"]+)"/)[1] },
   }, null, 2))
   // A standalone tsconfig, not the preset package: `@synajs/tsconfig` is for package authors, and a consumer of the
@@ -741,7 +745,7 @@ async function releaseGate(sourceFingerprint) {
   // `catalog.revisions(family)`, `anchor`, `reuse`, `isSynaError` narrowing, `env.inspect().abandonedAttempts`) against the
   // packed declarations; a pre-0.8 name would not compile.
   writeFileSync(path.join(consumerDir, 'src/index.ts'), `import packageJson from '#syna/package' with { type: 'json' }
-import { createRuntime, definePackage, isSynaError, type Env, type InputRef, type Runtime, type SlotState } from 'syna'
+import { createRuntime, definePackage, isSynaError, type Env, type InputRef, type Runtime, type SlotState } from 'synajs'
 
 const define = definePackage(packageJson)
 const Answer = define.input<number>('answer')

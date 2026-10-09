@@ -18,12 +18,12 @@
 
 ```ts
 import packageJson from '#syna/package' with { type: 'json' }
-import { definePackage } from 'syna'
+import { definePackage } from 'synajs'
 
 export const define = definePackage(packageJson)
 ```
 
-Use `@synajs/tsconfig/node-library.json` (`npm install -D @synajs/tsconfig`) or equivalent NodeNext settings with JSON modules enabled. The presets are a convenience for package authors and for this workspace; nobody who installs your package — or `syna` itself — needs them.
+Use `@synajs/tsconfig/node-library.json` (`npm install -D @synajs/tsconfig`) or equivalent NodeNext settings with JSON modules enabled. The presets are a convenience for package authors and for this workspace; nobody who installs your package — or `synajs` itself — needs them.
 
 ## Stable exports
 

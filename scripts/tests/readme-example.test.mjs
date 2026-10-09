@@ -1,5 +1,5 @@
 // The README's programs (1.0.0-rc.1, the first public candidate) are compiled and executed exactly as printed. The
-// `package.json`, `tsconfig.json` and the two `src/*.ts` blocks are written to a scratch package that resolves `syna`
+// `package.json`, `tsconfig.json` and the two `src/*.ts` blocks are written to a scratch package that resolves `synajs`
 // through this workspace's node_modules and is built with the workspace TypeScript under **the README's own
 // tsconfig.json** — a plain standalone one, no preset package: what a reader copies is what runs here. Each program's
 // stdout must equal the output block that follows it.
@@ -8,7 +8,7 @@
 // inside the packed tarball by the release gate) and README.zh-CN.md carries the same code and output blocks.
 //
 // The snippets that are not whole programs are checked for invented names instead: every name the README imports from
-// `syna` is an export of the built package, and every `define.`/`runtime.`/`env.` call it shows is a declared member.
+// `synajs` is an export of the built package, and every `define.`/`runtime.`/`env.` call it shows is a declared member.
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
@@ -56,7 +56,7 @@ test('the README names only what the built package declares', () => {
   const descriptors = readFileSync(join(root, 'packages/core/dist/descriptors.d.ts'), 'utf8')
   const exported = declaredExports(index)
   for (const name of importedNames(readme)) {
-    assert.ok(exported.has(name), `the README imports ${name} from 'syna', which the package does not export`)
+    assert.ok(exported.has(name), `the README imports ${name} from 'synajs', which the package does not export`)
   }
   const members = {
     define: interfaceMembers(descriptors, 'PackageDefinitions'),

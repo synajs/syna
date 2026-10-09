@@ -15,7 +15,7 @@ Syna makes those relationships part of the service declarations. A Service decla
 The first public RC is being prepared. Once it is published under the npm `rc` tag:
 
 ```sh
-npm install syna@rc
+npm install synajs@rc
 ```
 
 Requires Node.js ≥ 22 and ESM. TypeScript is recommended. Syna ships its own type declarations; no other Syna package or custom tsconfig preset is required. Your package manager installs the runtime dependencies automatically.
@@ -56,7 +56,7 @@ Three files. This program opens a pool when `Database` is first loaded and close
 
 ```ts
 import packageJson from '#syna/package' with { type: 'json' }
-import { createRuntime, definePackage } from 'syna'
+import { createRuntime, definePackage } from 'synajs'
 
 const define = definePackage(packageJson)
 const DatabaseConfig = define.input<{ url: string; poolSize: number }>('database-config')
@@ -105,7 +105,7 @@ async function openPool(url: string, poolSize: number) {
 After creating the files, install the dependencies in the project directory:
 
 ```sh
-npm install syna@rc
+npm install synajs@rc
 npm install -D typescript @types/node
 ```
 
@@ -153,7 +153,7 @@ Use the same `package.json` and `tsconfig.json` and add this file. The pool and 
 
 ```ts
 import packageJson from '#syna/package' with { type: 'json' }
-import { createRuntime, definePackage } from 'syna'
+import { createRuntime, definePackage } from 'synajs'
 
 const define = definePackage(packageJson)
 const CurrentTenant = define.input<{ id: string; apiKey: string }>('current-tenant')
@@ -240,7 +240,7 @@ The following three blocks form one example: put them in order in `src/mailers.t
 
 ```ts
 import packageJson from '#syna/package' with { type: 'json' }
-import { createRuntime, definePackage } from 'syna'
+import { createRuntime, definePackage } from 'synajs'
 
 const define = definePackage(packageJson)
 interface Mailer {
@@ -299,7 +299,7 @@ A reference stores a service identity and version range, not a live client. When
 Continuing the example, replace `SmtpMailer` in a test Runtime. The `services` list still contains the original service; the replacement does not need separate public admission:
 
 ```ts
-import { override } from 'syna'
+import { override } from 'synajs'
 
 const recorded: string[] = []
 const RecordingMailer = define.service('recording-mailer', {
@@ -376,7 +376,7 @@ The [semantic model][semantic-model] and [deferred features][deferred] cover the
 
 ## Status and license
 
-This repository is preparing the first public release, `syna@1.0.0-rc.1`. The public API is frozen; earlier development names and candidate versions are recorded in the [history][history]. Release validation includes rebuilding a source archive and testing an independently installed package. See the [validation record][validation] for the results.
+This repository is preparing the first public release, `synajs@1.0.0-rc.1`. The public API is frozen; earlier development names and candidate versions are recorded in the [history][history]. Release validation includes rebuilding a source archive and testing an independently installed package. See the [validation record][validation] for the results.
 
 MIT licensed. Source and issues: [synajs/syna](https://github.com/synajs/syna).
 

@@ -1,7 +1,7 @@
 // H06 / H12 / H13 / H01 — startup preflight, request fork budget, worker lifecycle, model normalization.
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { createRuntime, definePackage, override } from 'syna'
+import { createRuntime, definePackage, override } from 'synajs'
 import {
   CORE_SERVICES,
   PROBE_REQUEST,

@@ -130,3 +130,21 @@ records and the older ledgers that say those files were at the root are left exa
 the files were at the time, which is what a record is for.
 
 Not done, by instruction: no `npm publish`, no public release tag, no GitHub Release.
+
+## The name npm accepted — `synajs`（最终包名）
+
+Everything above was prepared for the unscoped name `syna`, and that name was never published: when the publish was
+attempted npm rejected it under its package-name similarity policy — a refusal that `npm view syna` (E404 throughout the
+preparation) could not show in advance. The runtime package is **`synajs`**; `@synajs/tsconfig` is unchanged. The
+registry before this round: `npm view synajs` → E404 (unregistered; not owned by anyone, which is not a guarantee of
+publishability), `npm view syna` → E404, `npm whoami` → E401 (no credential in this environment), `npm view
+@synajs/tsconfig` → `1.0.0-rc.1` already on the registry under the project's own maintainer.
+
+What changed is the npm identity and every current surface that names it — manifests, lockfile, imports, the two
+READMEs, the current documents, the release profile, the gate's consumer projects and tarball audit, and the
+package-name scan, which now rejects `syna` as a package. `packages/core/src` is untouched; the API inventory, the
+mutation audit, the benchmark thresholds and the PostgreSQL/matrix suites are the same checks. The run recorded above
+stays as `validation/public/syna-v1.0.0-rc.1-release/`, immutable; the release run of `synajs@1.0.0-rc.1` is
+`validation/public/synajs-v1.0.0-rc.1-release/`, fresh archives, fresh tarballs, fresh hashes, with the earlier run
+named as the one it continues from. Still not done, by instruction: no `npm publish`, no `v1.0.0-rc.1` tag, no GitHub
+Release; `archive/pre-public-v1.0.0-rc.1` untouched.

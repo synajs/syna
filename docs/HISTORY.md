@@ -15,6 +15,7 @@ The line from the tarball baselines to 1.0, one round per section: what the roun
 | 1.0.0-rc.4 | the cleanup phase（清理阶段） — from a three-party cross-review | `work/tasks/SYNA_RC4_EXECUTION_PROMPT.md`, `work/tasks/SYNA_RC4_GOAL.txt` | `docs/SEMANTIC_CHANGES_RC4.md` | `validation/v1.0.0-rc.4-release/`, `work/rc4/STATE.md` |
 | 1.0.0-rc.5 | the tests that hold（测试有效性） — from a third independent review | `work/tasks/SYNA_RC5_EXECUTION_PROMPT.md`, `work/tasks/SYNA_RC5_GOAL.txt` | `docs/SEMANTIC_CHANGES_RC5.md` | `validation/v1.0.0-rc.5-release/`, `work/rc5/STATE.md` |
 | `syna` 1.0.0-rc.1 (workspace 1.0.0-rc.6) | the public packages（公开身份） | `work/tasks/SYNA_PUBLIC_RC_EXECUTION_PROMPT.md`, `work/tasks/SYNA_PUBLIC_RC_GOAL.txt` | `CHANGELOG.md` | `validation/public/syna-v1.0.0-rc.1-release/`, `work/public-rc/STATE.md` |
+| `synajs` 1.0.0-rc.1 (workspace 1.0.0-rc.6) | the name npm accepted（最终包名） | — (the npm identity of the runtime package; no change of the core) | `CHANGELOG.md` | `validation/public/synajs-v1.0.0-rc.1-release/`, `work/public-rc/STATE.md` |
 
 ## 0.2 – 0.4 — the tarball baselines
 
@@ -40,7 +41,36 @@ Task book `work/tasks/SYNA_V08_EXECUTION_PROMPT.md` (goal `work/tasks/SYNA_V08_G
 
 No task book: no change of the core — the public API inventory is identical to the 0.8.0 record item by item, the planner differential and the snapshots are the 0.8.0 ones. The candidate changes metadata (the repository `github.com/synajs/syna` in every `package.json`, the badges and links), tooling (`scripts/verify-release.mjs` reads the version from `package.json`; both sides of the benchmark comparison run under `--no-maglev` against the 0.8.0 source re-recorded the same way; one gate run's evidence is committed with the release) and documents (this page, the diagnostics clause of `docs/API_STABILITY.md`, `docs/DEFERRED.md` N15, the task books committed under `work/tasks/`). Record: `CHANGELOG.md`; evidence `validation/v1.0.0-rc.1-release/`, `work/v1.0/STATE.md`.
 
-## syna 1.0.0-rc.1 — the public packages（公开身份）
+## synajs 1.0.0-rc.1 — the name npm accepted（最终包名）
+
+The candidate prepared in the round below, under the unscoped name `syna`, was never published under it: when the
+publish was attempted, npm rejected `syna` under its package-name similarity policy — an unscoped name too close to an
+existing package is refused at publish time, which a registry lookup cannot show in advance (`npm view syna` was E404,
+unregistered, throughout the preparation). The final public runtime package is **`synajs`** (`npm install synajs@rc`,
+`import { … } from 'synajs'`), beside **`@synajs/tsconfig`**, both at **1.0.0-rc.1**. The project, its documents, its
+vocabulary and its API are still **Syna**; the npm identity of the runtime package is the only thing that changed.
+
+It is not an API change and not a semantic change. `packages/core/src` is byte-identical to the tree of the round
+below; the public API inventory is the 1.0.0-rc.5 record and the frozen 0.8.0 record item by item; the nominal
+identities the runtime serializes — `@syna/core`, `@syna/core/entry/derive/v1`, every Family, Contract, Input, Binding
+and Entry id, the `ImplementationRef` shape — the error codes, the planner and the lifecycle are untouched
+(`docs/API_STABILITY.md`). What moved is every current surface that names the package: the manifests and the
+lockfile, the imports of the examples, the reference application, its tests and the fixture packages, the README and
+its Chinese twin, the current documents, the release profile, the gate's consumer projects and its tarball audit, and
+the package-name scan, which now rejects `syna` in the forms a package is used in — import specifier, dependency key,
+`name` field, install line, versioned specifier, tarball name, installed path — while the records keep it.
+
+The evidence is separated the same way the identities are. `validation/public/syna-v1.0.0-rc.1-release/` is the
+immutable record of the preparation that was never published; `validation/public/synajs-v1.0.0-rc.1-release/` is the
+release run of `synajs@1.0.0-rc.1`, a fresh run with fresh archives, tarballs and hashes, whose manifest names the
+earlier run as the one it continues from. Record: `CHANGELOG.md`; ledger `work/public-rc/STATE.md`.
+
+## syna 1.0.0-rc.1 — the public packages（公开身份）— prepared, never published
+
+*The round below prepared the first public candidate as the unscoped `syna`. npm rejected that name at publish time
+(the section above); the candidate is published as `synajs`. The text is kept as written: it describes the tree of its
+day, in which the package was named `syna`.*
+
 
 Task book `work/tasks/SYNA_PUBLIC_RC_EXECUTION_PROMPT.md` (goal `work/tasks/SYNA_PUBLIC_RC_GOAL.txt`). The runtime was
 developed and validated through the earlier 1.0 release candidates under the temporary package identity `@syna/core`,

@@ -1,5 +1,5 @@
 {
-  "name": "syna",
+  "name": "synajs",
   "version": "1.0.0-rc.1",
   "description": "A runtime for composing stateful TypeScript services with explicit lifetimes",
   "keywords": [

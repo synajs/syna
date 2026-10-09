@@ -1,10 +1,10 @@
 # Working in this repository
 
-This page is for people working **on** Syna. Using Syna needs none of it: `npm install syna@rc` and the
+This page is for people working **on** Syna. Using Syna needs none of it: `npm install synajs@rc` and the
 [README](README.md).
 
 The workspace is private and carries its own version — the validation line of the release gate — while the two packages
-it publishes are `syna` and `@synajs/tsconfig` (`packages/core`, `packages/tsconfig`), released in lockstep.
+it publishes are `synajs` and `@synajs/tsconfig` (`packages/core`, `packages/tsconfig`), released in lockstep.
 `docs/HISTORY.md` has the rounds; `docs/VALIDATION.md` the recorded run of the current one.
 
 ## Requirements
@@ -111,7 +111,7 @@ the remedy.
   migrations, audits, validation).
 - `validation/v<version>-<mode>/` — one gate run each: its manifest, logs, API inventory and scans. Records, never
   edited afterwards. These are the repository's own validation rounds, numbered by the workspace version.
-- `validation/public/syna-v<package version>-release/` — the same, for a release published to npm, numbered by the
+- `validation/public/synajs-v<package version>-release/` — the same, for a release published to npm, numbered by the
   package version. The two numbers are separate counters and the release profile carries the mapping
   (`validation/README.md`).
 - `work/` — the ledgers of each round (task books under `work/tasks/`, the 0.5 task package under

@@ -9,7 +9,7 @@ import test from 'node:test'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
-import { override } from 'syna'
+import { override } from 'synajs'
 import { PreflightError, RequestHandler, createHylaApp, violations } from '../dist/index.js'
 import { createFilesystemApp } from './helpers/app-harness.mjs'
 

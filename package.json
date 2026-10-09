@@ -45,7 +45,7 @@
     "node": ">=22"
   },
   "packageManager": "npm@11.12.1",
-  "description": "The Syna runtime (syna), its TypeScript presets, the seven examples and the multitenant-blog reference application",
+  "description": "The Syna runtime (synajs), its TypeScript presets, the seven examples and the multitenant-blog reference application",
   "devDependencies": {
     "@types/node": "^22.19.7",
     "typescript": "~5.9.3"

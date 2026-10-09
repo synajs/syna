@@ -10,7 +10,7 @@ import { PipelineBuilder } from '../render/pipeline.js'
 import { Renderer, type Renderer as RendererApi } from '../render/renderer.js'
 import { SiteContext } from '../site/context.js'
 import { RequestHandler, type RequestHandler as RequestHandlerApi } from '../site/request.js'
-import type { ServiceRevision } from 'syna'
+import type { ServiceRevision } from 'synajs'
 
 /** A shared factory that reads the current request: refused by the render-infrastructure preflight. */
 export const RequestAwareStageFactory = define.service('request-aware-stage-factory', {

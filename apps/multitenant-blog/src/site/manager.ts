@@ -1,4 +1,4 @@
-import type { Env } from 'syna'
+import type { Env } from 'synajs'
 import { define } from '../syna.js'
 import { ContentBackend } from '../domain/content.js'
 import type { SiteConfig } from '../domain/model.js'

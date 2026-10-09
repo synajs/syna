@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
-import { override } from 'syna'
+import { override } from 'synajs'
 import {
   AuthOptions,
   AuthenticatorContract,

@@ -64,8 +64,8 @@ export function readmePrograms(markdown) {
   return { files, outputs, snippets }
 }
 
-/** Every name imported from the runtime package anywhere in the document (`import { a, type B } from 'syna'`). */
-export function importedNames(markdown, specifier = 'syna') {
+/** Every name imported from the runtime package anywhere in the document (`import { a, type B } from 'synajs'`). */
+export function importedNames(markdown, specifier = 'synajs') {
   const names = new Set()
   const pattern = new RegExp(String.raw`import\s+(?:type\s+)?\{([^}]*)\}\s+from\s+'${specifier}'`, 'g')
   for (const match of markdown.matchAll(pattern)) {

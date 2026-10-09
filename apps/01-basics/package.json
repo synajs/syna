@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@syna-demo/logger": "1.1.0",
-    "syna": "1.0.0-rc.1"
+    "synajs": "1.0.0-rc.1"
   },
   "devDependencies": {
     "@synajs/tsconfig": "1.0.0-rc.1"

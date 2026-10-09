@@ -5,7 +5,7 @@
 // are installed side by side until the last legacy tenant has moved.
 import assert from 'node:assert/strict'
 import packageJson from '#syna/package' with { type: 'json' }
-import { createRuntime, definePackage, isSynaError } from 'syna'
+import { createRuntime, definePackage, isSynaError } from 'synajs'
 import { AcmeNotify as AcmeNotify1 } from '@syna-demo/acme-notify-v1'
 import { AcmeNotify as AcmeNotify2 } from '@syna-demo/acme-notify-v2'
 import { GlobexNotify } from '@syna-demo/globex-notify'

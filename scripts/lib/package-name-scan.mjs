@@ -1,11 +1,18 @@
-// The package identity scan (1.0.0-rc.1, the first public candidate): the current line installs and imports `syna`,
+// The package identity scan (1.0.0-rc.1, the first public candidate): the current line installs and imports `synajs`,
 // and its TypeScript presets are `@synajs/tsconfig`. The temporary identities the runtime was developed under —
 // `@syna/core` and `@syna/tsconfig` — are not rewritten out of the record: the history, the migrations, the recorded
-// gate runs, the ledgers under work/ and the benchmark records keep them, because they are their subject.
+// gate runs, the ledgers under work/ and the benchmark records keep them, because they are their subject. So is the
+// unscoped `syna` the candidate was first prepared as and never published under (npm rejected the name under its
+// package-name similarity policy; docs/HISTORY.md): `validation/public/syna-v1.0.0-rc.1-release/` and the entries
+// that describe that preparation keep it.
 //
 // What this scan asserts is narrower and is the thing that can rot: no *current* file — sources, examples, fixtures,
 // the reference application, the release tooling, package metadata, the current documents — recommends a package that
-// will not exist on the registry. Two lines of the current line are the old names on purpose, and both are allowed by
+// will not exist on the registry. For the two scoped names any occurrence is a hit. For `syna` only the forms in which
+// a *package* is used are hits — an import specifier, a dependency key, a `name` field, an install line, a versioned
+// specifier, a tarball name, an installed path — because the word itself is the product's name, a tag of the blog
+// fixtures and the user of the test cluster, and those are not a package anyone could try to install. Two lines of the
+// current line are the old names on purpose, and both are allowed by
 // literal so that the exception stays visible in every run:
 //
 //   - the runtime's own nominal package identity (`packages/core/src/runtime.ts`). It is serialized — it names the
@@ -47,10 +54,20 @@ export const HISTORICAL_FILES = [
 /** A line that spells an earlier name on purpose, to explain the rename, carries this marker. */
 export const MARKER = 'syna-public-rename'
 
-/** The temporary identities, and what the current line uses instead. */
+/** The temporary identities and the unpublished unscoped name, and what the current line uses instead. */
 export const PATTERNS = [
-  { name: '@syna/core', pattern: /@syna\/core/, replacement: 'syna' },
+  { name: '@syna/core', pattern: /@syna\/core/, replacement: 'synajs' },
   { name: '@syna/tsconfig', pattern: /@syna\/tsconfig/, replacement: '@synajs/tsconfig' },
+  // `syna`, in the forms a package is used in and in no other (see the head of this file). `'synajs'` never matches:
+  // every form requires the name to end right after `syna`. `'#syna/package'` is a subpath import of the consumer's
+  // own package.json, `"syna": {` is the Syna manifest field, `postgres://syna@…` is the test cluster's user.
+  { name: 'syna (import specifier)', pattern: /\b(?:from|import|require)\s*\(?\s*['"]syna['"]/, replacement: "from 'synajs'" },
+  { name: 'syna (dependency)', pattern: /"syna":\s*"/, replacement: '"synajs": "<version>"' },
+  { name: 'syna (package name)', pattern: /"name":\s*"syna"/, replacement: '"name": "synajs"' },
+  { name: 'syna (install line)', pattern: /\bnpm\s+(?:install|i|add)\s+(?:-[-\w]+\s+)*syna(?:@[\w.-]+)?(?=\s|$|`)/, replacement: 'npm install synajs@rc' },
+  { name: 'syna (versioned specifier)', pattern: /(?<![\w/.@-])syna@(?:rc|latest|next|\d+\.\d+\.\d+)/, replacement: 'synajs@<tag or version>' },
+  { name: 'syna (tarball)', pattern: /\bsyna-\d+\.\d+\.\d+(?:-[\w.]+)?\.tgz/, replacement: 'synajs-<version>.tgz' },
+  { name: 'syna (installed path)', pattern: /\bnode_modules\/syna(?![\w-])/, replacement: 'node_modules/synajs' },
 ]
 
 /** The two places where an old name is the current truth, longest literal first (a line is stripped in this order). */
