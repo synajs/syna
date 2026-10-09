@@ -170,6 +170,12 @@ registry and is packed and validated here, not republished.
 
 Tarball bytes across environments: the CI gate on the previous commit (Node 22, Linux) produced a `synajs-tsconfig`
 tarball whose decompressed tar stream is byte-identical to the local one (same entries, same headers, same tar
-SHA-256), while the gzip bytes differ — a different deflate implementation, not a different package. The comparison
-of the CI-built runtime tarball of this round's commit is recorded below once the run exists. Still not done, by
+SHA-256), while the gzip bytes differ — a different deflate implementation, not a different package. The CI gate on the
+evidence commit (`2fc9bef`, run 37990683494, COMPLETE 62/62, 1168 tests, Node 22, PostgreSQL 16) confirms it for the
+runtime tarball too: `synajs-1.0.0-rc.1.tgz` is 138197 bytes locally (sha256 `9c3acc3c…`) and 138336 bytes from CI
+(sha256 `27e6b6b0…`), and the two decompress to the same tar stream (sha256
+`361f20fa79c3fba5b8b6443902985fd031ac1fcab735528abafb326649f5be97`): 103 entries, identical names, modes, times,
+owners and contents, identical `package.json`. The difference is the deflate encoder, not the package; the packaging
+is not redesigned to force byte-identical archives across environments, and the hashes in `SHA256SUMS.txt` remain those
+of the local run that produced the manifest. Still not done, by
 instruction: no `npm publish`, no republish of `@synajs/tsconfig`, no `v1.0.0-rc.1` tag, no GitHub Release.
