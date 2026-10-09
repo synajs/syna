@@ -148,3 +148,28 @@ stays as `validation/public/syna-v1.0.0-rc.1-release/`, immutable; the release r
 `validation/public/synajs-v1.0.0-rc.1-release/`, fresh archives, fresh tarballs, fresh hashes, with the earlier run
 named as the one it continues from. Still not done, by instruction: no `npm publish`, no `v1.0.0-rc.1` tag, no GitHub
 Release; `archive/pre-public-v1.0.0-rc.1` untouched.
+
+## The README that ships — evergreen wording（最终文案）
+
+The README inside the runtime tarball is immutable once `synajs@1.0.0-rc.1` is published, and until this round it said
+the first public RC "is being prepared" / "正在准备中" — true during preparation, false the moment the tarball is on the
+registry. Four sentences changed and nothing else: the install section says to install the 1.0 release candidate from
+the npm `rc` tag, and the status section says `synajs@1.0.0-rc.1` is the first public release candidate of Syna, with
+the API frozen and the earlier names and candidates in the history; the Chinese README carries the same meaning. No
+sentence claims a registry event. `packages/core/README.md` is the synced copy (`npm run readme:sync`, byte for byte),
+the executable blocks and their documented output are untouched, and the README tests pass (8/8).
+
+The gate ran again on that commit (`63a30ed`, clean checkout): COMPLETE, 62 steps, 0 failed, 0 skipped, 1168 test
+executions, source fingerprint `d028549ab893fac497ec1cb0754da53a3f187281213177cb0107c2966b85be92` (404 files); the
+API inventory, the mutation audit, the benchmark comparison (139/139 rows within the tolerance, largest deviation
+4.1 %), PostgreSQL/matrix (45/45 twice), the archive rebuild, the packed consumer and the README consumer are the same
+checks with the same results. Fresh archives, fresh tarballs, fresh hashes in `SHA256SUMS.txt`; the only payload
+difference from the previous run's runtime tarball is `package/README.md`. The tsconfig tarball is byte-identical to
+the previous local run because `packages/tsconfig` did not change; `@synajs/tsconfig@1.0.0-rc.1` is already on the
+registry and is packed and validated here, not republished.
+
+Tarball bytes across environments: the CI gate on the previous commit (Node 22, Linux) produced a `synajs-tsconfig`
+tarball whose decompressed tar stream is byte-identical to the local one (same entries, same headers, same tar
+SHA-256), while the gzip bytes differ — a different deflate implementation, not a different package. The comparison
+of the CI-built runtime tarball of this round's commit is recorded below once the run exists. Still not done, by
+instruction: no `npm publish`, no republish of `@synajs/tsconfig`, no `v1.0.0-rc.1` tag, no GitHub Release.

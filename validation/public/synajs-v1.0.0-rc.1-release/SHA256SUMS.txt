@@ -1,4 +1,4 @@
-26724a5beef54c83eca1f53d091d156e7e9ced49a52ab37325d5b7c43fd9f0f2  work/release/syna-v1.0.0-rc.6-source.tar.gz
-cc5e121ae3842f2ce1030b4290cae92f8c804e68e866df78037b5f0835c06e65  work/release/syna-v1.0.0-rc.6-source.zip
-8c12ea52a9c1a9fa265e9a0b5c38205959f799cad33e307efaae4693e1a1c9c7  work/release/pack/synajs-1.0.0-rc.1.tgz
+f30210a69e3d3c7c904c21644c7e2ca2df8826c48da923a2860c3c8af399657c  work/release/syna-v1.0.0-rc.6-source.tar.gz
+4f0a5a362de8d575469cc7d5ccad46c695e5d40b36b61142e1725c1e979536fb  work/release/syna-v1.0.0-rc.6-source.zip
+9c3acc3c52b7cf51e1f5a049157b85f12f6ba3a3df465d8985b9ad12dbe728af  work/release/pack/synajs-1.0.0-rc.1.tgz
 3d88e537dd3c4e23475ca6cb009dc3e7ca60d4cfe79ac3f29c855a10dbdb578d  work/release/pack/synajs-tsconfig-1.0.0-rc.1.tgz
