@@ -1,0 +1,995 @@
+{
+  "name": "Syna v1.0.0-rc.6 + multitenant-blog",
+  "version": "1.0.0-rc.6",
+  "packages": {
+    "runtime": {
+      "directory": "packages/core",
+      "name": "synajs",
+      "version": "1.0.0-rc.1"
+    },
+    "tsconfig": {
+      "directory": "packages/tsconfig",
+      "name": "@synajs/tsconfig",
+      "version": "1.0.0-rc.1"
+    }
+  },
+  "validation": "validation/public/synajs-v1.0.0-rc.1-release",
+  "gate": "scripts/verify-release.mjs",
+  "status": "COMPLETE",
+  "mode": "release",
+  "generatedAt": "2026-10-09T19:17:12.606Z",
+  "startedAt": "2026-10-09T19:12:45.522Z",
+  "environment": {
+    "node": "v26.0.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "cwd": ".",
+    "gitProvenance": {
+      "commit": "1b47398a270c8c676d5bdb8fe63098ac898f3306",
+      "dirty": false,
+      "modified": [],
+      "untracked": []
+    },
+    "postgres": {
+      "server": "PostgreSQL 17.10",
+      "url": "postgres://syna@127.0.0.1:54329/postgres",
+      "origin": "temporary cluster"
+    }
+  },
+  "source": {
+    "algorithm": "sha256(path\\nsha256(content)\\n...)",
+    "files": 404,
+    "digest": "350ccdb43074e4ed547b4f18ee532175368485ba5c4f5fe2fd7d47c91576cf27"
+  },
+  "steps": [
+    {
+      "name": "clean",
+      "command": "npm run clean",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:12:45.611Z",
+      "endedAt": "2026-10-09T19:12:45.791Z",
+      "durationMs": 180,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/clean.log",
+      "ok": true
+    },
+    {
+      "name": "build",
+      "command": "npm run build",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:12:45.791Z",
+      "endedAt": "2026-10-09T19:12:55.079Z",
+      "durationMs": 9288,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/build.log",
+      "ok": true
+    },
+    {
+      "name": "type-tests",
+      "command": "npm run type-tests",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:12:55.079Z",
+      "endedAt": "2026-10-09T19:12:58.973Z",
+      "durationMs": 3894,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/type-tests.log",
+      "ok": true
+    },
+    {
+      "name": "core-tests",
+      "command": "node --test --test-reporter=tap packages/core/tests/disposal/bounded-close.test.mjs packages/core/tests/disposal/cleanup-phase.test.mjs packages/core/tests/disposal/close-matrix.test.mjs packages/core/tests/disposal/close-paths.test.mjs packages/core/tests/disposal/close-reentry.test.mjs packages/core/tests/disposal/retention.test.mjs packages/core/tests/disposal/state-and-ledger.test.mjs packages/core/tests/errors/env-state.test.mjs packages/core/tests/errors/foreign-errors.test.mjs packages/core/tests/errors/invalid-descriptor.test.mjs packages/core/tests/errors/missing-implementation.test.mjs packages/core/tests/errors/reuse-errors.test.mjs packages/core/tests/errors/syna-error.test.mjs packages/core/tests/inventory/expired-forms-0.7.test.mjs packages/core/tests/inventory/expired-forms-0.8.test.mjs packages/core/tests/inventory/snapshots.test.mjs packages/core/tests/materialization/deadline-clock.test.mjs packages/core/tests/materialization/deadline-queue.test.mjs packages/core/tests/materialization/hardening.test.mjs packages/core/tests/materialization/retry-and-late-results.test.mjs packages/core/tests/materialization/setup-and-sharing.test.mjs packages/core/tests/materialization/waiter-deadline.test.mjs packages/core/tests/materialization/waiter-termination.test.mjs packages/core/tests/materialization/waiters-and-cancellation.test.mjs packages/core/tests/planning/all-implementations-and-budgets.test.mjs packages/core/tests/planning/binding-and-version-ranges.test.mjs packages/core/tests/planning/candidate-identity-and-drift.test.mjs packages/core/tests/planning/contracts.test.mjs packages/core/tests/planning/definitions-and-ownership.test.mjs packages/core/tests/planning/explain-missing-inputs.test.mjs packages/core/tests/planning/explain.test.mjs packages/core/tests/planning/override-and-private-realms.test.mjs packages/core/tests/planning/parent-only-reuse.test.mjs packages/core/tests/planning/plan-cache-equivalence.test.mjs packages/core/tests/planning/plan-cache-lineages.test.mjs packages/core/tests/planning/realms-and-owner-anchoring.test.mjs packages/core/tests/planning/request-envs-and-templates.test.mjs packages/core/tests/planning/semver.test.mjs packages/core/tests/property/graph-invariants.test.mjs packages/core/tests/property/reference-planner.test.mjs packages/core/tests/refs/implementation-ref.test.mjs packages/core/tests/refs/refs-and-payloads.test.mjs packages/core/tests/refs/slot-state.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:12:58.974Z",
+      "endedAt": "2026-10-09T19:13:02.032Z",
+      "durationMs": 3058,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 340,
+        "pass": 340,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/core-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-filesystem-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/filesystem.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:02.032Z",
+      "endedAt": "2026-10-09T19:13:03.190Z",
+      "durationMs": 1158,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 69,
+        "pass": 69,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/blog-filesystem-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-render-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/render.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:03.190Z",
+      "endedAt": "2026-10-09T19:13:03.533Z",
+      "durationMs": 343,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 8,
+        "pass": 8,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/blog-render-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-tenants-auth-preflight-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/tenants-auth.test.mjs apps/multitenant-blog/tests/preflight.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:03.534Z",
+      "endedAt": "2026-10-09T19:13:04.024Z",
+      "durationMs": 490,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 12,
+        "pass": 12,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/blog-tenants-auth-preflight-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-audit-regression-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/audit-app.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:04.024Z",
+      "endedAt": "2026-10-09T19:13:09.663Z",
+      "durationMs": 5639,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 22,
+        "pass": 22,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/blog-audit-regression-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-review-regression-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/review-app.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:09.663Z",
+      "endedAt": "2026-10-09T19:13:11.373Z",
+      "durationMs": 1710,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 8,
+        "pass": 8,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/blog-review-regression-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-close-path-tests",
+      "command": "node --test --test-reporter=tap apps/multitenant-blog/tests/rc3-close-paths.test.mjs apps/multitenant-blog/tests/rc4-acquire-deadline.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:11.374Z",
+      "endedAt": "2026-10-09T19:13:12.713Z",
+      "durationMs": 1339,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 12,
+        "pass": 12,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/blog-close-path-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-site-manager-working-set-tests",
+      "command": "node --test --test-reporter=tap --expose-gc apps/multitenant-blog/tests/site-manager.test.mjs",
+      "env": {
+        "SYNA_WORKING_SET_OUT": "<root>/validation/public/synajs-v1.0.0-rc.1-release/working-set.json"
+      },
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:12.713Z",
+      "endedAt": "2026-10-09T19:13:18.345Z",
+      "durationMs": 5632,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 14,
+        "pass": 14,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/blog-site-manager-working-set-tests.log",
+      "ok": true
+    },
+    {
+      "name": "blog-postgres-and-matrix-tests",
+      "command": "node scripts/pg-test-cluster.mjs with -- node --test --test-reporter=tap apps/multitenant-blog/tests/postgres.test.mjs apps/multitenant-blog/tests/matrix.test.mjs",
+      "env": {
+        "SYNA_PG_CLUSTER_DIR": "<root>/work/pg-release"
+      },
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:18.345Z",
+      "endedAt": "2026-10-09T19:13:20.867Z",
+      "durationMs": 2522,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 45,
+        "pass": 45,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/blog-postgres-and-matrix-tests.log",
+      "ok": true
+    },
+    {
+      "name": "gate-self-tests",
+      "command": "node --test --test-reporter=tap scripts/tests/any-count.test.mjs scripts/tests/api-inventory-diff.test.mjs scripts/tests/api-inventory.test.mjs scripts/tests/benchmark-registered-faster.test.mjs scripts/tests/codemod-v08.test.mjs scripts/tests/core-tests-entry.test.mjs scripts/tests/deprecations.test.mjs scripts/tests/no-legacy-package-names.test.mjs scripts/tests/no-old-names.test.mjs scripts/tests/no-vendor-names.test.mjs scripts/tests/pg-test-cluster.test.mjs scripts/tests/readme-example.test.mjs scripts/tests/readme-snippets.test.mjs scripts/tests/step-runner.test.mjs",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:20.868Z",
+      "endedAt": "2026-10-09T19:13:25.638Z",
+      "durationMs": 4770,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 54,
+        "pass": 54,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/gate-self-tests.log",
+      "ok": true
+    },
+    {
+      "name": "mutation-audit-record",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "work/rc5/mutations/RESULTS.json",
+      "note": "2 mutant(s) recorded 2026-09-08T19:29:42.647Z on v26.0.0, 0 survived, 6 input file(s) checked"
+    },
+    {
+      "name": "api-inventory",
+      "command": "node scripts/api-inventory.mjs --out <root>/validation/public/synajs-v1.0.0-rc.1-release/api-inventory.md --json <root>/validation/public/synajs-v1.0.0-rc.1-release/api-inventory.json",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:25.639Z",
+      "endedAt": "2026-10-09T19:13:29.517Z",
+      "durationMs": 3878,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/api-inventory.log",
+      "ok": true
+    },
+    {
+      "name": "api-inventory-no-deprecated",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/api-inventory.json",
+      "note": "374 items, 0 @deprecated"
+    },
+    {
+      "name": "api-inventory-diff",
+      "command": "node scripts/api-inventory.mjs --diff validation/v1.0.0-rc.5-release/api-inventory.json <root>/validation/public/synajs-v1.0.0-rc.1-release/api-inventory.json --out <root>/validation/public/synajs-v1.0.0-rc.1-release/api-inventory-diff.md",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:29.517Z",
+      "endedAt": "2026-10-09T19:13:29.698Z",
+      "durationMs": 181,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/api-inventory-diff.log",
+      "ok": true
+    },
+    {
+      "name": "api-inventory-unchanged",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/api-inventory-diff.md",
+      "note": "374 items here, 374 in the 1.0.0-rc.5 record (validation/v1.0.0-rc.5-release/api-inventory.json, commit 64f5221); 0 added, 0 removed, 0 changed — the registration of 1.0.0-rc.6 for this comparison is 0 item(s)"
+    },
+    {
+      "name": "api-inventory-frozen",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/api-inventory.json",
+      "note": "374 items here, 374 in the 0.8.0 record (validation/v0.8-release/api-inventory.json, commit 38a722e); 0 added, 0 removed, 3 changed — the registration of 1.0.0-rc.6 for this comparison is 3 item(s)",
+      "changed": [
+        "RuntimeEvent",
+        "RuntimeLimits.disposalGraceMs",
+        "UnsettledAttemptInspection.state"
+      ]
+    },
+    {
+      "name": "codemod-idempotent",
+      "command": "node scripts/codemod-v08.mjs --dry-run --json <root>/validation/public/synajs-v1.0.0-rc.1-release/codemod-idempotent.json",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:29.700Z",
+      "endedAt": "2026-10-09T19:13:30.583Z",
+      "durationMs": 883,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/codemod-idempotent.log",
+      "ok": true
+    },
+    {
+      "name": "no-old-reference-tokens",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/old-reference-tokens.json",
+      "note": "69 files scanned, 0 hits"
+    },
+    {
+      "name": "no-vendor-names",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/vendor-name-scan.json",
+      "note": "260 files scanned, 0 hits, 12 allowed literals of the application"
+    },
+    {
+      "name": "no-legacy-package-names",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/package-name-scan.json",
+      "note": "255 files scanned, 0 hits, 4 allowed lines of the frozen identity, 5 explaining the rename"
+    },
+    {
+      "name": "any-count",
+      "command": "node scripts/any-count.mjs --check scripts/any-baseline-v1.0.0-rc.2.json",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:30.647Z",
+      "endedAt": "2026-10-09T19:13:30.899Z",
+      "durationMs": 252,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/any-count.log",
+      "ok": true
+    },
+    {
+      "name": "demo-01-basics",
+      "command": "node apps/01-basics/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:30.899Z",
+      "endedAt": "2026-10-09T19:13:30.981Z",
+      "durationMs": 82,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/demo-01-basics.log",
+      "ok": true
+    },
+    {
+      "name": "demo-02-per-tenant",
+      "command": "node apps/02-per-tenant/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:30.981Z",
+      "endedAt": "2026-10-09T19:13:31.072Z",
+      "durationMs": 91,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/demo-02-per-tenant.log",
+      "ok": true
+    },
+    {
+      "name": "demo-03-user-configurable",
+      "command": "node apps/03-user-configurable/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:31.073Z",
+      "endedAt": "2026-10-09T19:13:31.168Z",
+      "durationMs": 95,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/demo-03-user-configurable.log",
+      "ok": true
+    },
+    {
+      "name": "demo-04-two-versions",
+      "command": "node apps/04-two-versions/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:31.168Z",
+      "endedAt": "2026-10-09T19:13:31.261Z",
+      "durationMs": 93,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/demo-04-two-versions.log",
+      "ok": true
+    },
+    {
+      "name": "demo-05-scheduled-jobs",
+      "command": "node apps/05-scheduled-jobs/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:31.261Z",
+      "endedAt": "2026-10-09T19:13:31.351Z",
+      "durationMs": 90,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/demo-05-scheduled-jobs.log",
+      "ok": true
+    },
+    {
+      "name": "demo-06-testing",
+      "command": "node apps/06-testing/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:31.351Z",
+      "endedAt": "2026-10-09T19:13:31.443Z",
+      "durationMs": 92,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/demo-06-testing.log",
+      "ok": true
+    },
+    {
+      "name": "demo-07-failure-modes",
+      "command": "node apps/07-failure-modes/dist/index.js",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:31.444Z",
+      "endedAt": "2026-10-09T19:13:32.009Z",
+      "durationMs": 565,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/demo-07-failure-modes.log",
+      "ok": true
+    },
+    {
+      "name": "blog-demo-filesystem",
+      "command": "node apps/multitenant-blog/bin/multitenant-blog.mjs demo --root <root>/work/demo-content",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:32.010Z",
+      "endedAt": "2026-10-09T19:13:32.322Z",
+      "durationMs": 312,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/blog-demo-filesystem.log",
+      "ok": true
+    },
+    {
+      "name": "benchmarks",
+      "command": "node --expose-gc benchmarks/v0.5-planning.mjs <root>/validation/public/synajs-v1.0.0-rc.1-release/benchmark-v0.5.json",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:32.324Z",
+      "endedAt": "2026-10-09T19:13:35.986Z",
+      "durationMs": 3662,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/benchmarks.log",
+      "ok": true
+    },
+    {
+      "name": "benchmark-compare",
+      "command": "node scripts/benchmark-same-session.mjs --commit b691067 --baseline-label 1.0.0-rc.4 --record benchmarks/results-v1.0.0-rc.4-baseline-same-machine.json --runs 21 --faster-ok  --faster-floor 0.30 --out-dir <root>/validation/public/synajs-v1.0.0-rc.1-release/benchmark-compare",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:13:35.999Z",
+      "endedAt": "2026-10-09T19:16:23.267Z",
+      "durationMs": 167268,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/benchmark-compare.log",
+      "ok": true
+    },
+    {
+      "name": "blog-request-latency",
+      "command": "node scripts/pg-test-cluster.mjs with -- node benchmarks/blog-request-latency.mjs <root>/validation/public/synajs-v1.0.0-rc.1-release/blog-request-latency.json",
+      "env": {
+        "SYNA_PG_CLUSTER_DIR": "<root>/work/pg-release"
+      },
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:16:23.267Z",
+      "endedAt": "2026-10-09T19:16:25.353Z",
+      "durationMs": 2086,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/blog-request-latency.log",
+      "ok": true
+    },
+    {
+      "name": "archive-scan",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/archive-scan.json"
+    },
+    {
+      "name": "archive-tar",
+      "command": "tar -czf <root>/work/release/syna-v1.0.0-rc.6-source.tar.gz -C <root>/work/release syna-v1.0.0-rc.6-source",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:16:25.463Z",
+      "endedAt": "2026-10-09T19:16:25.728Z",
+      "durationMs": 265,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/archive-tar.log",
+      "ok": true
+    },
+    {
+      "name": "archive-zip",
+      "command": "zip -qr <root>/work/release/syna-v1.0.0-rc.6-source.zip syna-v1.0.0-rc.6-source",
+      "cwd": "work/release",
+      "startedAt": "2026-10-09T19:16:25.728Z",
+      "endedAt": "2026-10-09T19:16:25.801Z",
+      "durationMs": 73,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/archive-zip.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-unpack",
+      "command": "tar -xzf <root>/work/release/syna-v1.0.0-rc.6-source.tar.gz -C /var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O",
+      "cwd": ".",
+      "startedAt": "2026-10-09T19:16:25.802Z",
+      "endedAt": "2026-10-09T19:16:26.000Z",
+      "durationMs": 198,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/rebuild-unpack.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-install",
+      "command": "npm ci --no-fund --no-audit",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-10-09T19:16:26.000Z",
+      "endedAt": "2026-10-09T19:16:26.622Z",
+      "durationMs": 622,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/rebuild-install.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-build",
+      "command": "npm run build",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-10-09T19:16:26.622Z",
+      "endedAt": "2026-10-09T19:16:35.170Z",
+      "durationMs": 8548,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/rebuild-build.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-type-tests",
+      "command": "npm run type-tests",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-10-09T19:16:35.170Z",
+      "endedAt": "2026-10-09T19:16:39.262Z",
+      "durationMs": 4092,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/rebuild-type-tests.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-core-tests",
+      "command": "node --test --test-reporter=tap packages/core/tests/disposal/bounded-close.test.mjs packages/core/tests/disposal/cleanup-phase.test.mjs packages/core/tests/disposal/close-matrix.test.mjs packages/core/tests/disposal/close-paths.test.mjs packages/core/tests/disposal/close-reentry.test.mjs packages/core/tests/disposal/retention.test.mjs packages/core/tests/disposal/state-and-ledger.test.mjs packages/core/tests/errors/env-state.test.mjs packages/core/tests/errors/foreign-errors.test.mjs packages/core/tests/errors/invalid-descriptor.test.mjs packages/core/tests/errors/missing-implementation.test.mjs packages/core/tests/errors/reuse-errors.test.mjs packages/core/tests/errors/syna-error.test.mjs packages/core/tests/inventory/expired-forms-0.7.test.mjs packages/core/tests/inventory/expired-forms-0.8.test.mjs packages/core/tests/inventory/snapshots.test.mjs packages/core/tests/materialization/deadline-clock.test.mjs packages/core/tests/materialization/deadline-queue.test.mjs packages/core/tests/materialization/hardening.test.mjs packages/core/tests/materialization/retry-and-late-results.test.mjs packages/core/tests/materialization/setup-and-sharing.test.mjs packages/core/tests/materialization/waiter-deadline.test.mjs packages/core/tests/materialization/waiter-termination.test.mjs packages/core/tests/materialization/waiters-and-cancellation.test.mjs packages/core/tests/planning/all-implementations-and-budgets.test.mjs packages/core/tests/planning/binding-and-version-ranges.test.mjs packages/core/tests/planning/candidate-identity-and-drift.test.mjs packages/core/tests/planning/contracts.test.mjs packages/core/tests/planning/definitions-and-ownership.test.mjs packages/core/tests/planning/explain-missing-inputs.test.mjs packages/core/tests/planning/explain.test.mjs packages/core/tests/planning/override-and-private-realms.test.mjs packages/core/tests/planning/parent-only-reuse.test.mjs packages/core/tests/planning/plan-cache-equivalence.test.mjs packages/core/tests/planning/plan-cache-lineages.test.mjs packages/core/tests/planning/realms-and-owner-anchoring.test.mjs packages/core/tests/planning/request-envs-and-templates.test.mjs packages/core/tests/planning/semver.test.mjs packages/core/tests/property/graph-invariants.test.mjs packages/core/tests/property/reference-planner.test.mjs packages/core/tests/refs/implementation-ref.test.mjs packages/core/tests/refs/refs-and-payloads.test.mjs packages/core/tests/refs/slot-state.test.mjs",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-10-09T19:16:39.263Z",
+      "endedAt": "2026-10-09T19:16:42.350Z",
+      "durationMs": 3087,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 340,
+        "pass": 340,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/rebuild-core-tests.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-app-tests",
+      "command": "node --test --test-reporter=tap --expose-gc apps/multitenant-blog/tests/filesystem.test.mjs apps/multitenant-blog/tests/render.test.mjs apps/multitenant-blog/tests/tenants-auth.test.mjs apps/multitenant-blog/tests/preflight.test.mjs apps/multitenant-blog/tests/audit-app.test.mjs apps/multitenant-blog/tests/review-app.test.mjs apps/multitenant-blog/tests/rc3-close-paths.test.mjs apps/multitenant-blog/tests/rc4-acquire-deadline.test.mjs apps/multitenant-blog/tests/site-manager.test.mjs",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-10-09T19:16:42.350Z",
+      "endedAt": "2026-10-09T19:16:48.282Z",
+      "durationMs": 5932,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 145,
+        "pass": 145,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/rebuild-app-tests.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-postgres-matrix-tests",
+      "command": "node scripts/pg-test-cluster.mjs with -- node --test --test-reporter=tap apps/multitenant-blog/tests/postgres.test.mjs apps/multitenant-blog/tests/matrix.test.mjs",
+      "env": {
+        "SYNA_PG_CLUSTER_DIR": "/var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/pg"
+      },
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-10-09T19:16:48.282Z",
+      "endedAt": "2026-10-09T19:16:51.031Z",
+      "durationMs": 2749,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 45,
+        "pass": 45,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/rebuild-postgres-matrix-tests.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-gate-self-tests",
+      "command": "node --test --test-reporter=tap scripts/tests/any-count.test.mjs scripts/tests/api-inventory-diff.test.mjs scripts/tests/api-inventory.test.mjs scripts/tests/benchmark-registered-faster.test.mjs scripts/tests/codemod-v08.test.mjs scripts/tests/core-tests-entry.test.mjs scripts/tests/deprecations.test.mjs scripts/tests/no-legacy-package-names.test.mjs scripts/tests/no-old-names.test.mjs scripts/tests/no-vendor-names.test.mjs scripts/tests/pg-test-cluster.test.mjs scripts/tests/readme-example.test.mjs scripts/tests/readme-snippets.test.mjs scripts/tests/step-runner.test.mjs",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-10-09T19:16:51.031Z",
+      "endedAt": "2026-10-09T19:16:55.898Z",
+      "durationMs": 4867,
+      "exitCode": 0,
+      "signal": null,
+      "tests": {
+        "tests": 54,
+        "pass": 54,
+        "fail": 0,
+        "skipped": 0,
+        "todo": 0,
+        "cancelled": 0
+      },
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/rebuild-gate-self-tests.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-codemod-idempotent",
+      "command": "node scripts/codemod-v08.mjs --dry-run",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-10-09T19:16:55.898Z",
+      "endedAt": "2026-10-09T19:16:56.752Z",
+      "durationMs": 854,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/rebuild-codemod-idempotent.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-demo",
+      "command": "node apps/multitenant-blog/bin/multitenant-blog.mjs demo --root /var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/demo-content",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-10-09T19:16:56.752Z",
+      "endedAt": "2026-10-09T19:16:57.032Z",
+      "durationMs": 280,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/rebuild-demo.log",
+      "ok": true
+    },
+    {
+      "name": "rebuild-examples",
+      "command": "npm run demo",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/syna-v1.0.0-rc.6-source",
+      "startedAt": "2026-10-09T19:16:57.032Z",
+      "endedAt": "2026-10-09T19:17:07.556Z",
+      "durationMs": 10524,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/rebuild-examples.log",
+      "ok": true
+    },
+    {
+      "name": "pack-core",
+      "command": "npm pack --pack-destination <root>/work/release/pack /var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/syna-v1.0.0-rc.6-source/packages/core",
+      "cwd": "work/release/pack",
+      "startedAt": "2026-10-09T19:17:07.558Z",
+      "endedAt": "2026-10-09T19:17:07.948Z",
+      "durationMs": 390,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/pack-core.log",
+      "ok": true
+    },
+    {
+      "name": "pack-tsconfig",
+      "command": "npm pack --pack-destination <root>/work/release/pack /var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/syna-v1.0.0-rc.6-source/packages/tsconfig",
+      "cwd": "work/release/pack",
+      "startedAt": "2026-10-09T19:17:07.948Z",
+      "endedAt": "2026-10-09T19:17:08.154Z",
+      "durationMs": 206,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/pack-tsconfig.log",
+      "ok": true
+    },
+    {
+      "name": "pack-metadata",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/pack-audit.json",
+      "note": "synajs-1.0.0-rc.1.tgz (103 files), synajs-tsconfig-1.0.0-rc.1.tgz (5 files), 0 problem(s)"
+    },
+    {
+      "name": "consumer-install",
+      "command": "npm install --no-fund --no-audit",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/consumer",
+      "startedAt": "2026-10-09T19:17:08.174Z",
+      "endedAt": "2026-10-09T19:17:10.124Z",
+      "durationMs": 1950,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/consumer-install.log",
+      "ok": true
+    },
+    {
+      "name": "consumer-build",
+      "command": "npm run build",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/consumer",
+      "startedAt": "2026-10-09T19:17:10.124Z",
+      "endedAt": "2026-10-09T19:17:10.630Z",
+      "durationMs": 506,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/consumer-build.log",
+      "ok": true
+    },
+    {
+      "name": "consumer-run",
+      "command": "npm run -s start",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/consumer",
+      "startedAt": "2026-10-09T19:17:10.630Z",
+      "endedAt": "2026-10-09T19:17:10.827Z",
+      "durationMs": 197,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/consumer-run.log",
+      "ok": true
+    },
+    {
+      "name": "consumer-smoke-result",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/consumer-run.log",
+      "output": {
+        "result": 84,
+        "revision": "7.3.1",
+        "explainOk": true,
+        "missing": "smoke.consumer/input/answer/v1",
+        "abandoned": 0,
+        "revisions": "7.3.1",
+        "slots": "ready,ready"
+      }
+    },
+    {
+      "name": "readme-consumer-install",
+      "command": "npm install --no-fund --no-audit",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/readme-consumer",
+      "startedAt": "2026-10-09T19:17:10.829Z",
+      "endedAt": "2026-10-09T19:17:11.238Z",
+      "durationMs": 409,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/readme-consumer-install.log",
+      "ok": true
+    },
+    {
+      "name": "readme-consumer-build",
+      "command": "node node_modules/typescript/bin/tsc -p tsconfig.json --pretty false",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/readme-consumer",
+      "startedAt": "2026-10-09T19:17:11.238Z",
+      "endedAt": "2026-10-09T19:17:12.096Z",
+      "durationMs": 858,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/readme-consumer-build.log",
+      "ok": true
+    },
+    {
+      "name": "readme-consumer-main",
+      "command": "node dist/main.js",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/readme-consumer",
+      "startedAt": "2026-10-09T19:17:12.097Z",
+      "endedAt": "2026-10-09T19:17:12.185Z",
+      "durationMs": 88,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/readme-consumer-main.log",
+      "ok": true
+    },
+    {
+      "name": "readme-consumer-tenants",
+      "command": "node dist/tenants.js",
+      "cwd": "../../../../../var/folders/y0/gk3fktfn14g1xqyjjqr9mq8h0000gn/T/syna-release-rebuild-8dhz4O/readme-consumer",
+      "startedAt": "2026-10-09T19:17:12.185Z",
+      "endedAt": "2026-10-09T19:17:12.272Z",
+      "durationMs": 87,
+      "exitCode": 0,
+      "signal": null,
+      "mustRun": true,
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/logs/readme-consumer-tenants.log",
+      "ok": true
+    },
+    {
+      "name": "readme-consumer-result",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "validation/public/synajs-v1.0.0-rc.1-release/readme-consumer.json",
+      "note": "4 README files, 2 program(s) run, 5 package(s) installed, 0 problem(s)"
+    },
+    {
+      "name": "release-profile",
+      "ok": true,
+      "exitCode": 0,
+      "mustRun": true,
+      "command": "internal",
+      "log": "scripts/release-profiles/1.0.0-rc.6.json",
+      "note": "62 step(s) ran, 62 in scripts/release-profiles/1.0.0-rc.6.json"
+    }
+  ],
+  "totals": {
+    "steps": 62,
+    "failed": 0,
+    "skippedTests": 0,
+    "tests": 1168,
+    "passed": 1168,
+    "distinctTests": 584,
+    "rebuildTests": 584
+  },
+  "blocked": [],
+  "previousRun": {
+    "from": "validation/public/syna-v1.0.0-rc.1-release/manifest.json",
+    "generatedAt": "2026-09-11T00:12:06.426Z",
+    "commit": "4e7bcb5169a976a18fc52e4f39ae1d719ec4bd60",
+    "sourceDigest": "2935e75154b9d2fb0a6e67aab93b8b21611c5ebb3e377d87a60ff056e6b660a8",
+    "status": "COMPLETE",
+    "sameStepList": true,
+    "sameTestCounts": false,
+    "differences": [
+      "gate-self-tests: 53/53 → 54/54",
+      "rebuild-gate-self-tests: 53/53 → 54/54"
+    ]
+  },
+  "release": {
+    "archives": [
+      {
+        "path": "work/release/syna-v1.0.0-rc.6-source.tar.gz",
+        "bytes": 968818,
+        "sha256": "26724a5beef54c83eca1f53d091d156e7e9ced49a52ab37325d5b7c43fd9f0f2"
+      },
+      {
+        "path": "work/release/syna-v1.0.0-rc.6-source.zip",
+        "bytes": 1219755,
+        "sha256": "cc5e121ae3842f2ce1030b4290cae92f8c804e68e866df78037b5f0835c06e65"
+      }
+    ],
+    "packed": [
+      {
+        "path": "work/release/pack/synajs-1.0.0-rc.1.tgz",
+        "bytes": 138232,
+        "sha256": "8c12ea52a9c1a9fa265e9a0b5c38205959f799cad33e307efaae4693e1a1c9c7"
+      },
+      {
+        "path": "work/release/pack/synajs-tsconfig-1.0.0-rc.1.tgz",
+        "bytes": 1590,
+        "sha256": "3d88e537dd3c4e23475ca6cb009dc3e7ca60d4cfe79ac3f29c855a10dbdb578d"
+      }
+    ],
+    "sourceFingerprint": {
+      "algorithm": "sha256(path\\nsha256(content)\\n...)",
+      "files": 404,
+      "digest": "350ccdb43074e4ed547b4f18ee532175368485ba5c4f5fe2fd7d47c91576cf27"
+    },
+    "rebuiltFrom": "work/release/syna-v1.0.0-rc.6-source.tar.gz"
+  }
+}

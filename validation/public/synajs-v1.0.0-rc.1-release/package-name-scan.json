@@ -1,0 +1,52 @@
+{
+  "files": 255,
+  "hits": [],
+  "allowed": [
+    {
+      "file": "docs/API_STABILITY.md",
+      "line": 3,
+      "literal": "developed and validated under the temporary name `@syna/core`",
+      "reason": "docs/API_STABILITY.md: the name the frozen surface was developed under"
+    },
+    {
+      "file": "packages/core/src/runtime.ts",
+      "line": 62,
+      "literal": "name: '@syna/core'",
+      "reason": "the runtime's own nominal package identity, unchanged by the npm rename"
+    },
+    {
+      "file": "packages/core/src/runtime.ts",
+      "line": 63,
+      "literal": "id: '@syna/core'",
+      "reason": "the id of the runtime's own nominal package, unchanged by the npm rename"
+    },
+    {
+      "file": "packages/core/src/runtime.ts",
+      "line": 71,
+      "literal": "id: '@syna/core/entry/derive/v1'",
+      "reason": "the id of the runtime's internal derive Entry: serialized, frozen with every other identity"
+    }
+  ],
+  "marked": [
+    {
+      "file": "CONTRIBUTING.md",
+      "line": 121
+    },
+    {
+      "file": "docs/API_STABILITY.md",
+      "line": 31
+    },
+    {
+      "file": "scripts/validation-doc.mjs",
+      "line": 196
+    },
+    {
+      "file": "scripts/verify-release.mjs",
+      "line": 17
+    },
+    {
+      "file": "scripts/verify-release.mjs",
+      "line": 485
+    }
+  ]
+}

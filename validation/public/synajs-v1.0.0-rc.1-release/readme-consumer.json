@@ -1,0 +1,24 @@
+{
+  "readme": {
+    "sha256": "86dfd2c49c3e70297cfc8b1f9f9891152f9c3bedc49a7847567f973071726674",
+    "files": [
+      "package.json",
+      "tsconfig.json",
+      "src/main.ts",
+      "src/tenants.ts"
+    ],
+    "programs": [
+      "src/main.ts",
+      "src/tenants.ts"
+    ]
+  },
+  "tarball": "synajs-1.0.0-rc.1.tgz",
+  "installed": [
+    "@types/node",
+    "semver",
+    "synajs",
+    "typescript",
+    "undici-types"
+  ],
+  "problems": []
+}
